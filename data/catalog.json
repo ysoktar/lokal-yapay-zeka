@@ -253,7 +253,9 @@
     "stock": "stokta",
     "date": "01.11.2026",
     "source": "gömülü"
-   }
+   },
+   "pp": 700,
+   "vendor": "AMD"
   },
   "gpu5060ti": {
    "cat": "gpu",
@@ -269,7 +271,9 @@
     "stock": "stokta",
     "date": "01.11.2026",
     "source": "gömülü"
-   }
+   },
+   "pp": 600,
+   "vendor": "NVIDIA"
   },
   "gpu5070": {
    "cat": "gpu",
@@ -285,7 +289,9 @@
     "stock": "stokta",
     "date": "01.11.2026",
     "source": "gömülü"
-   }
+   },
+   "pp": 2090,
+   "vendor": "NVIDIA"
   },
   "gpu9070xt": {
    "cat": "gpu",
@@ -301,7 +307,9 @@
     "stock": "stokta",
     "date": "01.11.2026",
     "source": "gömülü"
-   }
+   },
+   "pp": 1110,
+   "vendor": "AMD"
   },
   "gpu5070ti": {
    "cat": "gpu",
@@ -317,7 +325,9 @@
     "stock": "stokta",
     "date": "01.11.2026",
     "source": "gömülü"
-   }
+   },
+   "pp": 2400,
+   "vendor": "NVIDIA"
   },
   "gpu5080": {
    "cat": "gpu",
@@ -333,7 +343,9 @@
     "stock": "stokta",
     "date": "01.11.2026",
     "source": "gömülü"
-   }
+   },
+   "pp": 2700,
+   "vendor": "NVIDIA"
   },
   "gpu5090": {
    "cat": "gpu",
@@ -349,7 +361,9 @@
     "stock": "bilinmiyor",
     "date": "01.11.2026",
     "source": "gömülü"
-   }
+   },
+   "pp": 5000,
+   "vendor": "NVIDIA"
   },
   "gpuR9700": {
    "cat": "gpu",
@@ -365,7 +379,9 @@
     "stock": "stokta",
     "date": "01.11.2026",
     "source": "gömülü"
-   }
+   },
+   "pp": 1200,
+   "vendor": "AMD"
   },
   "gpu3060used": {
    "cat": "gpu",
@@ -382,7 +398,9 @@
     "stock": "bilinmiyor",
     "date": "01.11.2026",
     "source": "gömülü"
-   }
+   },
+   "pp": 900,
+   "vendor": "NVIDIA"
   },
   "cpu5500": {
    "cat": "cpu",
@@ -445,7 +463,9 @@
     "stock": "bilinmiyor",
     "date": "01.11.2026",
     "source": "gömülü"
-   }
+   },
+   "pp": 2000,
+   "vendor": "NVIDIA"
   },
   "ram128": {
    "cat": "ram",
@@ -1170,7 +1190,7 @@
    "monthly": 100,
    "currency": "USD",
    "defaultCapM": 8,
-   "limit": "Kullanım sınırı model ve göreve bağlı; sabit token hakkı yok",
+   "limit": "Kullanım sınırı model ve göreve bağlı; sabit token hakkı yok · Kotalar sık değişiyor",
    "source": "https://help.openai.com/en/articles/9793128-about-chatgpt-pro-tiers"
   },
   {
@@ -1179,8 +1199,8 @@
    "name": "ChatGPT Pro 200",
    "monthly": 200,
    "currency": "USD",
-   "defaultCapM": 16,
-   "limit": "Pro 100’den yüksek kullanım; yine kötüye kullanım ve model sınırları",
+   "defaultCapM": 10,
+   "limit": "Codex kullanımı 30 Ekim’de 20×’ten 10×’e indirildi; model ve göreve bağlı sınırlar",
    "source": "https://help.openai.com/en/articles/9793128-about-chatgpt-pro-tiers"
   },
   {
@@ -2360,7 +2380,8 @@
    "tokens": 1000,
    "days": 30,
    "outputPct": 20,
-   "cachePct": 30
+   "cachePct": 30,
+   "task": "short"
   },
   {
    "id": "study",
@@ -2369,7 +2390,8 @@
    "tokens": 2500,
    "days": 30,
    "outputPct": 15,
-   "cachePct": 30
+   "cachePct": 30,
+   "task": "think"
   },
   {
    "id": "assist",
@@ -2378,7 +2400,8 @@
    "tokens": 1500,
    "days": 22,
    "outputPct": 8,
-   "cachePct": 60
+   "cachePct": 80,
+   "task": "agent"
   },
   {
    "id": "coding",
@@ -2386,8 +2409,9 @@
    "calls": 800,
    "tokens": 2000,
    "days": 22,
-   "outputPct": 3,
-   "cachePct": 85
+   "outputPct": 1,
+   "cachePct": 95,
+   "task": "agent"
   },
   {
    "id": "writing",
@@ -2396,7 +2420,8 @@
    "tokens": 4000,
    "days": 30,
    "outputPct": 40,
-   "cachePct": 20
+   "cachePct": 20,
+   "task": "short"
   },
   {
    "id": "batch",
@@ -2405,7 +2430,8 @@
    "tokens": 1500,
    "days": 30,
    "outputPct": 30,
-   "cachePct": 50
+   "cachePct": 50,
+   "task": "short"
   }
  ],
  "deepseekMeasured": {
@@ -2425,5 +2451,25 @@
    12,
    "R9700 + 251 GB RAM ölçümü 21–25; 64 GB ile daha yavaş (tahmin)"
   ]
+ },
+ "taskTypes": {
+  "short": {
+   "label": "Kısa cevap",
+   "out": 1000,
+   "ctx": 2000,
+   "desc": "sohbet, kısa soru"
+  },
+  "think": {
+   "label": "Düşünerek cevap",
+   "out": 15000,
+   "ctx": 5000,
+   "desc": "akıl yürüten model, zor soru"
+  },
+  "agent": {
+   "label": "Kodlama ajanı görevi",
+   "out": 50000,
+   "ctx": 32000,
+   "desc": "araç tanımları + proje dosyaları"
+  }
  }
 }

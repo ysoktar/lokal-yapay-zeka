@@ -103,3 +103,8 @@ code{background:var(--soft);padding:1px 5px;border-radius:4px}
 .offer-part{overflow-x:auto}.offers td:last-child{max-width:320px;overflow-wrap:anywhere}
 @media(max-width:700px){.offers td:nth-child(4){display:none}.seg button{flex:1 1 auto}.ctip{min-width:160px}}
 @media(max-width:700px){.presets{grid-template-columns:repeat(2,minmax(0,1fr))}.preset small{font-size:10.5px}}
+
+.recs,.checks{margin:0;padding-left:18px}.recs li,.checks li{margin:7px 0}.recs li span{display:block;color:var(--muted);font-size:13.5px}
+.pcgrid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.pcgrid.two .card{margin:0}
+details.card.alt{padding:14px 20px}details.card.alt summary{font-size:15px}
+@media(max-width:1000px){.pcgrid.two{grid-template-columns:minmax(0,1fr)}}

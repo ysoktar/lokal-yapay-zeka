@@ -13,6 +13,21 @@ const Calc = (() => {
       if (lp) Object.assign(m, lp, { live: true });
     }
   }
+  // Prices fetched by the visitor's own browser (OpenRouter allows cross-origin requests).
+  function applyBrowserOpenRouter(models) {
+    const map = {}; for (const m of models || []) map[m.id] = m.pricing; let n = 0;
+    for (const m of CAT.apiModels) {
+      const id = (m.source.match(/openrouter\.ai\/(.+)$/) || [])[1], p = id && map[id];
+      if (!p) continue;
+      const f = x => Number((Number(x) * 1e6).toPrecision(4));
+      const inp = f(p.prompt || 0), out = f(p.completion || 0);
+      if (!(out > 0) || inp < 0) continue;
+      Object.assign(m, { inputUsd: inp, outputUsd: out, live: 'tarayıcı' });
+      if (p.input_cache_read && Number(p.input_cache_read) > 0) m.cachedUsd = f(p.input_cache_read);
+      n++;
+    }
+    return n;
+  }
   const cat = () => CAT;
   const live = () => LIVE;
 
@@ -184,8 +199,13 @@ const Calc = (() => {
   function cloudOptions(S) {
     return [...CAT.subscriptions.map(o => ({ ...o, type: 'subscription' })), ...CAT.apiModels].map(o => {
       const monthly = cloudMonthly(o, S);
+      let split = null;
+      if (o.type !== 'subscription') {
+        const fx = S.usdTry * (1 + (S.foreignTax || 0) / 100), c = Math.min(1, (S.cachedInputSharePercent || 0) / 100), cached = Number.isFinite(o.cachedUsd) ? o.cachedUsd : o.inputUsd, inM = inputM(S);
+        split = { out: S.monthlyTokens * o.outputUsd * fx, inFresh: inM * (1 - c) * o.inputUsd * fx, inCached: inM * c * cached * fx };
+      }
       const fits = o.type !== 'subscription' || S.monthlyTokens <= (S.caps && S.caps[o.id] || o.defaultCapM);
-      return { ...o, monthly, fits };
+      return { ...o, monthly, fits, split };
     });
   }
   const FRONTIER = new Set(['api-claude-sonnet', 'api-claude-opus', 'api-openai-sol', 'api-openai-astra', 'api-openai-gpt54', 'api-openai-terra', 'api-gemini-argon-dec', 'api-gemini-argon-nov', 'api-gemini-31pro', 'api-xai-grok47', 'chatgpt-plus', 'chatgpt-pro100', 'chatgpt-pro200', 'claude-pro', 'claude-max5', 'claude-max20', 'google-ai-pro', 'google-ai-ultra5', 'google-ai-ultra20']);
@@ -203,5 +223,5 @@ const Calc = (() => {
     return 'no';
   }
 
-  return { init, prefill, taskTime, cat, live, offers, chosenOffer, cheapestOffer, computers, pcFromKeys, MODELS, estimate, speed, electricity, capacity, cloudMonthly, cloudOptions, inClass, localCum, cloudCum, breakEven, ggufFit, inputM, bill };
+  return { init, applyBrowserOpenRouter, prefill, taskTime, cat, live, offers, chosenOffer, cheapestOffer, computers, pcFromKeys, MODELS, estimate, speed, electricity, capacity, cloudMonthly, cloudOptions, inClass, localCum, cloudCum, breakEven, ggufFit, inputM, bill };
 })();

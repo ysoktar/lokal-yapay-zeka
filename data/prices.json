@@ -1,0 +1,471 @@
+{
+ "apple": {
+  "mac24": {
+   "name": "Mac mini, M5 Pro çip, 15 çekirdekli CPU, 16 çekirdekli GPU, 24 GB bellek, 512 GB depolama",
+   "price": 119999,
+   "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m5-pro-%C3%A7ip-15-%C3%A7ekirdekli-cpu-16-%C3%A7ekirdekli-gpu-24-gb-bellek-512gb-depolama"
+  },
+  "mac48": {
+   "name": "Mac mini, M5 Pro çip, 15 çekirdekli CPU, 16 çekirdekli GPU, 48 GB bellek, 512 GB depolama",
+   "price": 161999,
+   "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m5-pro-%C3%A7ip-15-%C3%A7ekirdekli-cpu-16-%C3%A7ekirdekli-gpu-48-gb-bellek-512gb-depolama"
+  },
+  "macm6": {
+   "name": "Mac mini, M6 çip, 12 çekirdekli CPU, 12 çekirdekli GPU, 16 GB bellek, 256 GB depolama",
+   "price": 62499,
+   "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-16-gb-bellek-256gb-depolama"
+  },
+  "macm6_24": {
+   "name": "Mac mini, M6 çip, 12 çekirdekli CPU, 12 çekirdekli GPU, 24 GB bellek, 256 GB depolama",
+   "price": 76499,
+   "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-24-gb-bellek-256gb-depolama"
+  },
+  "macm6_32": {
+   "name": "Mac mini, M6 çip, 12 çekirdekli CPU, 12 çekirdekli GPU, 32 GB bellek, 256 GB depolama",
+   "price": 90499,
+   "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-32-gb-bellek-256gb-depolama"
+  },
+  "macmini64": {
+   "name": "Mac mini, M5 Pro çip, 15 çekirdekli CPU, 16 çekirdekli GPU, 64 GB bellek, 512 GB depolama",
+   "price": 189999,
+   "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m5-pro-%C3%A7ip-15-%C3%A7ekirdekli-cpu-16-%C3%A7ekirdekli-gpu-64-gb-bellek-512gb-depolama"
+  },
+  "macstudio128": {
+   "name": "Mac Studio, M5 Max çip, 18 çekirdekli CPU, 40 çekirdekli GPU, 128 GB bellek, 1 TB depolama",
+   "price": 377999,
+   "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-max-%C3%A7ip-18-%C3%A7ekirdekli-cpu-40-%C3%A7ekirdekli-gpu-128-gb-bellek-1tb-depolama"
+  },
+  "macstudio36": {
+   "name": "Mac Studio, M5 Max çip, 18 çekirdekli CPU, 32 çekirdekli GPU, 36 GB bellek, 512 GB depolama",
+   "price": 174999,
+   "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-max-%C3%A7ip-18-%C3%A7ekirdekli-cpu-32-%C3%A7ekirdekli-gpu-36-gb-bellek-512gb-depolama"
+  },
+  "macstudio64": {
+   "name": "Mac Studio, M5 Max çip, 18 çekirdekli CPU, 40 çekirdekli GPU, 64 GB bellek, 1 TB depolama",
+   "price": 265999,
+   "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-max-%C3%A7ip-18-%C3%A7ekirdekli-cpu-40-%C3%A7ekirdekli-gpu-64-gb-bellek-1tb-depolama"
+  },
+  "macultra256": {
+   "name": "Mac Studio, M5 Ultra çip, 30 çekirdekli CPU, 64 çekirdekli GPU, 256 GB bellek, 1 TB depolama",
+   "price": 664999,
+   "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-ultra-%C3%A7ip-30-%C3%A7ekirdekli-cpu-64-%C3%A7ekirdekli-gpu-256-gb-bellek-1tb-depolama"
+  },
+  "macultra96": {
+   "name": "Mac Studio, M5 Ultra çip, 30 çekirdekli CPU, 64 çekirdekli GPU, 96 GB bellek, 1 TB depolama",
+   "price": 384999,
+   "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-ultra-%C3%A7ip-30-%C3%A7ekirdekli-cpu-64-%C3%A7ekirdekli-gpu-96-gb-bellek-1tb-depolama"
+  }
+ },
+ "meta": {
+  "updated": "2026-11-01T21:51Z"
+ },
+ "openrouter": {
+  "deepseek/deepseek-r1-0528": {
+   "cachedUsd": 0.35,
+   "inputUsd": 0.5,
+   "outputUsd": 2.15
+  },
+  "deepseek/deepseek-v3.2": {
+   "cachedUsd": 0.13,
+   "inputUsd": 0.26,
+   "outputUsd": 0.38
+  },
+  "google/gemma-3-12b-it": {
+   "inputUsd": 0.05,
+   "outputUsd": 0.15
+  },
+  "google/gemma-3-27b-it": {
+   "cachedUsd": 0.04,
+   "inputUsd": 0.08,
+   "outputUsd": 0.35
+  },
+  "meta-llama/llama-3.1-8b-instruct": {
+   "cachedUsd": 0.025,
+   "inputUsd": 0.05,
+   "outputUsd": 0.08
+  },
+  "meta-llama/llama-3.3-70b-instruct": {
+   "inputUsd": 0.1,
+   "outputUsd": 0.32
+  },
+  "meta-llama/llama-4-maverick": {
+   "cachedUsd": 0.05,
+   "inputUsd": 0.1875,
+   "outputUsd": 0.6525
+  },
+  "meta-llama/llama-4-scout": {
+   "inputUsd": 0.1,
+   "outputUsd": 0.3
+  },
+  "microsoft/phi-4": {
+   "inputUsd": 0.07,
+   "outputUsd": 0.14
+  },
+  "minimax/minimax-m2": {
+   "inputUsd": 0.255,
+   "outputUsd": 1.02
+  },
+  "mistralai/mistral-nemo": {
+   "inputUsd": 0.029,
+   "outputUsd": 0.03
+  },
+  "mistralai/mistral-small-3.2-24b-instruct": {
+   "inputUsd": 0.075,
+   "outputUsd": 0.2
+  },
+  "moonshotai/kimi-k2-0905": {
+   "inputUsd": 0.6,
+   "outputUsd": 2.5
+  },
+  "openai/gpt-oss-120b": {
+   "cachedUsd": 0.013,
+   "inputUsd": 0.015,
+   "outputUsd": 0.054
+  },
+  "openai/gpt-oss-20b": {
+   "cachedUsd": 0.03,
+   "inputUsd": 0.03,
+   "outputUsd": 0.13
+  },
+  "qwen/qwen3-235b-a22b-2507": {
+   "inputUsd": 0.09,
+   "outputUsd": 0.55
+  },
+  "qwen/qwen3-30b-a3b-instruct-2507": {
+   "cachedUsd": 0.1,
+   "inputUsd": 0.1,
+   "outputUsd": 0.3
+  },
+  "qwen/qwen3-32b": {
+   "inputUsd": 0.08,
+   "outputUsd": 0.28
+  },
+  "qwen/qwen3-coder": {
+   "cachedUsd": 0.1,
+   "inputUsd": 0.3,
+   "outputUsd": 1.0
+  },
+  "qwen/qwen3-coder-30b-a3b-instruct": {
+   "inputUsd": 0.07,
+   "outputUsd": 0.28
+  },
+  "z-ai/glm-4.5-air": {
+   "cachedUsd": 0.025,
+   "inputUsd": 0.13,
+   "outputUsd": 0.85
+  },
+  "z-ai/glm-4.6": {
+   "cachedUsd": 0.1,
+   "inputUsd": 0.5,
+   "outputUsd": 2.0
+  }
+ },
+ "stores": {
+  "Gamegaraj": {
+   "cpu5500": {
+    "date": "01.11.2026",
+    "name": "AMD Ryzen 5 5500 3.6GHz - 4.2GHz 19MB AM4 65W Tray İşlemci",
+    "price": 4900,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/amd-ryzen-5-5500-36ghz-42ghz-19mb-am4-65w-tray/"
+   },
+   "cpu7500f": {
+    "date": "01.11.2026",
+    "name": "AMD Ryzen 5 7500F  3.7GHz- 5.0GHz 32MB AM5 65W MPK İşlemci",
+    "price": 8979,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/amd-ryzen-5-7500f-37ghz-50ghz-32mb-am5-65w-mpk/"
+   },
+   "cpu9700x": {
+    "date": "01.11.2026",
+    "name": "AMD Ryzen 7 9700X 3.8GHz - 5.5GHz 40MB AM5 65W Tray İşlemci",
+    "price": 16830,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/amd-ryzen-7-9700x-tray/"
+   },
+   "gpu5060ti": {
+    "date": "01.11.2026",
+    "name": "Inno3D RTX5060Ti Twin X2 16GB GDDR7 128bit Ekran Kartı",
+    "price": 45768,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/inno3d-rtx5060ti-twin-x2-16gb-gddr7-128bit-ekran-karti/"
+   },
+   "gpu5070": {
+    "date": "01.11.2026",
+    "name": "Palit RTX5070 INFINITY 3 12GB GDDR7 192bit Ekran Kartı",
+    "price": 49866,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/palit-rtx5070-infinity-3-12gb-gddr7-192bit-ekran-karti/"
+   },
+   "gpu5070ti": {
+    "date": "01.11.2026",
+    "name": "Inno3D RTX5070Ti x3 OC 16GB White 256Bit GDDR7 Ekran Kartı",
+    "price": 72409,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/inno3d-rtx5070ti-x3-oc-16gb-white-256bit-gddr7/"
+   },
+   "gpu5080": {
+    "date": "01.11.2026",
+    "name": "Palit RTX5080 GAMINGPRO OC 16GB 256Bit GDDR7 Ekran Kartı",
+    "price": 88803,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/palit-rtx5080-gamingpro-oc-16gb-256bit-gddr7-ekran-karti/"
+   },
+   "gpu9060": {
+    "date": "01.11.2026",
+    "name": "PowerColor Reaper RX9060XT 16G-A 16GB 128Bit GDDR6 Ekran Kartı",
+    "price": 39620,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/powercolor-reaper-rx9060xt-16g-a-16gb-128bit-gddr6-ekran-karti/"
+   },
+   "gpu9070xt": {
+    "date": "01.11.2026",
+    "name": "PowerColor Reaper RX9070XT 16G-A 16GB 256Bit GDDR6 Ekran Kartı",
+    "price": 56697,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/powercolor-reaper-rx9070xt-16g-a-16gb-256bit-gddr6-ekran-karti/"
+   },
+   "moboA520": {
+    "date": "01.11.2026",
+    "name": "Biostar A520MHP DDR4 4400MHz AM4 mATX Anakart",
+    "price": 2831,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/biostar-a520mhp-ddr4-4400mhz-am4-matx-anakart/"
+   },
+   "moboB650": {
+    "date": "01.11.2026",
+    "name": "MSI PRO B650M-E AM5 DDR5 Micro ATX Anakart",
+    "price": 5940,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/msi-pro-b650m-e-am5-ddr5-micro-atx-anakart/"
+   },
+   "psu1200": {
+    "date": "01.11.2026",
+    "name": "ASUS TUF Gaming 1200G 1200W 80+ Gold Full Modüler Güç Kaynağı",
+    "price": 14969,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/asus-tuf-gaming-1200g-1200w-80-gold-full-moduler-guc-kaynagi/"
+   },
+   "psu1300": {
+    "date": "01.11.2026",
+    "name": "Cooler Master V Platinum V2 1300W 80+ Platinum GEN 5.1 Full Modüler ATX 3.1 Güç Kaynağı",
+    "price": 20890,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/cooler-master-v-platinum-v2-1300w-80-platinum-gen51-fullmoduler-atx31-guc-kaynagi/"
+   },
+   "psu750": {
+    "date": "01.11.2026",
+    "name": "AIGO GP750 750W 80+Bronze Güç Kaynağı Kutusuz",
+    "price": 3108,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/aigo-gp750-750w-80bronze-guc-kaynagikutusuz/"
+   },
+   "psu850": {
+    "date": "01.11.2026",
+    "name": "Cooler Master MWE V3 850W 80+ Gold Full Modüler, PCIe Gen 5.0, ATX 3.1 Güç Kaynağı",
+    "price": 7917,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/cooler-master-mwe-v3-850w-80-gold-full-moduler-pciegen50-atx31-guc-kaynagi/"
+   },
+   "ram128": {
+    "date": "01.11.2026",
+    "name": "Crucial Pro 128GB (2x64) 5600MHz CL46 DDR5 Masaüstü Bilgisayar RAM",
+    "price": 106445,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/crucial-pro-128gb-2x64-5600mhz-cl46-ddr5-masaustu-bilgisayar-ram/"
+   },
+   "ram32": {
+    "date": "01.11.2026",
+    "name": "CUSU DR360 RGB 32GB (2x16) 6000MHz CL38 DDR5 Masaüstü Bilgisayar RAM",
+    "price": 26611,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/cusu-rd360-rgb-32gb-2x16-6000mhz-cl38-ddr5-masaustu-bilgisayar-ram/"
+   },
+   "ram64": {
+    "date": "01.11.2026",
+    "name": "Kingston Beast 64GB (2x32GB) 5200MHz CL36 DDR5 Masaüstü Bilgisayar RAM",
+    "price": 53222,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/kingston-beast-64gb-2x32gb-5200mhz-cl36-ddr5-masaustu-bilgisayar-ram/"
+   },
+   "ssd1": {
+    "date": "01.11.2026",
+    "name": "TwinMOS XTREME 1TB 7500-6800MB/s M.2 SSD NV1TBG42280 Soğutuculu",
+    "price": 8648,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/twinmos-xtreme-1tb-7500-6800mbs-m2-ssd-nv1tbg42280/"
+   },
+   "ssd2": {
+    "date": "01.11.2026",
+    "name": "CUSU CV5000 2TB 5200/4700MBs M.2 SSD",
+    "price": 14199,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gamegaraj",
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/cusu-cv5000-2tb-52004700mbs-m2-ssd/"
+   }
+  },
+  "Gaming.gen.tr": {
+   "cpu9700x": {
+    "date": "01.11.2026",
+    "name": "AMD Ryzen 7 9700X Tray 5.5GHz 32MB Önbellek 8 Çekirdek AM5 4nm İşlemci",
+    "price": 17999,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/530284/amd-ryzen-7-9700x-tray-5-5ghz-40mb-onbellek-8-cekirdek-am5-4nm-islemci/"
+   },
+   "gpu5070": {
+    "date": "01.11.2026",
+    "name": "ASUS DUAL GeForce RTX 5070 OC 12GB GDDR7 192 Bit DLSS 4 Ekran Kartı",
+    "price": 77499,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/736054/asus-dual-geforce-rtx-5070-oc-12gb-gddr7-192-bit-dlss-4-ekran-karti/"
+   },
+   "gpu5070ti": {
+    "date": "01.11.2026",
+    "name": "MSI GeForce RTX 5070 Ti 16G SHADOW 3X OC 16GB GDDR7 256 Bit DLSS 4 Ekran Kartı",
+    "price": 97899,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/569391/msi-geforce-rtx-5070-ti-16g-shadow-3x-oc-16gb-gddr7-256-bit-dlss-4-ekran-karti/"
+   },
+   "gpu5080": {
+    "date": "01.11.2026",
+    "name": "ASUS PRIME GeForce RTX 5080 OC 16GB GDDR7 256 Bit DLSS 4 Ekran Kartı",
+    "price": 133999,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/478061/asus-prime-geforce-rtx-5080-oc-16gb-gddr7-256-bit-dlss-4-ekran-karti/"
+   },
+   "gpu5090": {
+    "date": "01.11.2026",
+    "name": "MSI GeForce RTX 5090 32G GAMING TRIO OC 32GB GDDR7 512 Bit DLSS 4 Ekran Kartı",
+    "price": 468899,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/569437/msi-geforce-rtx-5090-32g-gaming-trio-oc-32gb-gddr7-512-bit-dlss-4-ekran-karti/"
+   },
+   "gpu9070xt": {
+    "date": "01.11.2026",
+    "name": "ASUS PRIME Radeon RX 9070 XT OC 16GB GDDR6 256 Bit Ekran Kartı",
+    "price": 79399,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/599588/asus-prime-radeon-rx-9070-xt-oc-16gb-gddr6-256-bit-ekran-karti/"
+   },
+   "gpuR9700": {
+    "date": "01.11.2026",
+    "name": "ASUS TURBO Radeon Ai PRO R9700 32GB GDDR6 256 Bit Yapay Zeka Ekran Kartı",
+    "price": 175499,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/991485/asus-turbo-radeon-ai-pro-r9700-32gb-gddr6-256-bit-yapay-zeka-ekran-karti/"
+   },
+   "psu1200": {
+    "date": "01.11.2026",
+    "name": "Enermax Platimax II 1200DF 1200W 80+ Platinum PCIe 5.1 Full Modüler ATX 3.1 Güç Kaynağı (EPS1200P-NPX) – 2 Yıl Birebir Değişim Garantili",
+    "price": 8199,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/867492/enermax-platimax-ii-1200df-1200w-80-platinum-pcie-5-1-full-moduler-atx-3-1-guc-kaynagi-eps1200p-npx-2-yil-birebir-degisim-garantili/"
+   },
+   "psu850": {
+    "date": "01.11.2026",
+    "name": "Enermax REVOLUTION III 850W 80+ Gold PCIe 5.1 Full Modüler ATX 3.1 Güç Kaynağı (ERV850G-AHG-MAC) – 2 Yıl Birebir Değişim Garantili",
+    "price": 5699,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/867589/enermax-revolution-iii-850w-80-gold-pcie-5-1-full-moduler-atx-3-1-guc-kaynagi-erv850g-ahg-mac-2-yil-birebir-degisim-garantili/"
+   },
+   "ram32": {
+    "date": "01.11.2026",
+    "name": "KLEVV Urbane V RGB 32GB (2x16GB) 6400MHz CL32 INTEL XMP 3.0 – AMD EXPO DDR5 Heatsink Beyaz Ram (KD5AGUA80-64A320M) – 2 Yıl Birebir Değişim Garantili",
+    "price": 36999,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/647418/klevv-urbane-v-rgb-32gb-2x16gb-6400mhz-cl32-intel-xmp-3-0-amd-expo-ddr5-heatsink-beyaz-ram-kd5agua80-64a320m-2-yil-birebir-degisim-garantili/"
+   },
+   "ram64": {
+    "date": "01.11.2026",
+    "name": "Crucial Pro 64GB (2x32GB) 5600MHz CL46 INTEL XMP 3.0 – AMD EXPO DDR5 Ram (CP2K32G56C46U5)",
+    "price": 53599,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/957260/crucial-pro-64gb-2x32gb-5600mhz-cl46-intel-xmp-3-0-amd-expo-ddr5-ram-cp2k32g56c46u5/"
+   },
+   "ssd1": {
+    "date": "01.11.2026",
+    "name": "WD Green SN3000 1TB NVMe PCIe Gen4 x4 Okuma 5000MB – 4200MB M.2 SSD (WDS100T4G0E)",
+    "price": 8799,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/871607/wd-green-sn3000-1tb-nvme-pcie-gen4-x4-okuma-5000mb-4200mb-m-2-ssd-wds100t4g0e/"
+   },
+   "ssd2": {
+    "date": "01.11.2026",
+    "name": "Kioxia EXCERIA BASIC 2TB NVMe PCIe 4.0 Okuma 7300MB/s Yazma 6800MB/s M.2 SSD (LSF10Z002TG8)",
+    "price": 15999,
+    "source": "otomatik",
+    "stock": "stokta",
+    "store": "Gaming.gen.tr",
+    "url": "https://www.gaming.gen.tr/urun/1002733/kioxia-exceria-basic-2tb-nvme-pcie-4-0-okuma-7300mb-s-yazma-6800mb-s-m-2-ssd-lsf10z002tg8/"
+   }
+  }
+ },
+ "usdTry": {
+  "date": "30.10.2026",
+  "source": "TCMB döviz satış",
+  "value": 49.8644
+ }
+}

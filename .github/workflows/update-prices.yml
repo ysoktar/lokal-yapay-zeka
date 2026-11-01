@@ -1,0 +1,36 @@
+name: Fiyatları güncelle
+
+on:
+  schedule:
+    - cron: "17 4 * * *"   # her gün 07:17 (Türkiye saati)
+  workflow_dispatch: {}     # Actions sekmesinden elle de çalıştırılabilir
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-prices
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fiyatları çek
+        run: python scripts/update_prices.py
+      - name: Değişiklik varsa commit'le
+        run: |
+          if git diff --quiet -- data/; then
+            echo "Fiyatlarda değişiklik yok."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/prices.json
+          git commit -m "Fiyatlar otomatik güncellendi ($(date -u +%F))"
+          git push

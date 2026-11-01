@@ -1,0 +1,2429 @@
+{
+ "version": 1,
+ "note": "Elle düzenlenen katalog: parça özellikleri, hazır sistem tarifleri, abonelikler, API modelleri. Fiyatlar data/prices.json (otomatik) ve data/manual-offers.json (elle) ile güncellenir.",
+ "tariff": {
+  "lowRate": 2.918965,
+  "highRate": 4.320708,
+  "lowKwhPerDay": 8,
+  "levyTl": 9.23,
+  "levyRefKwh": 298.445,
+  "vatPct": 10,
+  "homeKwh": 298.445,
+  "source": "Örnek ev faturası, Kasım 2026"
+ },
+ "defaults": {
+  "usdTry": 49.9338,
+  "monthlyTokens": 10,
+  "outputSharePercent": 25,
+  "cachedInputSharePercent": 0,
+  "horizon": 24,
+  "hoursPerDay": 8,
+  "budget": 200000,
+  "usdYearly": 0,
+  "tlYearly": 0,
+  "foreignTax": 0
+ },
+ "parts": {
+  "cpu7500f": {
+   "cat": "cpu",
+   "label": "Ryzen 5 7500F (AM5)",
+   "socket": "AM5",
+   "watts": 65,
+   "seed": {
+    "store": "n11 (akakçe)",
+    "name": "AMD Ryzen 5 7500F (tray)",
+    "price": 6799,
+    "url": "https://www.akakce.com/islemci/en-ucuz-amd-ryzen-5-7500f-alti-cekirdek-3-7-ghz-kutusuz-fansiz-fiyati,632236878.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "cpu9700x": {
+   "cat": "cpu",
+   "label": "Ryzen 7 9700X (AM5)",
+   "socket": "AM5",
+   "watts": 65,
+   "seed": {
+    "store": "n11 (akakçe)",
+    "name": "AMD Ryzen 7 9700X (tray)",
+    "price": 14200,
+    "url": "https://www.akakce.com/islemci/en-ucuz-amd-ryzen-7-9700x-sekiz-cekirdek-3-8-ghz-fiyati,706818645.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "moboB650": {
+   "cat": "mobo",
+   "label": "B650M · AM5 · DDR5",
+   "socket": "AM5",
+   "ramType": "DDR5",
+   "multiGpu": false,
+   "seed": {
+    "store": "Amazon TR (akakçe)",
+    "name": "ASUS PRIME B650M-R (mATX)",
+    "price": 5039,
+    "url": "https://www.akakce.com/anakart/en-ucuz-asus-prime-b650m-r-amd-am5-ddr5-micro-atx-fiyati,520840753.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "moboX870E": {
+   "cat": "mobo",
+   "label": "X870E · AM5 · iki kart (x8/x8)",
+   "socket": "AM5",
+   "ramType": "DDR5",
+   "multiGpu": true,
+   "seed": {
+    "store": "Hepsiburada (akakçe)",
+    "name": "ASUS ProArt X870E-Creator WIFI (iki kartla x8/x8)",
+    "price": 32099,
+    "url": "https://www.akakce.com/anakart/en-ucuz-asus-proart-x870e-creator-wi-fi-amd-am5-ddr5-atx-fiyati,741704230.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "ram32": {
+   "cat": "ram",
+   "label": "32 GB DDR5",
+   "size": 32,
+   "ramType": "DDR5",
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "32 GB DDR5 6000 (2×16)",
+    "price": 26611,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/cusu-rd360-rgb-32gb-2x16-6000mhz-cl38-ddr5-masaustu-bilgisayar-ram/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "ram64": {
+   "cat": "ram",
+   "label": "64 GB DDR5",
+   "size": 64,
+   "ramType": "DDR5",
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "64 GB DDR5 5200 (2×32)",
+    "price": 53222,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/kingston-beast-64gb-2x32gb-5200mhz-cl36-ddr5-masaustu-bilgisayar-ram/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "ssd1": {
+   "cat": "ssd",
+   "label": "1 TB NVMe",
+   "size": 1000,
+   "seed": {
+    "store": "Hepsiburada (akakçe)",
+    "name": "Kingston NV3 1 TB NVMe",
+    "price": 7169,
+    "url": "https://www.akakce.com/ssd/en-ucuz-kingston-nv3-snv3s-1000g-pci-express-4-0-1-tb-m-2-fiyati,733964099.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "ssd2": {
+   "cat": "ssd",
+   "label": "2 TB NVMe",
+   "size": 2000,
+   "seed": {
+    "store": "n11 (akakçe)",
+    "name": "Kioxia Exceria Basic 2 TB NVMe",
+    "price": 13999,
+    "url": "https://www.akakce.com/ssd/en-ucuz-kioxia-exceria-basic-lsf10z002tg8-pci-express-4-0-2-tb-m-2-fiyati,1318519580.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "psu750": {
+   "cat": "psu",
+   "label": "750 W",
+   "watts": 750,
+   "seed": {
+    "store": "n11 (akakçe)",
+    "name": "Thermaltake Smart BX1 750 W 80+ Bronze",
+    "price": 3776,
+    "url": "https://www.akakce.com/power-supply/en-ucuz-thermaltake-ps-spd-0750nnsabe-1-smart-serisi-bx1-750w-80-bronze-psu-fiyati,1253456847.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "psu850": {
+   "cat": "psu",
+   "label": "850 W Gold",
+   "watts": 850,
+   "seed": {
+    "store": "n11 (akakçe)",
+    "name": "MSI MAG A850GL 850 W 80+ Gold",
+    "price": 6799,
+    "url": "https://www.akakce.com/power-supply/en-ucuz-msi-mag-a850gl-850-w-80-plus-gold-tam-moduler-fiyati,122221010.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "psu1200": {
+   "cat": "psu",
+   "label": "1200 W Gold",
+   "watts": 1200,
+   "seed": {
+    "store": "Sinerji (akakçe)",
+    "name": "Thermaltake Toughpower GT 1200 W 80+ Gold",
+    "price": 11766,
+    "url": "https://www.akakce.com/power-supply/en-ucuz-thermaltake-toughpower-gt-ps-tpt-1200fnfage-3-gen5-1-1200-w-fiyati,1222010824.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "psu1300": {
+   "cat": "psu",
+   "label": "1300 W Platinum",
+   "watts": 1300,
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "1300 W 80+ Platinum PSU",
+    "price": 20890,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/cooler-master-v-platinum-v2-1300w-80-platinum-gen51-fullmoduler-atx31-guc-kaynagi/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "caseMid": {
+   "cat": "case",
+   "label": "Mid tower kasa",
+   "seed": {
+    "store": "Sinerji (akakçe)",
+    "name": "Sharkoon VK4 ARGB ATX mid tower",
+    "price": 2494,
+    "url": "https://www.akakce.com/bilgisayar-kasasi/en-ucuz-sharkoon-vk4-argb-fanli-atx-oyuncu-kasasi-fiyati,1671030542.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "caseBig": {
+   "cat": "case",
+   "label": "Geniş mid tower kasa",
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "Geniş mid tower kasa (mesh)",
+    "price": 4826,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/cougar-mx430-mesh-rgb-mid-tower-kasa-psu-yok/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "cooler": {
+   "cat": "cooler",
+   "label": "Kule tipi CPU soğutucu",
+   "seed": {
+    "store": "İnceHesap",
+    "name": "DeepCool AG400 G2 kule tipi soğutucu",
+    "price": 2099,
+    "url": "https://www.incehesap.com/deepcool-ag400-g2-120mm-kule-tipi-siyah-islemci-sogutucu-fiyati-93169/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "gpu9060": {
+   "cat": "gpu",
+   "label": "RX 9060 XT 16 GB",
+   "vram": 16,
+   "tps14": 28.5,
+   "watts": 160,
+   "seed": {
+    "store": "Vatan / Hepsiburada (akakçe)",
+    "name": "XFX RX 9060 XT Swift OC 16 GB",
+    "price": 35329,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-xfx-rx-9060-xt-swift-gaming-edition-oc-rx-96tsw16bq-128-bit-gddr6-16-gb-fiyati,1086042159.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "gpu5060ti": {
+   "cat": "gpu",
+   "label": "RTX 5060 Ti 16 GB",
+   "vram": 16,
+   "tps14": 32.9,
+   "watts": 180,
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "Inno3D RTX 5060 Ti Twin X2 16 GB",
+    "price": 45768,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/inno3d-rtx5060ti-twin-x2-16gb-gddr7-128bit-ekran-karti/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "gpu5070": {
+   "cat": "gpu",
+   "label": "RTX 5070 12 GB",
+   "vram": 12,
+   "tps14": 40.6,
+   "watts": 250,
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "Inno3D RTX 5070 Twin X2 12 GB",
+    "price": 49866,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/inno3d-rtx5070-twin-x2-12gb-gddr7-192bit-ekran-karti/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "gpu9070xt": {
+   "cat": "gpu",
+   "label": "RX 9070 XT 16 GB",
+   "vram": 16,
+   "tps14": 54.3,
+   "watts": 304,
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "PowerColor Reaper RX 9070 XT 16 GB",
+    "price": 56697,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/powercolor-reaper-rx9070xt-16g-a-16gb-256bit-gddr6-ekran-karti/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "gpu5070ti": {
+   "cat": "gpu",
+   "label": "RTX 5070 Ti 16 GB",
+   "vram": 16,
+   "tps14": 58,
+   "watts": 300,
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "Inno3D RTX 5070 Ti X3 OC 16 GB",
+    "price": 72409,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/inno3d-rtx5070ti-x3-oc-16gb-white-256bit-gddr7/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "gpu5080": {
+   "cat": "gpu",
+   "label": "RTX 5080 16 GB",
+   "vram": 16,
+   "tps14": 65,
+   "watts": 360,
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "Palit RTX 5080 GamingPro OC 16 GB",
+    "price": 88803,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/palit-rtx5080-gamingpro-oc-16gb-256bit-gddr7-ekran-karti/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "gpu5090": {
+   "cat": "gpu",
+   "label": "RTX 5090 32 GB",
+   "vram": 32,
+   "tps14": 110,
+   "watts": 575,
+   "seed": {
+    "store": "akakçe",
+    "name": "Gigabyte RTX 5090 AORUS Master ICE 32 GB (hava soğutmalı; en ucuz ilan su bloklu model)",
+    "price": 407999,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-gigabyte-rtx-5090-aorus-master-ice-32g-gv-n5090aorusm-ice-32gd-512-bit-gddr7-32-gb-fiyati,903115096.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "gpuR9700": {
+   "cat": "gpu",
+   "label": "Radeon AI PRO R9700 32 GB",
+   "vram": 32,
+   "tps14": 50,
+   "watts": 300,
+   "seed": {
+    "store": "AI Donanım (akakçe)",
+    "name": "PowerColor Radeon AI PRO R9700 32 GB",
+    "price": 147912,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-powercolor-radeon-ai-pro-r9700-32g-b-gddr6-256bit-fiyati,1698307329.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "gpu3060used": {
+   "cat": "gpu",
+   "label": "RTX 3060 12 GB (2. el)",
+   "vram": 12,
+   "tps14": 24,
+   "watts": 170,
+   "used": true,
+   "seed": {
+    "store": "tahmin",
+    "name": "RTX 3060 12 GB (2. el; yurt dışı ortalama 290 $ × kur, Türkiye ilanı doğrulanmadı)",
+    "price": 14500,
+    "url": "https://resaleprices.com/gpu/nvidia-rtx-3060",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "cpu5500": {
+   "cat": "cpu",
+   "label": "Ryzen 5 5500 (AM4)",
+   "socket": "AM4",
+   "watts": 65,
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "AMD Ryzen 5 5500 (AM4, tray)",
+    "price": 4900,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/amd-ryzen-5-5500-36ghz-42ghz-19mb-am4-65w-tray/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "moboA520": {
+   "cat": "mobo",
+   "label": "A520 · AM4 · DDR4",
+   "socket": "AM4",
+   "ramType": "DDR4",
+   "multiGpu": false,
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "Biostar A520MHP (AM4, DDR4)",
+    "price": 2831,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/biostar-a520mhp-ddr4-4400mhz-am4-matx-anakart/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "ram64ddr4": {
+   "cat": "ram",
+   "label": "64 GB DDR4",
+   "size": 64,
+   "ramType": "DDR4",
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "64 GB DDR4 3600 (2×32) · stokta yok",
+    "price": 26611,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/gskill-ripjawsv-64gb-2x32-3600mhz-cl18-ddr4-masaustu-ram/",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "gpu3090used": {
+   "cat": "gpu",
+   "label": "RTX 3090 24 GB (2. el)",
+   "vram": 24,
+   "tps14": 52.1,
+   "watts": 350,
+   "used": true,
+   "seed": {
+    "store": "sahibinden",
+    "name": "RTX 3090 24 GB (2. el, 9 sahibinden ilanının ortancası)",
+    "price": 57000,
+    "url": "https://www.sahibinden.com/ilan/ikinci-el-ve-sifir-alisveris-bilgisayar-masaustu-zotac-arctic-storm-rtx-3090-24gb-ekran-karti-1343991752/detay",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  },
+  "ram128": {
+   "cat": "ram",
+   "label": "128 GB DDR5",
+   "size": 128,
+   "ramType": "DDR5",
+   "seed": {
+    "store": "Gamegaraj",
+    "name": "Crucial Pro 128GB (2x64) 5600MHz CL46 DDR5",
+    "price": 106445,
+    "url": "https://www.gamegaraj.com/bilgisayar-parcalari/crucial-pro-128gb-2x64-5600mhz-cl46-ddr5-masaustu-bilgisayar-ram/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "gömülü"
+   }
+  }
+ },
+ "platforms": {
+  "p32": [
+   "cpu7500f",
+   "moboB650",
+   "ram32",
+   "ssd1",
+   "psu750",
+   "caseMid",
+   "cooler"
+  ],
+  "p32g": [
+   "cpu7500f",
+   "moboB650",
+   "ram32",
+   "ssd1",
+   "psu850",
+   "caseMid",
+   "cooler"
+  ],
+  "p64d4": [
+   "cpu5500",
+   "moboA520",
+   "ram64ddr4",
+   "ssd2",
+   "psu750",
+   "caseMid",
+   "cooler"
+  ],
+  "p64e": [
+   "cpu7500f",
+   "moboB650",
+   "ram64",
+   "ssd2",
+   "psu850",
+   "caseMid",
+   "cooler"
+  ],
+  "p64": [
+   "cpu9700x",
+   "moboB650",
+   "ram64",
+   "ssd2",
+   "psu850",
+   "caseMid",
+   "cooler"
+  ],
+  "p64x": [
+   "cpu9700x",
+   "moboB650",
+   "ram64",
+   "ssd2",
+   "psu1200",
+   "caseBig",
+   "cooler"
+  ],
+  "pDual": [
+   "cpu9700x",
+   "moboX870E",
+   "ram64",
+   "ssd2",
+   "psu1300",
+   "caseBig",
+   "cooler"
+  ]
+ },
+ "builds": [
+  {
+   "id": "macm6",
+   "name": "Mac mini M6 · 16 GB birleşik",
+   "ram": 16,
+   "vram": 0,
+   "gpus": 1,
+   "tps": 14,
+   "watts": 40,
+   "strata": {
+    "tps": 4,
+    "measured": false,
+    "note": "16 GB birleşik bellek modele yetmez; uzmanlar SSD’den okunur, çok yavaş"
+   },
+   "kind": "mac",
+   "apple": {
+    "name": "Mac mini M6 16 GB / 256 GB",
+    "price": 62499,
+    "store": "Apple Türkiye",
+    "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-16-gb-bellek-256gb-depolama"
+   },
+   "estimated": true
+  },
+  {
+   "id": "macm6_24",
+   "name": "Mac mini M6 · 24 GB birleşik",
+   "ram": 24,
+   "vram": 0,
+   "gpus": 1,
+   "tps": 14,
+   "watts": 40,
+   "strata": {
+    "tps": 7,
+    "measured": false,
+    "note": "24 GB: uzmanlar SSD’den okunur, yavaş"
+   },
+   "kind": "mac",
+   "apple": {
+    "name": "Mac mini M6 24 GB / 256 GB (512 GB: 90.499 TL)",
+    "price": 76499,
+    "store": "Apple Türkiye",
+    "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-24-gb-bellek-256gb-depolama"
+   },
+   "estimated": true
+  },
+  {
+   "id": "macm6_32",
+   "name": "Mac mini M6 · 32 GB birleşik",
+   "ram": 32,
+   "vram": 0,
+   "gpus": 1,
+   "tps": 14,
+   "watts": 40,
+   "strata": {
+    "tps": 13,
+    "measured": true,
+    "note": "32 GB: uzmanlar SSD’den okunur (M4 Mac mini 32 GB ölçümü ≈13–14 tok/sn)"
+   },
+   "kind": "mac",
+   "apple": {
+    "name": "Mac mini M6 32 GB / 256 GB (512 GB: 104.499 TL)",
+    "price": 90499,
+    "store": "Apple Türkiye",
+    "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-32-gb-bellek-256gb-depolama"
+   },
+   "estimated": true
+  },
+  {
+   "id": "rx9060",
+   "name": "RX 9060 XT 16 GB · 32 GB RAM",
+   "ram": 32,
+   "vram": 16,
+   "gpus": 1,
+   "tps": 28.5,
+   "watts": 250,
+   "strata": {
+    "tps": 12,
+    "measured": false,
+    "note": "32 GB RAM yetmez (en az 48 GB); uzmanlar SSD’den okunur"
+   },
+   "gpu": "gpu9060",
+   "platform": "p32",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "rtx5060",
+   "name": "RTX 5060 Ti 16 GB · 32 GB RAM",
+   "ram": 32,
+   "vram": 16,
+   "gpus": 1,
+   "tps": 32.9,
+   "watts": 290,
+   "strata": {
+    "tps": 15,
+    "measured": false,
+    "note": "32 GB RAM yetmez (en az 48 GB); uzmanlar SSD’den okunur"
+   },
+   "gpu": "gpu5060ti",
+   "platform": "p32",
+   "kind": "pc",
+   "estimated": false
+  },
+  {
+   "id": "rtx5070",
+   "name": "RTX 5070 12 GB · 32 GB RAM",
+   "ram": 32,
+   "vram": 12,
+   "gpus": 1,
+   "tps": 40.6,
+   "watts": 350,
+   "strata": {
+    "tps": 15,
+    "measured": false,
+    "note": "32 GB RAM yetmez (en az 48 GB); uzmanlar SSD’den okunur"
+   },
+   "gpu": "gpu5070",
+   "platform": "p32",
+   "kind": "pc",
+   "estimated": false
+  },
+  {
+   "id": "rtx3060_d4",
+   "name": "RTX 3060 12 GB (2. el) · 64 GB DDR4",
+   "ram": 64,
+   "vram": 12,
+   "gpus": 1,
+   "ramType": "DDR4",
+   "tps": 24,
+   "watts": 230,
+   "strata": {
+    "tps": 48,
+    "measured": false,
+    "note": "Videodaki “ucuz yol”: eski 12 GB kart + 64 GB RAM; DDR4 daha ucuz ama daha yavaş"
+   },
+   "gpu": "gpu3060used",
+   "platform": "p64d4",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "rtx3060_64",
+   "name": "RTX 3060 12 GB (2. el) · 64 GB DDR5",
+   "ram": 64,
+   "vram": 12,
+   "gpus": 1,
+   "tps": 24,
+   "watts": 230,
+   "strata": {
+    "tps": 60,
+    "measured": false,
+    "note": "Strata topluluğunun önerdiği yapı: 2. el 3060 + 64 GB RAM"
+   },
+   "gpu": "gpu3060used",
+   "platform": "p64e",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "rtx5070_d4",
+   "name": "RTX 5070 12 GB · 64 GB DDR4",
+   "ram": 64,
+   "vram": 12,
+   "gpus": 1,
+   "ramType": "DDR4",
+   "tps": 40.6,
+   "watts": 350,
+   "strata": {
+    "tps": 63,
+    "measured": false,
+    "note": "DDR4: GB başına yarı fiyat, yaklaşık yarı bant genişliği"
+   },
+   "gpu": "gpu5070",
+   "platform": "p64d4",
+   "kind": "pc",
+   "estimated": false
+  },
+  {
+   "id": "rx9060_64",
+   "name": "RX 9060 XT 16 GB · 64 GB RAM",
+   "ram": 64,
+   "vram": 16,
+   "gpus": 1,
+   "tps": 28.5,
+   "watts": 250,
+   "strata": {
+    "tps": 50,
+    "measured": false,
+    "note": "64 GB RAM ile tüm boyutlar sığar"
+   },
+   "gpu": "gpu9060",
+   "platform": "p64e",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "rtx5060_64",
+   "name": "RTX 5060 Ti 16 GB · 64 GB RAM",
+   "ram": 64,
+   "vram": 16,
+   "gpus": 1,
+   "tps": 32.9,
+   "watts": 290,
+   "strata": {
+    "tps": 60,
+    "measured": false,
+    "note": "64 GB RAM ile tüm boyutlar sığar"
+   },
+   "gpu": "gpu5060ti",
+   "platform": "p64e",
+   "kind": "pc",
+   "estimated": false
+  },
+  {
+   "id": "rtx5070_64",
+   "name": "RTX 5070 12 GB · 64 GB RAM",
+   "ram": 64,
+   "vram": 12,
+   "gpus": 1,
+   "tps": 40.6,
+   "watts": 350,
+   "strata": {
+    "tps": 79,
+    "measured": true,
+    "note": "Geliştiricinin referans sistemi: RTX 5070 + Ryzen 5 7600 + 64 GB, IQ2_XS 79 / Q2_0 94 tok/sn"
+   },
+   "gpu": "gpu5070",
+   "platform": "p64e",
+   "kind": "pc",
+   "estimated": false
+  },
+  {
+   "id": "rx9070_64",
+   "name": "RX 9070 XT 16 GB · 64 GB RAM",
+   "ram": 64,
+   "vram": 16,
+   "gpus": 1,
+   "tps": 54.3,
+   "watts": 410,
+   "strata": {
+    "tps": 52,
+    "measured": true,
+    "note": "RX 9070 XT + 47 GB RAM ölçümü: IQ2_XS 52 / Q2_0 60 tok/sn"
+   },
+   "gpu": "gpu9070xt",
+   "platform": "p64e",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "rx9070",
+   "name": "RX 9070 XT 16 GB · 32 GB RAM",
+   "ram": 32,
+   "vram": 16,
+   "gpus": 1,
+   "tps": 54.3,
+   "watts": 410,
+   "strata": {
+    "tps": 15,
+    "measured": false,
+    "note": "32 GB RAM yetmez (en az 48 GB); uzmanlar SSD’den okunur"
+   },
+   "gpu": "gpu9070xt",
+   "platform": "p32",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "mac24",
+   "name": "Mac mini M5 Pro · 24 GB birleşik",
+   "ram": 24,
+   "vram": 0,
+   "gpus": 1,
+   "tps": 25.5,
+   "watts": 100,
+   "strata": {
+    "tps": 8,
+    "measured": false,
+    "note": "24 GB: uzmanlar SSD’den okunur, yavaş"
+   },
+   "kind": "mac",
+   "apple": {
+    "name": "Mac mini M5 Pro 24 GB / 512 GB",
+    "price": 119999,
+    "store": "Apple Türkiye",
+    "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini"
+   },
+   "estimated": true
+  },
+  {
+   "id": "rtx5070ti32",
+   "name": "RTX 5070 Ti 16 GB · 32 GB RAM",
+   "ram": 32,
+   "vram": 16,
+   "gpus": 1,
+   "tps": 58,
+   "watts": 400,
+   "strata": {
+    "tps": 15,
+    "measured": false,
+    "note": "32 GB RAM yetmez (en az 48 GB); uzmanlar SSD’den okunur"
+   },
+   "gpu": "gpu5070ti",
+   "platform": "p32g",
+   "kind": "pc",
+   "estimated": false
+  },
+  {
+   "id": "mac48",
+   "name": "Mac mini M5 Pro · 48 GB birleşik",
+   "ram": 48,
+   "vram": 0,
+   "gpus": 1,
+   "tps": 25.5,
+   "watts": 100,
+   "strata": {
+    "tps": 35,
+    "measured": false,
+    "note": "48 GB: Q2_0 sınırda sığar (46 GB gerekir)"
+   },
+   "kind": "mac",
+   "apple": {
+    "name": "Mac mini M5 Pro 15/16 · 48 GB / 512 GB",
+    "price": 161999,
+    "store": "Apple Türkiye",
+    "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m5-pro-%C3%A7ip-15-%C3%A7ekirdekli-cpu-16-%C3%A7ekirdekli-gpu-48-gb-bellek-512gb-depolama"
+   },
+   "estimated": true
+  },
+  {
+   "id": "rtx3090",
+   "name": "RTX 3090 24 GB (2. el) · 64 GB RAM",
+   "ram": 64,
+   "vram": 24,
+   "gpus": 1,
+   "tps": 52.1,
+   "watts": 470,
+   "strata": {
+    "tps": 110,
+    "measured": false,
+    "note": "24 GB kart: 100–140 tok/sn tahmini aralığı"
+   },
+   "gpu": "gpu3090used",
+   "platform": "p64",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "rtx5080_32",
+   "name": "RTX 5080 16 GB · 32 GB RAM",
+   "ram": 32,
+   "vram": 16,
+   "gpus": 1,
+   "tps": 65,
+   "watts": 450,
+   "strata": {
+    "tps": 15,
+    "measured": false,
+    "note": "32 GB RAM yetmez (en az 48 GB); uzmanlar SSD’den okunur"
+   },
+   "gpu": "gpu5080",
+   "platform": "p32g",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "r9700",
+   "name": "Radeon AI PRO R9700 32 GB · 32 GB RAM",
+   "ram": 32,
+   "vram": 32,
+   "gpus": 1,
+   "tps": 50,
+   "watts": 400,
+   "strata": {
+    "tps": 70,
+    "measured": false,
+    "note": "32 GB kart + 32 GB RAM: düşük RAM modu (Q2_0, IQ2_XS)"
+   },
+   "gpu": "gpuR9700",
+   "platform": "p32g",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "macstudio36",
+   "name": "Mac Studio M5 Max · 36 GB birleşik",
+   "ram": 36,
+   "vram": 0,
+   "gpus": 1,
+   "tps": 40,
+   "watts": 145,
+   "strata": {
+    "tps": 15,
+    "measured": false,
+    "note": "36 GB: uzmanlar SSD’den okunur"
+   },
+   "kind": "mac",
+   "apple": {
+    "name": "Mac Studio M5 Max 18/32 · 36 GB / 512 GB",
+    "price": 174999,
+    "store": "Apple Türkiye",
+    "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio"
+   },
+   "estimated": true
+  },
+  {
+   "id": "rtx5070ti64",
+   "name": "RTX 5070 Ti 16 GB · 64 GB RAM · 2 TB",
+   "ram": 64,
+   "vram": 16,
+   "gpus": 1,
+   "tps": 58,
+   "watts": 400,
+   "strata": {
+    "tps": 90,
+    "measured": false,
+    "note": "64 GB RAM ile tüm boyutlar sığar"
+   },
+   "gpu": "gpu5070ti",
+   "platform": "p64",
+   "kind": "pc",
+   "estimated": false
+  },
+  {
+   "id": "macmini64",
+   "name": "Mac mini M5 Pro · 64 GB birleşik",
+   "ram": 64,
+   "vram": 0,
+   "gpus": 1,
+   "tps": 25.5,
+   "watts": 115,
+   "strata": {
+    "tps": 43,
+    "measured": false,
+    "note": "64 GB: model bellekte kalır (önerilen boyut)"
+   },
+   "kind": "mac",
+   "apple": {
+    "name": "Mac mini M5 Pro 15/16 · 64 GB / 512 GB",
+    "price": 189999,
+    "store": "Apple Türkiye",
+    "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m5-pro-%C3%A7ip-15-%C3%A7ekirdekli-cpu-16-%C3%A7ekirdekli-gpu-64-gb-bellek-512gb-depolama"
+   },
+   "estimated": true
+  },
+  {
+   "id": "rtx5080_64",
+   "name": "RTX 5080 16 GB · 64 GB RAM · 2 TB",
+   "ram": 64,
+   "vram": 16,
+   "gpus": 1,
+   "tps": 65,
+   "watts": 450,
+   "strata": {
+    "tps": 100,
+    "measured": false,
+    "note": "64 GB RAM ile tüm boyutlar sığar"
+   },
+   "gpu": "gpu5080",
+   "platform": "p64",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "r9700_64",
+   "name": "R9700 32 GB · 64 GB RAM · 2 TB",
+   "ram": 64,
+   "vram": 32,
+   "gpus": 1,
+   "tps": 50,
+   "watts": 420,
+   "strata": {
+    "tps": 75,
+    "measured": true,
+    "note": "R9700 ölçümü: IQ3_S 75 (metin) / 95 (kod) tok/sn"
+   },
+   "gpu": "gpuR9700",
+   "platform": "p64",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "macstudio64",
+   "name": "Mac Studio M5 Max · 64 GB birleşik",
+   "ram": 64,
+   "vram": 0,
+   "gpus": 1,
+   "tps": 46,
+   "watts": 160,
+   "strata": {
+    "tps": 85,
+    "measured": false,
+    "note": "64 GB: Q2_0 bellekte kalır"
+   },
+   "kind": "mac",
+   "apple": {
+    "name": "Mac Studio M5 Max 18/40 · 64 GB / 1 TB",
+    "price": 265999,
+    "store": "Apple Türkiye",
+    "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-max-%C3%A7ip-18-%C3%A7ekirdekli-cpu-40-%C3%A7ekirdekli-gpu-64-gb-bellek-1tb-depolama"
+   },
+   "estimated": true
+  },
+  {
+   "id": "dual3090",
+   "name": "2× RTX 3090 (2. el) · 48 GB toplam · 64 GB RAM",
+   "ram": 64,
+   "vram": 48,
+   "gpus": 2,
+   "tps": 52.1,
+   "watts": 550,
+   "strata": {
+    "tps": 100,
+    "measured": true,
+    "note": "Kullanıcı raporu: 2× RTX 3090 ile 100+ tok/sn"
+   },
+   "gpu": "gpu3090used",
+   "platform": "pDual",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "dualr9700",
+   "name": "2× R9700 · 64 GB toplam VRAM · 64 GB RAM",
+   "ram": 64,
+   "vram": 64,
+   "gpus": 2,
+   "tps": 50,
+   "watts": 700,
+   "strata": {
+    "tps": 110,
+    "measured": false,
+    "note": "64 GB VRAM: yüksek kaliteli paketler"
+   },
+   "gpu": "gpuR9700",
+   "platform": "pDual",
+   "kind": "pc",
+   "estimated": true
+  },
+  {
+   "id": "macstudio128",
+   "name": "Mac Studio M5 Max · 128 GB birleşik",
+   "ram": 128,
+   "vram": 0,
+   "gpus": 1,
+   "tps": 46,
+   "watts": 170,
+   "strata": {
+    "tps": 87,
+    "measured": true,
+    "note": "M5 Max 128 GB ölçümü: Q2_0 87, IQ3_S 74 tok/sn"
+   },
+   "kind": "mac",
+   "apple": {
+    "name": "Mac Studio M5 Max 18/40 · 128 GB / 1 TB",
+    "price": 377999,
+    "store": "Apple Türkiye",
+    "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-max-%C3%A7ip-18-%C3%A7ekirdekli-cpu-40-%C3%A7ekirdekli-gpu-128-gb-bellek-1tb-depolama"
+   },
+   "estimated": true
+  },
+  {
+   "id": "macultra96",
+   "name": "Mac Studio M5 Ultra · 96 GB birleşik",
+   "ram": 96,
+   "vram": 0,
+   "gpus": 1,
+   "tps": 70,
+   "watts": 270,
+   "strata": {
+    "tps": 100,
+    "measured": false,
+    "note": "96 GB: IQ3_S bellekte kalır"
+   },
+   "kind": "mac",
+   "apple": {
+    "name": "Mac Studio M5 Ultra 30/64 · 96 GB / 1 TB",
+    "price": 384999,
+    "store": "Apple Türkiye",
+    "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-ultra-%C3%A7ip-30-%C3%A7ekirdekli-cpu-64-%C3%A7ekirdekli-gpu-96-gb-bellek-1tb-depolama"
+   },
+   "estimated": true
+  },
+  {
+   "id": "macultra256",
+   "name": "Mac Studio M5 Ultra · 256 GB birleşik",
+   "ram": 256,
+   "vram": 0,
+   "gpus": 1,
+   "tps": 70,
+   "watts": 280,
+   "strata": {
+    "tps": 100,
+    "measured": false,
+    "note": "256 GB: 4–8 bit Unsloth paketleri bile bellekte kalır"
+   },
+   "kind": "mac",
+   "apple": {
+    "name": "Mac Studio M5 Ultra 30/64 · 256 GB / 1 TB",
+    "price": 664999,
+    "store": "Apple Türkiye",
+    "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-ultra-%C3%A7ip-30-%C3%A7ekirdekli-cpu-64-%C3%A7ekirdekli-gpu-256-gb-bellek-1tb-depolama"
+   },
+   "estimated": true
+  },
+  {
+   "id": "rtx5090",
+   "name": "RTX 5090 32 GB · 64 GB RAM · 2 TB",
+   "ram": 64,
+   "vram": 32,
+   "gpus": 1,
+   "tps": 110,
+   "watts": 700,
+   "strata": {
+    "tps": 179,
+    "measured": true,
+    "note": "Topluluk ölçümü: RTX 5090 + 64 GB, IQ2_XS 179 tok/sn"
+   },
+   "gpu": "gpu5090",
+   "platform": "p64x",
+   "kind": "pc",
+   "estimated": true
+  }
+ ],
+ "subscriptions": [
+  {
+   "id": "chatgpt-plus",
+   "type": "subscription",
+   "name": "ChatGPT Plus",
+   "monthly": 20,
+   "currency": "USD",
+   "defaultCapM": 2,
+   "limit": "Model ve 5 saatlik kullanım pencereleri; araçlarda ayrı limitler",
+   "source": "https://help.openai.com/en/articles/6950777-what-is-chatgpt-plus"
+  },
+  {
+   "id": "chatgpt-pro100",
+   "type": "subscription",
+   "name": "ChatGPT Pro 100",
+   "monthly": 100,
+   "currency": "USD",
+   "defaultCapM": 8,
+   "limit": "Kullanım sınırı model ve göreve bağlı; sabit token hakkı yok",
+   "source": "https://help.openai.com/en/articles/9793128-about-chatgpt-pro-tiers"
+  },
+  {
+   "id": "chatgpt-pro200",
+   "type": "subscription",
+   "name": "ChatGPT Pro 200",
+   "monthly": 200,
+   "currency": "USD",
+   "defaultCapM": 16,
+   "limit": "Pro 100’den yüksek kullanım; yine kötüye kullanım ve model sınırları",
+   "source": "https://help.openai.com/en/articles/9793128-about-chatgpt-pro-tiers"
+  },
+  {
+   "id": "claude-pro",
+   "type": "subscription",
+   "name": "Claude Pro",
+   "monthly": 20,
+   "currency": "USD",
+   "defaultCapM": 2,
+   "limit": "5 saatlik oturum + haftalık limit; bağlam uzunluğuna bağlı",
+   "source": "https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work"
+  },
+  {
+   "id": "claude-max5",
+   "type": "subscription",
+   "name": "Claude Max 5×",
+   "monthly": 100,
+   "currency": "USD",
+   "defaultCapM": 10,
+   "limit": "Pro’nun 5× oturum kullanımı, haftalık limitler de geçerli",
+   "source": "https://support.claude.com/en/articles/11049762-choose-a-claude-plan"
+  },
+  {
+   "id": "claude-max20",
+   "type": "subscription",
+   "name": "Claude Max 20×",
+   "monthly": 200,
+   "currency": "USD",
+   "defaultCapM": 20,
+   "limit": "Pro’nun 20× oturum kullanımı, haftalık limitler de geçerli",
+   "source": "https://support.claude.com/en/articles/11049762-choose-a-claude-plan"
+  },
+  {
+   "id": "google-ai-plus",
+   "type": "subscription",
+   "name": "Google AI Plus (Türkiye)",
+   "monthly": 199.99,
+   "currency": "TRY",
+   "defaultCapM": 1,
+   "limit": "Ücretsiz plana göre 2× kullanım; Flash modeli, istek limiti",
+   "source": "https://gemini.google/tr/subscriptions/?hl=tr"
+  },
+  {
+   "id": "google-ai-pro",
+   "type": "subscription",
+   "name": "Google AI Pro (Türkiye)",
+   "monthly": 869.99,
+   "currency": "TRY",
+   "defaultCapM": 2,
+   "limit": "Ücretsiz plana göre 4× kullanım; modele göre farklı limit",
+   "source": "https://gemini.google/tr/subscriptions/?hl=tr"
+  },
+  {
+   "id": "google-ai-ultra5",
+   "type": "subscription",
+   "name": "Google AI Ultra 5× (başlangıç)",
+   "monthly": 1479.99,
+   "currency": "TRY",
+   "defaultCapM": 10,
+   "limit": "Başlangıç/teklif fiyatı; Pro’nun 5× kullanımı, süreli koşullar",
+   "source": "https://gemini.google/tr/subscriptions/?hl=tr"
+  },
+  {
+   "id": "google-ai-ultra20",
+   "type": "subscription",
+   "name": "Google AI Ultra 20× (Türkiye)",
+   "monthly": 8999.99,
+   "currency": "TRY",
+   "defaultCapM": 30,
+   "limit": "Pro’nun 20× kullanımı; model ve özellik limitleri",
+   "source": "https://gemini.google/tr/subscriptions/?hl=tr"
+  },
+  {
+   "id": "cursor-plus",
+   "type": "subscription",
+   "name": "Cursor Plus",
+   "monthly": 8,
+   "currency": "USD",
+   "defaultCapM": 1,
+   "limit": "Temel paylaşılan Grok kullanım havuzu; üçüncü taraf modeller dahil değil",
+   "source": "https://cursor.com/pricing"
+  },
+  {
+   "id": "cursor-premium",
+   "type": "subscription",
+   "name": "Cursor Premium",
+   "monthly": 30,
+   "currency": "USD",
+   "defaultCapM": 2,
+   "limit": "Plus’a göre 4× kullanım; üçüncü taraf modeller ayrıca ücretli",
+   "source": "https://cursor.com/pricing"
+  },
+  {
+   "id": "cursor-super",
+   "type": "subscription",
+   "name": "Cursor Super",
+   "monthly": 100,
+   "currency": "USD",
+   "defaultCapM": 8,
+   "limit": "Plus’a göre 15× kullanım; üçüncü taraf modeller ayrıca ücretli",
+   "source": "https://cursor.com/pricing"
+  },
+  {
+   "id": "cursor-ultra",
+   "type": "subscription",
+   "name": "Cursor Ultra",
+   "monthly": 200,
+   "currency": "USD",
+   "defaultCapM": 20,
+   "limit": "Plus’a göre 50× kullanım; üçüncü taraf modeller ayrıca ücretli",
+   "source": "https://cursor.com/pricing"
+  },
+  {
+   "id": "copilot-pro",
+   "type": "subscription",
+   "name": "GitHub Copilot Pro",
+   "monthly": 10,
+   "currency": "USD",
+   "defaultCapM": 2,
+   "limit": "Aylık 1.500 AI kredisi (1.000 temel + 500 esnek); token kotası değil",
+   "source": "https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing"
+  },
+  {
+   "id": "copilot-proplus",
+   "type": "subscription",
+   "name": "GitHub Copilot Pro+",
+   "monthly": 39,
+   "currency": "USD",
+   "defaultCapM": 5,
+   "limit": "Aylık 7.000 AI kredisi (3.900 temel + 3.100 esnek); token kotası değil",
+   "source": "https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing"
+  },
+  {
+   "id": "copilot-max",
+   "type": "subscription",
+   "name": "GitHub Copilot Max",
+   "monthly": 100,
+   "currency": "USD",
+   "defaultCapM": 15,
+   "limit": "Aylık 20.000 AI kredisi (10.000 temel + 10.000 esnek); token kotası değil",
+   "source": "https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing"
+  }
+ ],
+ "apiModels": [
+  {
+   "id": "api-openai-luna",
+   "type": "api",
+   "name": "OpenAI · GPT-6 Luna",
+   "inputUsd": 0.1,
+   "outputUsd": 0.5,
+   "cachedUsd": 0.01,
+   "source": "https://developers.openai.com/api/docs/pricing",
+   "note": "Standart fiyat; >272K girdi ve bölgesel işleme farklı tarifeli",
+   "provider": "OpenAI"
+  },
+  {
+   "id": "api-openai-terra",
+   "type": "api",
+   "name": "OpenAI · GPT-6.1 Terra",
+   "inputUsd": 1,
+   "outputUsd": 5,
+   "cachedUsd": 0.05,
+   "source": "https://developers.openai.com/api/docs/pricing",
+   "note": "Standart fiyat; >272K uzun bağlam tarifesi farklı",
+   "provider": "OpenAI"
+  },
+  {
+   "id": "api-openai-sol",
+   "type": "api",
+   "name": "OpenAI · GPT-6.1 Sol",
+   "inputUsd": 2,
+   "outputUsd": 10,
+   "cachedUsd": 0.1,
+   "source": "https://developers.openai.com/api/docs/pricing",
+   "note": "Standart fiyat; uzun bağlam ek ücrete tabi",
+   "provider": "OpenAI"
+  },
+  {
+   "id": "api-openai-astra",
+   "type": "api",
+   "name": "OpenAI · GPT-6 Astra",
+   "inputUsd": 10,
+   "outputUsd": 50,
+   "cachedUsd": 1,
+   "source": "https://developers.openai.com/api/docs/pricing",
+   "note": "Standart fiyat; uzun bağlam ek ücrete tabi",
+   "provider": "OpenAI"
+  },
+  {
+   "id": "api-openai-gpt54",
+   "type": "api",
+   "name": "OpenAI · GPT-5.4",
+   "inputUsd": 2.5,
+   "outputUsd": 15,
+   "cachedUsd": 0.25,
+   "source": "https://developers.openai.com/api/docs/models/gpt-5.4",
+   "note": "272K üzeri bağlam için ek tarife",
+   "provider": "OpenAI"
+  },
+  {
+   "id": "api-claude-haiku",
+   "type": "api",
+   "name": "Claude · Haiku 5.5",
+   "inputUsd": 0.1,
+   "outputUsd": 0.5,
+   "cachedUsd": 0.01,
+   "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+   "note": "En çok 100K girişlik istem; daha büyük istemde fiyat artar",
+   "provider": "Claude"
+  },
+  {
+   "id": "api-claude-sonnet",
+   "type": "api",
+   "name": "Claude · Sonnet 5.5",
+   "inputUsd": 2,
+   "outputUsd": 10,
+   "cachedUsd": 0.1,
+   "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+   "note": "Önbellek okuma fiyatı; cache yazımı ayrıca ücretli",
+   "provider": "Claude"
+  },
+  {
+   "id": "api-claude-opus",
+   "type": "api",
+   "name": "Claude · Opus 5.5",
+   "inputUsd": 4,
+   "outputUsd": 20,
+   "cachedUsd": 0.2,
+   "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+   "note": "Önbellek yazımı ve bölgesel işleme ayrıca ücretli",
+   "provider": "Claude"
+  },
+  {
+   "id": "api-gemini-argon-nov",
+   "type": "api",
+   "name": "Gemini · 4 Argon (Kasım 2026)",
+   "inputUsd": 2,
+   "outputUsd": 10,
+   "cachedUsd": 0.1,
+   "source": "https://ai.google.dev/gemini-api/docs/pricing",
+   "note": "Kampanya 30 Kasım 2026’da bitiyor; uzun vadeli grafik bu fiyatı sabit varsayar",
+   "provider": "Gemini"
+  },
+  {
+   "id": "api-gemini-argon-dec",
+   "type": "api",
+   "name": "Gemini · 4 Argon (Aralık 2026+)",
+   "inputUsd": 4,
+   "outputUsd": 20,
+   "cachedUsd": 0.2,
+   "source": "https://ai.google.dev/gemini-api/docs/pricing",
+   "note": "Resmî açıklanan 1 Aralık 2026 sonrası standart fiyat",
+   "provider": "Gemini"
+  },
+  {
+   "id": "api-gemini-31pro",
+   "type": "api",
+   "name": "Gemini · 3.1 Pro Preview",
+   "inputUsd": 2,
+   "outputUsd": 12,
+   "cachedUsd": 0.2,
+   "source": "https://ai.google.dev/gemini-api/docs/pricing",
+   "note": "200K üzeri istemde fiyat daha yüksek",
+   "provider": "Gemini"
+  },
+  {
+   "id": "api-gemini-3flash",
+   "type": "api",
+   "name": "Gemini · 3 Flash Preview",
+   "inputUsd": 0.5,
+   "outputUsd": 3,
+   "cachedUsd": 0.05,
+   "source": "https://ai.google.dev/gemini-api/docs/pricing",
+   "note": "Önizleme modeli, değişebilir",
+   "provider": "Gemini"
+  },
+  {
+   "id": "api-gemini-31lite",
+   "type": "api",
+   "name": "Gemini · 3.1 Flash-Lite",
+   "inputUsd": 0.25,
+   "outputUsd": 1.5,
+   "cachedUsd": 0.025,
+   "source": "https://ai.google.dev/gemini-api/docs/pricing",
+   "note": "Metin girdi/çıktı",
+   "provider": "Gemini"
+  },
+  {
+   "id": "api-gemini-flash",
+   "type": "api",
+   "name": "Gemini · 2.5 Flash",
+   "inputUsd": 0.3,
+   "outputUsd": 2.5,
+   "cachedUsd": 0.03,
+   "source": "https://ai.google.dev/gemini-api/docs/pricing",
+   "note": "Metin fiyatı; düşünme tokenları çıktıya dahil",
+   "provider": "Gemini"
+  },
+  {
+   "id": "api-gemini-pro25",
+   "type": "api",
+   "name": "Gemini · 2.5 Pro",
+   "inputUsd": 1.25,
+   "outputUsd": 10,
+   "cachedUsd": 0.125,
+   "source": "https://ai.google.dev/gemini-api/docs/pricing",
+   "note": "200K üzeri istemlerde giriş $2.50, çıktı $15",
+   "provider": "Gemini"
+  },
+  {
+   "id": "api-deepseek-flash-peak",
+   "type": "api",
+   "name": "DeepSeek · V4.1 Flash (pik)",
+   "inputUsd": 0.3,
+   "outputUsd": 1.2,
+   "cachedUsd": 0.006,
+   "source": "https://api-docs.deepseek.com/quick_start/pricing/",
+   "note": "Pik: Hafta içi 01:00–04:00 ve 06:00–10:00 UTC",
+   "provider": "DeepSeek"
+  },
+  {
+   "id": "api-deepseek-flash-off",
+   "type": "api",
+   "name": "DeepSeek · V4.1 Flash (pik dışı)",
+   "inputUsd": 0.15,
+   "outputUsd": 0.6,
+   "cachedUsd": 0.003,
+   "source": "https://api-docs.deepseek.com/quick_start/pricing/",
+   "note": "Pik dışı saatler/hafta sonu; UTC zaman dilimi",
+   "provider": "DeepSeek"
+  },
+  {
+   "id": "api-deepseek-pro-peak",
+   "type": "api",
+   "name": "DeepSeek · V4 Pro (pik)",
+   "inputUsd": 1.32,
+   "outputUsd": 3.96,
+   "cachedUsd": 0.044,
+   "source": "https://api-docs.deepseek.com/quick_start/pricing/",
+   "note": "Pik: Hafta içi 01:00–04:00 ve 06:00–10:00 UTC",
+   "provider": "DeepSeek"
+  },
+  {
+   "id": "api-deepseek-pro-off",
+   "type": "api",
+   "name": "DeepSeek · V4 Pro (pik dışı)",
+   "inputUsd": 0.66,
+   "outputUsd": 1.98,
+   "cachedUsd": 0.022,
+   "source": "https://api-docs.deepseek.com/quick_start/pricing/",
+   "note": "Pik dışı saatler/hafta sonu; UTC zaman dilimi",
+   "provider": "DeepSeek"
+  },
+  {
+   "id": "api-mistral-large",
+   "type": "api",
+   "name": "Mistral · Large 3",
+   "inputUsd": 0.5,
+   "outputUsd": 1.5,
+   "cachedUsd": 0.05,
+   "source": "https://docs.mistral.ai/inference/pricing",
+   "note": "Standart metin API",
+   "provider": "Mistral"
+  },
+  {
+   "id": "api-mistral-medium",
+   "type": "api",
+   "name": "Mistral · Medium 3.5",
+   "inputUsd": 1.5,
+   "outputUsd": 7.5,
+   "cachedUsd": 0.15,
+   "source": "https://docs.mistral.ai/inference/pricing",
+   "note": "Standart metin API",
+   "provider": "Mistral"
+  },
+  {
+   "id": "api-mistral-small",
+   "type": "api",
+   "name": "Mistral · Small 4",
+   "inputUsd": 0.15,
+   "outputUsd": 0.6,
+   "cachedUsd": 0.015,
+   "source": "https://docs.mistral.ai/inference/pricing",
+   "note": "Standart metin API",
+   "provider": "Mistral"
+  },
+  {
+   "id": "api-ministral14",
+   "type": "api",
+   "name": "Mistral · Ministral 3 14B",
+   "inputUsd": 0.2,
+   "outputUsd": 0.2,
+   "cachedUsd": 0.02,
+   "source": "https://docs.mistral.ai/inference/pricing",
+   "note": "Standart metin API",
+   "provider": "Mistral"
+  },
+  {
+   "id": "api-groq-120",
+   "type": "api",
+   "open": true,
+   "name": "Groq · GPT-OSS 120B",
+   "inputUsd": 0.15,
+   "outputUsd": 0.6,
+   "cachedUsd": 0.075,
+   "source": "https://console.groq.com/docs/models",
+   "note": "GroqCloud hosted API; sağlayıcının hız/sınırlamaları geçerli",
+   "provider": "Groq"
+  },
+  {
+   "id": "api-groq-20",
+   "type": "api",
+   "open": true,
+   "name": "Groq · GPT-OSS 20B",
+   "inputUsd": 0.075,
+   "outputUsd": 0.3,
+   "cachedUsd": 0.037,
+   "source": "https://console.groq.com/docs/models",
+   "note": "GroqCloud hosted API; sağlayıcının hız/sınırlamaları geçerli",
+   "provider": "Groq"
+  },
+  {
+   "id": "api-xai-grok47",
+   "type": "api",
+   "name": "xAI · Grok 4.7",
+   "inputUsd": 2,
+   "outputUsd": 6,
+   "cachedUsd": 0.5,
+   "source": "https://docs.x.ai/developers/pricing",
+   "note": "200K+ uzun bağlam isteğinde fiyat artar",
+   "provider": "xAI"
+  },
+  {
+   "id": "api-open-llama-3.1-8b-instruct",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Llama 3.1 8B",
+   "inputUsd": 0.05,
+   "outputUsd": 0.08,
+   "cachedUsd": 0.025,
+   "source": "https://openrouter.ai/meta-llama/llama-3.1-8b-instruct",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 128K bağlam",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-mistral-nemo",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Mistral Nemo 12B",
+   "inputUsd": 0.029,
+   "outputUsd": 0.03,
+   "source": "https://openrouter.ai/mistralai/mistral-nemo",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 128K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-gemma-3-12b-it",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Gemma 3 12B",
+   "inputUsd": 0.05,
+   "outputUsd": 0.15,
+   "source": "https://openrouter.ai/google/gemma-3-12b-it",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 128K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-phi-4",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Phi-4 14B",
+   "inputUsd": 0.07,
+   "outputUsd": 0.14,
+   "source": "https://openrouter.ai/microsoft/phi-4",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 16K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-mistral-small-3.2-24b-instruct",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Mistral Small 3.2 24B",
+   "inputUsd": 0.075,
+   "outputUsd": 0.2,
+   "source": "https://openrouter.ai/mistralai/mistral-small-3.2-24b-instruct",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 250K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-gemma-3-27b-it",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Gemma 3 27B",
+   "inputUsd": 0.08,
+   "outputUsd": 0.35,
+   "cachedUsd": 0.04,
+   "source": "https://openrouter.ai/google/gemma-3-27b-it",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 128K bağlam",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-qwen3-coder-30b-a3b-instruct",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Qwen3-Coder 30B-A3B",
+   "inputUsd": 0.07,
+   "outputUsd": 0.28,
+   "source": "https://openrouter.ai/qwen/qwen3-coder-30b-a3b-instruct",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 256K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-qwen3-30b-a3b-instruct-2507",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Qwen3 30B-A3B 2507",
+   "inputUsd": 0.1,
+   "outputUsd": 0.3,
+   "cachedUsd": 0.1,
+   "source": "https://openrouter.ai/qwen/qwen3-30b-a3b-instruct-2507",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 256K bağlam",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-qwen3-32b",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Qwen3 32B",
+   "inputUsd": 0.08,
+   "outputUsd": 0.28,
+   "source": "https://openrouter.ai/qwen/qwen3-32b",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 128K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-gpt-oss-20b",
+   "type": "api",
+   "open": true,
+   "name": "Açık · gpt-oss 20B",
+   "inputUsd": 0.03,
+   "outputUsd": 0.13,
+   "cachedUsd": 0.03,
+   "source": "https://openrouter.ai/openai/gpt-oss-20b",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 128K bağlam",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-gpt-oss-120b",
+   "type": "api",
+   "open": true,
+   "name": "Açık · gpt-oss 120B",
+   "inputUsd": 0.015,
+   "outputUsd": 0.057,
+   "source": "https://openrouter.ai/openai/gpt-oss-120b",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 128K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-llama-3.3-70b-instruct",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Llama 3.3 70B",
+   "inputUsd": 0.1,
+   "outputUsd": 0.32,
+   "source": "https://openrouter.ai/meta-llama/llama-3.3-70b-instruct",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 128K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-llama-4-scout",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Llama 4 Scout",
+   "inputUsd": 0.1,
+   "outputUsd": 0.3,
+   "source": "https://openrouter.ai/meta-llama/llama-4-scout",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 1280K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-llama-4-maverick",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Llama 4 Maverick",
+   "inputUsd": 0.1875,
+   "outputUsd": 0.6525,
+   "cachedUsd": 0.05,
+   "source": "https://openrouter.ai/meta-llama/llama-4-maverick",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 512K bağlam",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-glm-4.5-air",
+   "type": "api",
+   "open": true,
+   "name": "Açık · GLM-4.5 Air",
+   "inputUsd": 0.13,
+   "outputUsd": 0.85,
+   "cachedUsd": 0.025,
+   "source": "https://openrouter.ai/z-ai/glm-4.5-air",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 128K bağlam",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-qwen3-235b-a22b-2507",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Qwen3 235B-A22B 2507",
+   "inputUsd": 0.09,
+   "outputUsd": 0.55,
+   "source": "https://openrouter.ai/qwen/qwen3-235b-a22b-2507",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 256K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-minimax-m2",
+   "type": "api",
+   "open": true,
+   "name": "Açık · MiniMax M2",
+   "inputUsd": 0.255,
+   "outputUsd": 1.02,
+   "source": "https://openrouter.ai/minimax/minimax-m2",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 200K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-deepseek-v3.2",
+   "type": "api",
+   "open": true,
+   "name": "Açık · DeepSeek V3.2",
+   "inputUsd": 0.26,
+   "outputUsd": 0.38,
+   "cachedUsd": 0.13,
+   "source": "https://openrouter.ai/deepseek/deepseek-v3.2",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 160K bağlam",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-deepseek-r1-0528",
+   "type": "api",
+   "open": true,
+   "name": "Açık · DeepSeek R1 0528",
+   "inputUsd": 0.5,
+   "outputUsd": 2.15,
+   "cachedUsd": 0.35,
+   "source": "https://openrouter.ai/deepseek/deepseek-r1-0528",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 160K bağlam",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-qwen3-coder",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Qwen3-Coder 480B-A35B",
+   "inputUsd": 0.3,
+   "outputUsd": 1,
+   "cachedUsd": 0.1,
+   "source": "https://openrouter.ai/qwen/qwen3-coder",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 256K bağlam",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-glm-4.6",
+   "type": "api",
+   "open": true,
+   "name": "Açık · GLM-4.6",
+   "inputUsd": 0.5,
+   "outputUsd": 2,
+   "cachedUsd": 0.1,
+   "source": "https://openrouter.ai/z-ai/glm-4.6",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 200K bağlam",
+   "provider": "OpenRouter"
+  },
+  {
+   "id": "api-open-kimi-k2-0905",
+   "type": "api",
+   "open": true,
+   "name": "Açık · Kimi K2 0905",
+   "inputUsd": 0.6,
+   "outputUsd": 2.5,
+   "source": "https://openrouter.ai/moonshotai/kimi-k2-0905",
+   "note": "OpenRouter varsayılan sağlayıcı fiyatı; sağlayıcıya göre değişir · 256K bağlam · önbellek indirimi yok",
+   "provider": "OpenRouter"
+  }
+ ],
+ "ggufModels": [
+  {
+   "id": "qwen3-1.7b",
+   "name": "Qwen3 1.7B",
+   "params": "1.7B",
+   "layers": 28,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 40960,
+   "source": "https://huggingface.co/tensorblock/Qwen_Qwen3-1.7B-GGUF",
+   "config": "https://huggingface.co/Qwen/Qwen3-1.7B/blob/main/config.json",
+   "quants": {
+    "Q2_K": 0.88,
+    "Q3_K_M": 1.073,
+    "Q4_K_M": 1.282,
+    "Q5_K_M": 1.472,
+    "Q6_K": 1.673,
+    "Q8_0": 2.165
+   }
+  },
+  {
+   "id": "llama32-3b",
+   "name": "Llama 3.2 3B",
+   "params": "3B",
+   "layers": 28,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 131072,
+   "source": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF",
+   "config": "https://huggingface.co/unsloth/Llama-3.2-3B-Instruct/blob/main/config.json",
+   "quants": {
+    "Q4_K_M": 2.019,
+    "Q5_K_M": 2.322,
+    "Q6_K": 2.644,
+    "Q8_0": 3.422
+   }
+  },
+  {
+   "id": "gemma3-4b",
+   "name": "Gemma 3 4B (metin)",
+   "params": "4B",
+   "layers": 34,
+   "kvHeads": 4,
+   "headDim": 256,
+   "nativeCtx": 131072,
+   "slidingWindow": 1024,
+   "slidingEvery": 6,
+   "source": "https://huggingface.co/bartowski/google_gemma-3-4b-it-GGUF",
+   "config": "https://huggingface.co/unsloth/gemma-3-4b-it/blob/main/config.json",
+   "quants": {
+    "Q2_K": 1.729,
+    "Q3_K_M": 2.098,
+    "Q4_K_M": 2.49,
+    "Q5_K_M": 2.83,
+    "Q6_K": 3.191,
+    "Q8_0": 4.13
+   }
+  },
+  {
+   "id": "qwen3-4b",
+   "name": "Qwen3 4B",
+   "params": "4B",
+   "layers": 36,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 40960,
+   "source": "https://huggingface.co/tensorblock/Qwen_Qwen3-4B-GGUF",
+   "config": "https://huggingface.co/Qwen/Qwen3-4B/blob/main/config.json",
+   "quants": {
+    "Q2_K": 1.669,
+    "Q3_K_M": 2.076,
+    "Q4_K_M": 2.497,
+    "Q5_K_M": 2.89,
+    "Q6_K": 3.306,
+    "Q8_0": 4.28
+   }
+  },
+  {
+   "id": "qwen25coder-7b",
+   "name": "Qwen2.5-Coder 7B",
+   "params": "7B",
+   "layers": 28,
+   "kvHeads": 4,
+   "headDim": 128,
+   "nativeCtx": 32768,
+   "source": "https://huggingface.co/bartowski/Qwen2.5-Coder-7B-Instruct-GGUF",
+   "config": "https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct/blob/main/config.json",
+   "quants": {
+    "Q2_K": 3.016,
+    "Q3_K_M": 3.808,
+    "Q4_K_M": 4.683,
+    "Q5_K_M": 5.445,
+    "Q6_K": 6.254,
+    "Q8_0": 8.099
+   }
+  },
+  {
+   "id": "llama31-8b",
+   "name": "Llama 3.1 8B",
+   "params": "8B",
+   "layers": 32,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 131072,
+   "source": "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
+   "config": "https://huggingface.co/unsloth/Meta-Llama-3.1-8B-Instruct/blob/main/config.json",
+   "quants": {
+    "Q2_K": 3.179,
+    "Q3_K_M": 4.019,
+    "Q4_K_M": 4.921,
+    "Q5_K_M": 5.733,
+    "Q6_K": 6.596,
+    "Q8_0": 8.541
+   }
+  },
+  {
+   "id": "qwen3-8b",
+   "name": "Qwen3 8B",
+   "params": "8B",
+   "layers": 36,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 40960,
+   "source": "https://huggingface.co/tensorblock/Qwen_Qwen3-8B-GGUF",
+   "config": "https://huggingface.co/Qwen/Qwen3-8B/blob/main/config.json",
+   "quants": {
+    "Q2_K": 3.282,
+    "Q3_K_M": 4.124,
+    "Q4_K_M": 5.028,
+    "Q5_K_M": 5.851,
+    "Q6_K": 6.726,
+    "Q8_0": 8.71
+   }
+  },
+  {
+   "id": "gemma3-12b",
+   "name": "Gemma 3 12B (metin)",
+   "params": "12B",
+   "layers": 48,
+   "kvHeads": 8,
+   "headDim": 256,
+   "nativeCtx": 131072,
+   "slidingWindow": 1024,
+   "slidingEvery": 6,
+   "source": "https://huggingface.co/bartowski/google_gemma-3-12b-it-GGUF",
+   "config": "https://huggingface.co/unsloth/gemma-3-12b-it/blob/main/config.json",
+   "quants": {
+    "Q2_K": 4.768,
+    "Q3_K_M": 6.009,
+    "Q4_K_M": 7.301,
+    "Q5_K_M": 8.445,
+    "Q6_K": 9.661,
+    "Q8_0": 12.51
+   }
+  },
+  {
+   "id": "nemo-12b",
+   "name": "Mistral Nemo 12B",
+   "params": "12B",
+   "layers": 40,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 131072,
+   "source": "https://huggingface.co/bartowski/Mistral-Nemo-Instruct-2407-GGUF",
+   "config": "https://huggingface.co/unsloth/Mistral-Nemo-Instruct-2407/blob/main/config.json",
+   "quants": {
+    "Q2_K": 4.791,
+    "Q3_K_M": 6.083,
+    "Q4_K_M": 7.477,
+    "Q5_K_M": 8.728,
+    "Q6_K": 10.056,
+    "Q8_0": 13.022
+   }
+  },
+  {
+   "id": "qwen25coder-14b",
+   "name": "Qwen2.5-Coder 14B",
+   "params": "14B",
+   "layers": 48,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 32768,
+   "source": "https://huggingface.co/bartowski/Qwen2.5-Coder-14B-Instruct-GGUF",
+   "config": "https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct/blob/main/config.json",
+   "quants": {
+    "Q2_K": 5.77,
+    "Q3_K_M": 7.339,
+    "Q4_K_M": 8.988,
+    "Q5_K_M": 10.509,
+    "Q6_K": 12.125,
+    "Q8_0": 15.702
+   }
+  },
+  {
+   "id": "r1qwen-14b",
+   "name": "DeepSeek-R1-Distill-Qwen 14B",
+   "params": "14B · akıl yürütme",
+   "layers": 48,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 131072,
+   "source": "https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF",
+   "config": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B/blob/main/config.json",
+   "quants": {
+    "Q2_K": 5.77,
+    "Q3_K_M": 7.339,
+    "Q4_K_M": 8.988,
+    "Q5_K_M": 10.509,
+    "Q6_K": 12.125,
+    "Q8_0": 15.702
+   }
+  },
+  {
+   "id": "qwen3-14b",
+   "name": "Qwen3 14B",
+   "params": "14B",
+   "layers": 40,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 40960,
+   "source": "https://huggingface.co/tensorblock/Qwen_Qwen3-14B-GGUF",
+   "config": "https://huggingface.co/Qwen/Qwen3-14B/blob/main/config.json",
+   "quants": {
+    "Q2_K": 5.754,
+    "Q3_K_M": 7.321,
+    "Q4_K_M": 9.002,
+    "Q5_K_M": 10.515,
+    "Q6_K": 12.122,
+    "Q8_0": 15.699
+   }
+  },
+  {
+   "id": "phi4-14b",
+   "name": "Phi-4 14B",
+   "params": "14B",
+   "layers": 40,
+   "kvHeads": 10,
+   "headDim": 128,
+   "nativeCtx": 16384,
+   "source": "https://huggingface.co/bartowski/phi-4-GGUF",
+   "config": "https://huggingface.co/microsoft/phi-4/blob/main/config.json",
+   "quants": {
+    "Q2_K": 5.547,
+    "Q3_K_M": 7.363,
+    "Q4_K_M": 9.053,
+    "Q5_K_M": 10.604,
+    "Q6_K": 12.03,
+    "Q8_0": 15.581
+   }
+  },
+  {
+   "id": "gptoss-20b",
+   "name": "gpt-oss 20B (MoE)",
+   "params": "21B / 3,6B etkin",
+   "layers": 24,
+   "kvHeads": 8,
+   "headDim": 64,
+   "nativeCtx": 131072,
+   "slidingWindow": 128,
+   "slidingEvery": 2,
+   "note": "MXFP4 yerel quant: tüm quant dosyaları neredeyse aynı boyutta",
+   "source": "https://huggingface.co/bartowski/openai_gpt-oss-20b-GGUF",
+   "config": "https://huggingface.co/openai/gpt-oss-20b/blob/main/config.json",
+   "quants": {
+    "Q2_K": 11.559,
+    "Q3_K_M": 11.559,
+    "Q4_K_M": 11.673,
+    "Q5_K_M": 11.728,
+    "Q6_K": 12.041,
+    "Q8_0": 12.11
+   }
+  },
+  {
+   "id": "mistralsmall32-24b",
+   "name": "Mistral Small 3.2 24B (metin)",
+   "params": "24B",
+   "layers": 40,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 131072,
+   "source": "https://huggingface.co/bartowski/mistralai_Mistral-Small-3.2-24B-Instruct-2506-GGUF",
+   "config": "https://huggingface.co/unsloth/Mistral-Small-3.2-24B-Instruct-2506/blob/main/config.json",
+   "quants": {
+    "Q2_K": 8.89,
+    "Q3_K_M": 11.474,
+    "Q4_K_M": 14.334,
+    "Q5_K_M": 16.764,
+    "Q6_K": 19.346,
+    "Q8_0": 25.055
+   }
+  },
+  {
+   "id": "devstral-24b",
+   "name": "Devstral Small 24B",
+   "params": "24B · kodlama ajanı",
+   "layers": 40,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 131072,
+   "source": "https://huggingface.co/bartowski/mistralai_Devstral-Small-2507-GGUF",
+   "config": "https://huggingface.co/unsloth/Devstral-Small-2507/blob/main/config.json",
+   "quants": {
+    "Q2_K": 8.89,
+    "Q3_K_M": 11.474,
+    "Q4_K_M": 14.334,
+    "Q5_K_M": 16.764,
+    "Q6_K": 19.346,
+    "Q8_0": 25.055
+   }
+  },
+  {
+   "id": "gemma3-27b",
+   "name": "Gemma 3 27B (metin)",
+   "params": "27B",
+   "layers": 62,
+   "kvHeads": 16,
+   "headDim": 128,
+   "nativeCtx": 131072,
+   "slidingWindow": 1024,
+   "slidingEvery": 6,
+   "source": "https://huggingface.co/second-state/gemma-3-27b-it-GGUF",
+   "config": "https://huggingface.co/unsloth/gemma-3-27b-it/blob/main/config.json",
+   "quants": {
+    "Q2_K": 10.5,
+    "Q3_K_M": 13.4,
+    "Q4_K_M": 16.5,
+    "Q5_K_M": 19.3,
+    "Q6_K": 22.2,
+    "Q8_0": 28.7
+   }
+  },
+  {
+   "id": "qwen3-30a3",
+   "name": "Qwen3 30B-A3B (MoE)",
+   "params": "30B / 3B etkin",
+   "layers": 48,
+   "kvHeads": 4,
+   "headDim": 128,
+   "nativeCtx": 40960,
+   "source": "https://huggingface.co/tensorblock/Qwen_Qwen3-30B-A3B-GGUF",
+   "config": "https://huggingface.co/Qwen/Qwen3-30B-A3B/blob/main/config.json",
+   "quants": {
+    "Q2_K": 11.259,
+    "Q3_K_M": 14.712,
+    "Q4_K_M": 18.557,
+    "Q5_K_M": 21.726,
+    "Q6_K": 25.093,
+    "Q8_0": 32.484
+   }
+  },
+  {
+   "id": "qwen3coder-30a3",
+   "name": "Qwen3-Coder 30B-A3B (MoE)",
+   "params": "30B / 3B etkin",
+   "layers": 48,
+   "kvHeads": 4,
+   "headDim": 128,
+   "nativeCtx": 262144,
+   "source": "https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF",
+   "config": "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct/blob/main/config.json",
+   "quants": {
+    "Q2_K": 11.259,
+    "Q3_K_M": 14.712,
+    "Q4_K_M": 18.557,
+    "Q5_K_M": 21.726,
+    "Q6_K": 25.093,
+    "Q8_0": 32.484
+   }
+  },
+  {
+   "id": "glm4-32b",
+   "name": "GLM-4 32B",
+   "params": "32B",
+   "layers": 61,
+   "kvHeads": 2,
+   "headDim": 128,
+   "nativeCtx": 32768,
+   "source": "https://huggingface.co/unsloth/GLM-4-32B-0414-GGUF",
+   "config": "https://huggingface.co/zai-org/GLM-4-32B-0414/blob/main/config.json",
+   "quants": {
+    "Q2_K": 12.292,
+    "Q3_K_M": 15.891,
+    "Q4_K_M": 19.68,
+    "Q5_K_M": 23.097,
+    "Q6_K": 26.728,
+    "Q8_0": 34.615
+   }
+  },
+  {
+   "id": "qwen3-32b",
+   "name": "Qwen3 32B",
+   "params": "32B",
+   "layers": 64,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 40960,
+   "source": "https://huggingface.co/tensorblock/willcb_Qwen3-32B-GGUF",
+   "config": "https://huggingface.co/Qwen/Qwen3-32B/blob/main/config.json",
+   "quants": {
+    "Q2_K": 12.345,
+    "Q3_K_M": 15.972,
+    "Q4_K_M": 19.762,
+    "Q5_K_M": 23.215,
+    "Q6_K": 26.883,
+    "Q8_0": 34.818
+   }
+  },
+  {
+   "id": "qwen25coder-32b",
+   "name": "Qwen2.5-Coder 32B",
+   "params": "32B",
+   "layers": 64,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 32768,
+   "source": "https://huggingface.co/bartowski/Qwen2.5-Coder-32B-Instruct-GGUF",
+   "config": "https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct/blob/main/config.json",
+   "quants": {
+    "Q2_K": 12.313,
+    "Q3_K_M": 15.935,
+    "Q4_K_M": 19.851,
+    "Q5_K_M": 23.262,
+    "Q6_K": 26.886,
+    "Q8_0": 34.821
+   }
+  },
+  {
+   "id": "r1qwen-32b",
+   "name": "DeepSeek-R1-Distill-Qwen 32B",
+   "params": "32B · akıl yürütme",
+   "layers": 64,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 131072,
+   "source": "https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF",
+   "config": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B/blob/main/config.json",
+   "quants": {
+    "Q2_K": 12.313,
+    "Q3_K_M": 15.935,
+    "Q4_K_M": 19.851,
+    "Q5_K_M": 23.262,
+    "Q6_K": 26.886,
+    "Q8_0": 34.821
+   }
+  },
+  {
+   "id": "llama33-70b",
+   "name": "Llama 3.3 70B",
+   "params": "70B",
+   "layers": 80,
+   "kvHeads": 8,
+   "headDim": 128,
+   "nativeCtx": 131072,
+   "source": "https://huggingface.co/tensorblock/Llama-3.3-70B-Instruct-GGUF",
+   "config": "https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct",
+   "quants": {
+    "Q2_K": 26.375,
+    "Q3_K_M": 34.267,
+    "Q4_K_M": 42.52,
+    "Q5_K_M": 49.95,
+    "Q6_K": 57.888,
+    "Q8_0": 74.975
+   }
+  },
+  {
+   "id": "gptoss-120b",
+   "name": "gpt-oss 120B (MoE)",
+   "params": "117B / 5,1B etkin",
+   "layers": 36,
+   "kvHeads": 8,
+   "headDim": 64,
+   "nativeCtx": 131072,
+   "slidingWindow": 128,
+   "slidingEvery": 2,
+   "note": "MXFP4 yerel quant: tüm quant dosyaları neredeyse aynı boyutta",
+   "source": "https://huggingface.co/bartowski/openai_gpt-oss-120b-GGUF",
+   "config": "https://huggingface.co/openai/gpt-oss-120b/blob/main/config.json",
+   "quants": {
+    "Q2_K": 62.706,
+    "Q3_K_M": 62.706,
+    "Q4_K_M": 62.842,
+    "Q6_K": 63.284,
+    "Q8_0": 63.387
+   }
+  }
+ ],
+ "usagePresets": [
+  {
+   "id": "casual",
+   "label": "Gündelik sohbet",
+   "calls": 40,
+   "tokens": 1000,
+   "days": 30,
+   "outputPct": 20,
+   "cachePct": 30
+  },
+  {
+   "id": "study",
+   "label": "Araştırma / ders",
+   "calls": 80,
+   "tokens": 2500,
+   "days": 30,
+   "outputPct": 15,
+   "cachePct": 30
+  },
+  {
+   "id": "assist",
+   "label": "Kod asistanı",
+   "calls": 300,
+   "tokens": 1500,
+   "days": 22,
+   "outputPct": 8,
+   "cachePct": 60
+  },
+  {
+   "id": "coding",
+   "label": "Kodlama ajanı",
+   "calls": 800,
+   "tokens": 2000,
+   "days": 22,
+   "outputPct": 3,
+   "cachePct": 85
+  },
+  {
+   "id": "writing",
+   "label": "Uzun içerik",
+   "calls": 100,
+   "tokens": 4000,
+   "days": 30,
+   "outputPct": 40,
+   "cachePct": 20
+  },
+  {
+   "id": "batch",
+   "label": "Yoğun otomasyon",
+   "calls": 5000,
+   "tokens": 1500,
+   "days": 30,
+   "outputPct": 30,
+   "cachePct": 50
+  }
+ ],
+ "deepseekMeasured": {
+  "rtx5070_64": [
+   4.7,
+   "RTX 5070 + 64 GB ölçümü: 4,7 tok/sn"
+  ],
+  "macstudio128": [
+   16,
+   "M5 Max 128 GB ölçümü: 15–18 tok/sn"
+  ],
+  "rtx5090": [
+   20,
+   "RTX 5090 ölçümü: 15–25 tok/sn (bağlama göre)"
+  ],
+  "r9700_64": [
+   12,
+   "R9700 + 251 GB RAM ölçümü 21–25; 64 GB ile daha yavaş (tahmin)"
+  ]
+ }
+}

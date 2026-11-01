@@ -1,0 +1,520 @@
+{
+ "note": "Otomatik okunamayan mağazaların teklifleri. ChatGPT promptuyla (README) toplanıp buraya eklenir. stock: stokta | tükendi | bilinmiyor.",
+ "updated": "01.11.2026",
+ "offers": {
+  "gpu9060": [
+   {
+    "store": "Vatan",
+    "name": "XFX RX 9060 XT Swift OC 16 GB",
+    "price": 35329,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-xfx-rx-9060-xt-swift-gaming-edition-oc-rx-96tsw16bq-128-bit-gddr6-16-gb-fiyati,1086042159.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Hepsiburada",
+    "name": "XFX RX 9060 XT Swift OC 16 GB",
+    "price": 35329,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-xfx-rx-9060-xt-swift-gaming-edition-oc-rx-96tsw16bq-128-bit-gddr6-16-gb-fiyati,1086042159.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Gaming.gen.tr",
+    "name": "Gigabyte RX 9060 XT Gaming OC 16 GB",
+    "price": 39381,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-gigabyte-rx-9060-xt-gaming-oc-16g-gv-r9060xtgaming-oc-16gd-128-bit-gddr6-16-gb-fiyati,1051086978.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "gpu5060ti": [
+   {
+    "store": "İnceHesap",
+    "name": "PNY RTX 5060 Ti OC 16 GB",
+    "price": 52059,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-pny-rtx-5060-ti-oc-vcg5060t16dfxpb1-o-128-bit-gddr7-16-gb-fiyati,1182533263.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Amazon TR",
+    "name": "PNY RTX 5060 Ti OC 16 GB",
+    "price": 52588,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-pny-rtx-5060-ti-oc-vcg5060t16dfxpb1-o-128-bit-gddr7-16-gb-fiyati,1182533263.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Trendyol",
+    "name": "PNY RTX 5060 Ti OC 16 GB",
+    "price": 53399,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-pny-rtx-5060-ti-oc-vcg5060t16dfxpb1-o-128-bit-gddr7-16-gb-fiyati,1182533263.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "gpu5070": [
+   {
+    "store": "Amazon TR",
+    "name": "MSI RTX 5070 Ventus 2X OC 12 GB",
+    "price": 63120,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-msi-rtx-5070-12g-ventus-2x-oc-g5070-12v2c-192-bit-gddr7-12-gb-fiyati,981566839.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Hepsiburada",
+    "name": "MSI RTX 5070 Ventus 2X OC 12 GB",
+    "price": 64277,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-msi-rtx-5070-12g-ventus-2x-oc-g5070-12v2c-192-bit-gddr7-12-gb-fiyati,981566839.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "gpu9070xt": [
+   {
+    "store": "n11",
+    "name": "XFX RX 9070 XT Swift 16 GB",
+    "price": 59997,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-xfx-rx-9070-xt-swift-gaming-edition-rx-97tswf3b9-256-bit-gddr6-16-gb-fiyati,965231457.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Vatan",
+    "name": "XFX RX 9070 XT Swift 16 GB",
+    "price": 58089,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-xfx-rx-9070-xt-swift-gaming-edition-rx-97tswf3b9-256-bit-gddr6-16-gb-fiyati,965231457.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Trendyol",
+    "name": "PowerColor RX 9070 XT Reaper 16 GB",
+    "price": 62999,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-powercolor-rx-9070-xt-reaper-16g-a-256-bit-gddr6-16-gb-fiyati,965173812.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "gpu5070ti": [
+   {
+    "store": "Sinerji",
+    "name": "PNY RTX 5070 Ti OC 16 GB",
+    "price": 91739,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-pny-rtx-5070-ti-oc-vcg5070t16tfxpb1-o-256-bit-gddr7-16-gb-fiyati,1148267835.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "idefix",
+    "name": "PNY RTX 5070 Ti OC 16 GB",
+    "price": 94289,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-pny-rtx-5070-ti-oc-vcg5070t16tfxpb1-o-256-bit-gddr7-16-gb-fiyati,1148267835.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "gpu5080": [
+   {
+    "store": "Sinerji",
+    "name": "Palit RTX 5080 Infinity 3 16 GB",
+    "price": 112812,
+    "url": "https://www.sinerji.gen.tr/palit-geforce-rtx-5080-infinity-3-16gb-gddr7-256-bit-dlss-4-ekran-karti-p-58562",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Ucuzbudur",
+    "name": "PNY RTX 5080 OC 16 GB",
+    "price": 119950,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-pny-rtx-5080-oc-vcg508016tfxpb1-o-256-bit-gddr7-16-gb-fiyati,960259420.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "gpu5090": [
+   {
+    "store": "akakçe",
+    "name": "Gigabyte RTX 5090 AORUS Master ICE 32 GB (hava soğutmalı)",
+    "price": 407999,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-gigabyte-rtx-5090-aorus-master-ice-32g-gv-n5090aorusm-ice-32gd-512-bit-gddr7-32-gb-fiyati,903115096.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "gpuR9700": [
+   {
+    "store": "AI Donanım",
+    "name": "PowerColor Radeon AI PRO R9700 32 GB",
+    "price": 147912,
+    "url": "https://www.akakce.com/ekran-karti/en-ucuz-powercolor-radeon-ai-pro-r9700-32g-b-gddr6-256bit-fiyati,1698307329.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Sinerji",
+    "name": "PowerColor Radeon AI PRO R9700 32 GB",
+    "price": 152939,
+    "url": "https://www.sinerji.gen.tr/powercolor-radeon-ai-pro-r9700-32gb-gddr6-256-bit-ekran-karti-p-58896",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Nova",
+    "name": "PowerColor Radeon AI PRO R9700 32 GB",
+    "price": 117000,
+    "url": "https://www.novabilgisayar.com/powercolor-radeon-ai-pro-r9700-ai-pro-r9700-32g-b-ekran-karti-n-18882",
+    "stock": "tükendi",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "gpu3090used": [
+   {
+    "store": "sahibinden",
+    "name": "RTX 3090 24 GB 2. el (9 ilanın ortancası)",
+    "price": 57000,
+    "url": "https://www.sahibinden.com/ilan/ikinci-el-ve-sifir-alisveris-bilgisayar-masaustu-zotac-arctic-storm-rtx-3090-24gb-ekran-karti-1343991752/detay",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "cpu7500f": [
+   {
+    "store": "n11",
+    "name": "AMD Ryzen 5 7500F (tray)",
+    "price": 6799,
+    "url": "https://www.akakce.com/islemci/en-ucuz-amd-ryzen-5-7500f-alti-cekirdek-3-7-ghz-kutusuz-fansiz-fiyati,632236878.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Amazon TR",
+    "name": "AMD Ryzen 5 7500F (tray)",
+    "price": 6799,
+    "url": "https://www.akakce.com/islemci/en-ucuz-amd-ryzen-5-7500f-alti-cekirdek-3-7-ghz-kutusuz-fansiz-fiyati,632236878.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Vatan",
+    "name": "AMD Ryzen 5 7500F (tray)",
+    "price": 7519,
+    "url": "https://www.akakce.com/islemci/en-ucuz-amd-ryzen-5-7500f-alti-cekirdek-3-7-ghz-kutusuz-fansiz-fiyati,632236878.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "cpu9700x": [
+   {
+    "store": "n11",
+    "name": "AMD Ryzen 7 9700X (tray)",
+    "price": 14200,
+    "url": "https://www.akakce.com/islemci/en-ucuz-amd-ryzen-7-9700x-sekiz-cekirdek-3-8-ghz-fiyati,706818645.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "İnceHesap",
+    "name": "AMD Ryzen 7 9700X (tray)",
+    "price": 14999,
+    "url": "https://www.akakce.com/islemci/en-ucuz-amd-ryzen-7-9700x-sekiz-cekirdek-3-8-ghz-fiyati,706818645.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "moboB650": [
+   {
+    "store": "Amazon TR",
+    "name": "ASUS PRIME B650M-R",
+    "price": 5039,
+    "url": "https://www.akakce.com/anakart/en-ucuz-asus-prime-b650m-r-amd-am5-ddr5-micro-atx-fiyati,520840753.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Teknosa",
+    "name": "ASUS PRIME B650M-R",
+    "price": 6110,
+    "url": "https://www.akakce.com/anakart/en-ucuz-asus-prime-b650m-r-amd-am5-ddr5-micro-atx-fiyati,520840753.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Vatan",
+    "name": "ASUS PRIME B650M-R",
+    "price": 6499,
+    "url": "https://www.akakce.com/anakart/en-ucuz-asus-prime-b650m-r-amd-am5-ddr5-micro-atx-fiyati,520840753.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "moboX870E": [
+   {
+    "store": "Hepsiburada",
+    "name": "ASUS ProArt X870E-Creator WIFI (x8/x8)",
+    "price": 32099,
+    "url": "https://www.akakce.com/anakart/en-ucuz-asus-proart-x870e-creator-wi-fi-amd-am5-ddr5-atx-fiyati,741704230.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "idefix",
+    "name": "ASUS ProArt X870E-Creator WIFI (x8/x8)",
+    "price": 32540,
+    "url": "https://www.akakce.com/anakart/en-ucuz-asus-proart-x870e-creator-wi-fi-amd-am5-ddr5-atx-fiyati,741704230.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "ram32": [
+   {
+    "store": "Pttavm",
+    "name": "G.Skill Ripjaws S5 32 GB DDR5-6000",
+    "price": 33558,
+    "url": "https://www.akakce.com/ram/en-ucuz-g-skill-ripjaws-s5-32-gb-2x16-ddr5-6000-mhz-f5-6000j3636f16gx2-rs5k-fiyati,327922607.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "MediaMarkt",
+    "name": "G.Skill Ripjaws S5 32 GB DDR5-6000",
+    "price": 35497,
+    "url": "https://www.akakce.com/ram/en-ucuz-g-skill-ripjaws-s5-32-gb-2x16-ddr5-6000-mhz-f5-6000j3636f16gx2-rs5k-fiyati,327922607.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Vatan",
+    "name": "G.Skill Ripjaws S5 32 GB DDR5-6000",
+    "price": 37549,
+    "url": "https://www.akakce.com/ram/en-ucuz-g-skill-ripjaws-s5-32-gb-2x16-ddr5-6000-mhz-f5-6000j3636f16gx2-rs5k-fiyati,327922607.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "ram64": [
+   {
+    "store": "n11",
+    "name": "Crucial Pro 64 GB DDR5-5600",
+    "price": 57957,
+    "url": "https://www.akakce.com/ram/en-ucuz-crucial-pro-64-gb-2x32-5600-mhz-cl46-cp2k32g56c46u5-ddr5-fiyati,640938601.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "MediaMarkt",
+    "name": "Crucial Pro 64 GB DDR5-5600",
+    "price": 60909,
+    "url": "https://www.akakce.com/ram/en-ucuz-crucial-pro-64-gb-2x32-5600-mhz-cl46-cp2k32g56c46u5-ddr5-fiyati,640938601.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "ssd1": [
+   {
+    "store": "Hepsiburada",
+    "name": "Kingston NV3 1 TB",
+    "price": 7169,
+    "url": "https://www.akakce.com/ssd/en-ucuz-kingston-nv3-snv3s-1000g-pci-express-4-0-1-tb-m-2-fiyati,733964099.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Trendyol",
+    "name": "Kingston NV3 1 TB",
+    "price": 7869,
+    "url": "https://www.akakce.com/ssd/en-ucuz-kingston-nv3-snv3s-1000g-pci-express-4-0-1-tb-m-2-fiyati,733964099.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Teknosa",
+    "name": "Kingston NV3 1 TB",
+    "price": 8864,
+    "url": "https://www.akakce.com/ssd/en-ucuz-kingston-nv3-snv3s-1000g-pci-express-4-0-1-tb-m-2-fiyati,733964099.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "ssd2": [
+   {
+    "store": "n11",
+    "name": "Kioxia Exceria Basic 2 TB",
+    "price": 13999,
+    "url": "https://www.akakce.com/ssd/en-ucuz-kioxia-exceria-basic-lsf10z002tg8-pci-express-4-0-2-tb-m-2-fiyati,1318519580.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Amazon TR",
+    "name": "Kioxia Exceria Basic 2 TB",
+    "price": 14209,
+    "url": "https://www.akakce.com/ssd/en-ucuz-kioxia-exceria-basic-lsf10z002tg8-pci-express-4-0-2-tb-m-2-fiyati,1318519580.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "psu750": [
+   {
+    "store": "n11",
+    "name": "Thermaltake Smart BX1 750 W",
+    "price": 3776,
+    "url": "https://www.akakce.com/power-supply/en-ucuz-thermaltake-ps-spd-0750nnsabe-1-smart-serisi-bx1-750w-80-bronze-psu-fiyati,1253456847.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Vatan",
+    "name": "Thermaltake Smart BX1 750 W (sepette fiyat)",
+    "price": 3496,
+    "url": "https://www.vatanbilgisayar.com/thermaltake-intel/guc-kaynaklari-power/?stk=true",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "psu850": [
+   {
+    "store": "n11",
+    "name": "MSI MAG A850GL 850 W Gold",
+    "price": 6799,
+    "url": "https://www.akakce.com/power-supply/en-ucuz-msi-mag-a850gl-850-w-80-plus-gold-tam-moduler-fiyati,122221010.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Vatan",
+    "name": "MSI MAG A850GL 850 W Gold",
+    "price": 6965,
+    "url": "https://www.akakce.com/power-supply/en-ucuz-msi-mag-a850gl-850-w-80-plus-gold-tam-moduler-fiyati,122221010.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "psu1200": [
+   {
+    "store": "Sinerji",
+    "name": "Thermaltake Toughpower GT 1200 W",
+    "price": 11766,
+    "url": "https://www.akakce.com/power-supply/en-ucuz-thermaltake-toughpower-gt-ps-tpt-1200fnfage-3-gen5-1-1200-w-fiyati,1222010824.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Vatan",
+    "name": "Thermaltake Toughpower GT 1200 W (sepette fiyat)",
+    "price": 10021,
+    "url": "https://www.vatanbilgisayar.com/thermaltake/10000-14999-tl-arasi/bilgisayar-bilesenleri/?stk=true",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "psu1300": [
+   {
+    "store": "Pttavm",
+    "name": "MSI MEG Ai1300P 1300 W Platinum",
+    "price": 21485,
+    "url": "https://www.akakce.com/power-supply/en-ucuz-msi-meg-ai1300p-pcie5-1300-w-fiyati,431687921.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Gamemar",
+    "name": "MSI MEG Ai1300P 1300 W Platinum",
+    "price": 21640,
+    "url": "https://www.akakce.com/power-supply/en-ucuz-msi-meg-ai1300p-pcie5-1300-w-fiyati,431687921.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "caseMid": [
+   {
+    "store": "Sinerji",
+    "name": "Sharkoon VK4 ARGB ATX mid tower",
+    "price": 2494,
+    "url": "https://www.akakce.com/bilgisayar-kasasi/en-ucuz-sharkoon-vk4-argb-fanli-atx-oyuncu-kasasi-fiyati,1671030542.html",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "Amazon TR",
+    "name": "Sharkoon VK4 ARGB ATX mid tower",
+    "price": 2917,
+    "url": "https://www.akakce.com/bilgisayar-kasasi/en-ucuz-sharkoon-vk4-argb-fanli-atx-oyuncu-kasasi-fiyati,1671030542.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ],
+  "cooler": [
+   {
+    "store": "İnceHesap",
+    "name": "DeepCool AG400 G2",
+    "price": 2099,
+    "url": "https://www.incehesap.com/deepcool-ag400-g2-120mm-kule-tipi-siyah-islemci-sogutucu-fiyati-93169/",
+    "stock": "stokta",
+    "date": "01.11.2026",
+    "source": "elle"
+   },
+   {
+    "store": "idefix",
+    "name": "DeepCool AG400 G2 (yeniden doğrulanmalı)",
+    "price": 1293,
+    "url": "https://www.akakce.com/islemci-sogutucu/en-ucuz-deepcool-ag400-g2-siyah-fiyati,1679944135.html",
+    "stock": "bilinmiyor",
+    "date": "01.11.2026",
+    "source": "elle"
+   }
+  ]
+ }
+}

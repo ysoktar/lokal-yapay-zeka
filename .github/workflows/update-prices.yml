@@ -2,7 +2,7 @@ name: Fiyatları güncelle
 
 on:
   schedule:
-    - cron: "17 4 * * *"   # her gün 07:17 (Türkiye saati)
+    - cron: "17 4 * * 1"   # her pazartesi 07:17 (Türkiye saati)
   workflow_dispatch: {}     # Actions sekmesinden elle de çalıştırılabilir
 
 permissions:

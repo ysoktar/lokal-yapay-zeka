@@ -18,7 +18,8 @@ const DEFAULT_STATE = () => {
     build: { gpu: 'gpu5070', gpuCount: 1, cpu: 'cpu7500f', mobo: 'moboB650', ram: 'ram64', ssd: 'ssd2', psu: 'psu850', case: 'caseMid', cooler: 'cooler' },
     mine: { gpu: 'rtx3060', vram: 12, watts: 170, ram: 32, ramType: 'DDR5', ssd: 500 } };
 };
-let S;
+let S, LIVE_STATUS = null;
+const liveStatusText = () => LIVE_STATUS ? `Canlı (tarayıcından, ${LIVE_STATUS.at.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}): ${LIVE_STATUS.api} API fiyatı${LIVE_STATUS.rate ? ` · 1 $ = ${nf(LIVE_STATUS.rate, 2)} TL` : ''}` : 'Canlı veriler yükleniyor…';
 const STORE_KEY = 'yerel-ai-state-v2';
 function loadState() {
   S = DEFAULT_STATE();
@@ -155,7 +156,8 @@ VIEWS[''] = () => {
    <li><b>RAM pahalandı, token ucuzladı.</b> 64 GB DDR5 bir yılda ≈6 kat; aynı dönemde API fiyatları düştü. Gizlilik şart değilse kiralamak çoğu kişiye ucuz.</li>
    <li><b>Yerel her zaman gizli değil.</b> Sunucuyu dışarı açma, modeli güvendiğin yerden indir.</li></ol>
    <p class="small muted"><a href="#nasil">Yöntem ve ayrıntılar</a></p></section>
-  <p class="small muted center">${L.meta ? `Fiyatlar son güncelleme: ${new Date(L.meta.updated).toLocaleString('tr-TR')}` : 'Fiyatlar: gömülü veri (otomatik güncelleme okunamadı)'} · <a href="#fiyatlar">Tüm mağaza fiyatları</a></p>`;
+  <p class="small muted center" id="liveStatus">${liveStatusText()}</p>
+  <p class="small muted center">${L.meta ? `Mağaza fiyatları (haftalık): ${new Date(L.meta.updated).toLocaleString('tr-TR')}` : 'Fiyatlar: gömülü veri (otomatik güncelleme okunamadı)'} · <a href="#fiyatlar">Tüm mağaza fiyatları</a></p>`;
 };
 
 VIEWS.elimde = () => `<header class="page-head"><p class="eyebrow">Bilgisayarım var</p><h1>Elindeki bilgisayar neyi çalıştırır?</h1><p class="lead">Bir şey almadan önce bak: darboğaz RAM’ken daha hızlı kart, model zaten sığıyorken daha fazla RAM almanın faydası yok.</p></header>
@@ -278,7 +280,7 @@ function resultsBulut() {
    <li><b>Aylık harcama limiti koy.</b> Bazı sağlayıcılarda faturalama birkaç dakika geriden gelir, limit biraz aşılabilir.</li>
    <li><b>Üçüncü taraf araçlara yapıştırdığın anahtarları yenile,</b> kullanmadıklarını sil. Bir araç sızıntısında eski anahtarlar saatler içinde boşaltıldı.</li></ul></section></div>`;
   return `<div class="pcgrid three">${top.map((o, i) => `<article class="pc hl"><span class="tag">${['En ucuz', '2.', '3.'][i]}</span><h3>${esc(o.name)}</h3><p class="small muted">${o.type === 'subscription' ? 'Abonelik · kullanım sınırlı' : o.open ? 'API · açık model' : 'API'}</p><b class="big">${tl(o.monthly)}<small>/ay</small></b><p class="small muted">${o.type === 'subscription' ? esc(o.limit) : `Girdi $${o.inputUsd} · çıktı $${o.outputUsd} / 1M`}</p><div class="actions"><a class="btn ghost" href="${esc(o.source)}" target="_blank" rel="noopener">Resmî fiyat ↗</a><button type="button" class="btn ghost" data-cmpcloud="${o.id}">Bilgisayarla karşılaştır →</button></div></article>`).join('')}</div>
-  <section class="card"><h2>Tüm seçenekler <span class="muted">(${opts.length})</span></h2><div class="bars">${opts.map(o => `<div class="bar-row${o.fits ? '' : ' dim'}"><span class="bn">${esc(o.name)}<small>${o.type === 'subscription' ? 'Abonelik' : o.open ? 'API · açık' : 'API'}${o.fits ? '' : ' · kotası bu kullanıma yetmez (varsayım)'}</small></span><span class="bt"><i style="width:${Math.max(1, Math.log1p(o.monthly) / Math.log1p(max) * 100)}%"></i></span><b>${tl(o.monthly)}</b></div>`).join('')}</div>
+  <section class="card"><h2>Tüm seçenekler <span class="muted">(${opts.length})</span></h2><div class="bars">${opts.map(o => `<div class="bar-row${o.fits ? '' : ' dim'}"><span class="bn">${esc(o.name)}<small>${o.type === 'subscription' ? 'Abonelik' : o.open ? 'API · açık' : 'API'}${o.split ? ` · çıktı ${tl(o.split.out)} · girdi ${tl(o.split.inFresh)} · önbellek ${tl(o.split.inCached)}` : ''}${o.fits ? '' : ' · kotası bu kullanıma yetmez (varsayım)'}${o.live ? ' · canlı fiyat' : ''}</small></span><span class="bt"><i style="width:${Math.max(1, Math.log1p(o.monthly) / Math.log1p(max) * 100)}%"></i></span><b>${tl(o.monthly)}</b></div>`).join('')}</div>
   <p class="small muted">Çubuk uzunluğu logaritmik. Aboneliklerin aylık token kotası sağlayıcı garantisi değil, varsayımdır. API girdisi: çıktı payı %${S.outputSharePercent} → ayda ${nf(Calc.inputM(S), 1)} M girdi; önbellek %${S.cachedInputSharePercent}.</p></section>${notes}`;
 }
 
@@ -341,11 +343,12 @@ VIEWS.fiyatlar = () => {
   const L = Calc.live(), P = Calc.cat().parts;
   const CATS = [['gpu', 'Ekran kartları'], ['cpu', 'İşlemciler'], ['mobo', 'Anakartlar'], ['ram', 'RAM'], ['ssd', 'SSD'], ['psu', 'Güç kaynakları'], ['case', 'Kasalar'], ['cooler', 'Soğutucular']];
   return `<header class="page-head"><p class="eyebrow">Fiyatlar</p><h1>Her parçanın mağaza fiyatları</h1><p class="lead">Varsayılan olarak stoktaki en ucuz teklif kullanılır. Başka bir mağazayı seçersen hazır sistemlerde ve topladığın bilgisayarda o fiyat kullanılır.</p>
-  <p class="small muted">Otomatik (her gün): ${Object.keys(L.stores || {}).join(', ') || '—'}${L.meta ? ` · son değişiklik ${new Date(L.meta.updated).toLocaleString('tr-TR')}` : ''} · Elle: akakçe, Vatan, Hepsiburada, n11, Sinerji, İnceHesap… (tarihli) · Dolar kuru: ${nf(S.usdTry, 4)} TL${L.usdTry ? ` (TCMB ${esc(L.usdTry.date)})` : ''}</p>
+  <p class="small muted" id="liveStatus">${liveStatusText()}</p>
+  <p class="small muted">Mağaza ve Mac fiyatları (her hafta GitHub Actions): ${Object.keys(L.stores || {}).join(', ') || '—'}${L.meta ? ` · son değişiklik ${new Date(L.meta.updated).toLocaleString('tr-TR')}` : ''} · Elle: akakçe, Vatan, Hepsiburada, n11, Sinerji, İnceHesap… (tarihli) · Dolar kuru: ${nf(S.usdTry, 4)} TL${L.usdTry ? ` (TCMB ${esc(L.usdTry.date)})` : ''}</p>
   <button type="button" class="btn ghost" data-resetoffers>Mağaza seçimlerini sıfırla</button></header>
   ${CATS.map(([cat, label]) => `<section class="card"><h2>${label}</h2>${Object.entries(P).filter(([, p]) => p.cat === cat).map(([k, p]) => { const offs = Calc.offers(k), ch = Calc.chosenOffer(k, S.offerSel); return `<div class="offer-part"><h3>${esc(p.label)}</h3><table class="offers"><tbody>${offs.map((o, i) => `<tr class="${o.store === ch.store ? 'sel' : ''}"><td><label><input type="radio" name="o-${k}" data-pickoffer="${k}" value="${esc(o.store)}"${o.store === ch.store ? ' checked' : ''}> <b>${esc(o.store)}</b></label>${i === 0 ? ' <span class="badge ok">en ucuz</span>' : ''}</td><td class="num"><b>${tl(o.price)}</b></td><td><span class="badge ${o.stock === 'stokta' ? 'ok' : o.stock === 'tükendi' ? 'no' : 'slow'}">${esc(o.stock)}</span></td><td class="small muted">${esc(o.source)} · ${esc(o.date)}</td><td class="small"><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc((o.name || '').slice(0, 60))} ↗</a></td></tr>`).join('')}</tbody></table></div>`; }).join('')}</section>`).join('')}
   <section class="card"><h2>Mac fiyatları (Apple Türkiye)</h2><table class="offers"><tbody>${Calc.computers({}).filter(c => c.kind === 'mac').map(c => `<tr><td>${esc(c.appleName)}</td><td class="num"><b>${tl(c.price)}</b></td><td><a href="${esc(c.url)}" target="_blank" rel="noopener">Apple ↗</a></td></tr>`).join('')}</tbody></table></section>
-  <section class="card"><h2>Fiyatları güncellemek</h2><p>Gamegaraj, Gaming.gen.tr, Apple, OpenRouter ve TCMB her gün GitHub Actions ile otomatik okunur. Otomatik erişimi engelleyen mağazalar için aşağıdaki promptu web araması açık bir yapay zekâya ver; çıkan JSON’u <code>data/manual-offers.json</code> dosyasına ekle.</p><button type="button" class="btn ghost" data-copyprompt>Promptu kopyala</button></section>`;
+  <section class="card"><h2>Fiyatları güncellemek</h2><p>API fiyatları ve dolar kuru her ziyarette senin tarayıcından canlı çekilir. Mağaza (Gamegaraj, Gaming.gen.tr) ve Apple fiyatları her hafta GitHub Actions ile toplanır; tarayıcılar bu sitelerden doğrudan okuyamaz. Otomatik erişimi engelleyen mağazalar için aşağıdaki promptu web araması açık bir yapay zekâya ver; çıkan JSON’u <code>data/manual-offers.json</code> dosyasına ekle.</p><button type="button" class="btn ghost" data-copyprompt>Promptu kopyala</button></section>`;
 };
 
 VIEWS.nasil = () => `<header class="page-head"><p class="eyebrow">Nasıl hesaplıyoruz?</p><h1>Yöntem, varsayımlar ve kaynaklar</h1></header>
@@ -372,6 +375,63 @@ VIEWS.nasil = () => `<header class="page-head"><p class="eyebrow">Nasıl hesapl�
    <li>Fiyatlar: Gamegaraj, Gaming.gen.tr, Apple Türkiye, OpenRouter, TCMB (otomatik); akakçe, Vatan, Hepsiburada, n11, Sinerji, İnceHesap, sahibinden (elle, tarihli)</li>
    <li>Abonelik ve API fiyatları: sağlayıcıların resmî fiyat sayfaları (<a href="#bulut">Bulut</a> sayfasında her seçenekte bağlantı)</li></ul></section>`;
 
+
+/* ---------- metrics page ---------- */
+const MET_DEVICES = [ // label, memory bandwidth GB/s, memory GB, note
+  ['RTX 3060 12 GB', 360, 12], ['RTX 4060 8 GB', 272, 8], ['RTX 5060 Ti 16 GB', 448, 16], ['RTX 5070 12 GB', 672, 12], ['RTX 5070 Ti 16 GB', 896, 16], ['RTX 5080 16 GB', 960, 16],
+  ['RTX 3090 24 GB', 936, 24], ['RTX 4090 24 GB', 1008, 24], ['RTX 5090 32 GB', 1792, 32], ['RX 9060 XT 16 GB', 320, 16], ['RX 9070 XT 16 GB', 640, 16], ['RX 7900 XT 20 GB', 800, 20], ['Radeon AI PRO R9700 32 GB', 640, 32],
+  ['Mac mini M6', 170, 32], ['Mac M5 Pro', 307, 64], ['Mac M5 Max (40 çekirdek)', 614, 128], ['Mac M5 Ultra', 1200, 256], ['Ryzen AI Max mini PC (128 GB)', 256, 128], ['DGX Spark (128 GB)', 273, 128], ['PlayStation 5 (16 GB)', 448, 16],
+  ['Sistem RAM · DDR5 çift kanal (gerçek)', 70, 64], ['Sistem RAM · DDR4 çift kanal (gerçek)', 34, 64]];
+const MET_MODELS = [ // label, GB read per generated token, total file GB
+  ['Qwen3.8 27B · 4 bit (yoğun)', 16.5, 16.5], ['Qwen3.8 27B · 3,5 bit', 11.8, 11.8], ['Qwen3.8 27B · 2 bit', 6.8, 6.8], ['Qwen3.6-35B-A3B · 4 bit (MoE, ~3B etkin)', 2, 22],
+  ['Qwen3.8-Flash-Next 125B · ~3,4 bit (MoE, ~6B etkin)', 1, 65], ['gpt-oss 120B (MoE, ~5B etkin)', 3, 63], ['Llama 3.3 70B · 4 bit (yoğun)', 42.5, 42.5]];
+VIEWS.metrikler = () => `<header class="page-head"><p class="eyebrow">Metrikler</p><h1>Hızı ve maliyeti belirleyen sayılar</h1><p class="lead">Girdi ve çıktı tokenleri, okuma ve yazma hızı, bellek bant genişliği… Bir bilgisayarın ya da bir API’nin sana ne kadara ve ne hızda hizmet edeceğini bu sayılar belirler.</p></header>
+  <section class="card"><h2>Yazma hızı tavanı hesaplayıcı</h2><p class="muted small">Model her yeni token için “etkin” ağırlıklarının tamamını bellekten okur. Bu yüzden yazma hızının üst sınırı ≈ <b>bellek bant genişliği ÷ token başına okunan GB</b>. İyi bir motor bu tavanın %70–80’ine ulaşır.</p>
+   <div class="fields"><label class="f"><span>Donanım</span><select data-met="dev">${MET_DEVICES.map((d, i) => `<option value="${i}"${i === (S.metDev ?? 2) ? ' selected' : ''}>${d[0]} · ${d[1]} GB/sn</option>`).join('')}</select></label>
+   <label class="f"><span>Model</span><select data-met="model">${MET_MODELS.map((m, i) => `<option value="${i}"${i === (S.metModel ?? 0) ? ' selected' : ''}>${m[0]}</option>`).join('')}</select></label></div>
+   <div id="results"></div></section>
+  <section class="card prose"><h2>1. Girdi ve çıktı tokenleri</h2>
+   <p><b>Girdi (input)</b> modelin okuduğu her şey: sistem talimatı, sohbet geçmişi, dosyalar, araç tanımları. <b>Çıktı (output)</b> modelin yazdığı her şey, düşünme tokenleri dahil.</p>
+   <ul><li><b>Fiyat farkı:</b> API’lerde çıktı tokeni genelde girdiden 4–8 kat pahalı (ör. 1 $ girdi / 5 $ çıktı). Önbellekten okunan girdi ise normal girdinin yaklaşık 1/10’u.</li>
+   <li><b>Örnek:</b> pik dışı saatlerde 1M tokenlik önbellek isabeti ≈0,3 sent, önbellek ıskası ≈15 sent, 1M çıktı ≈60 sent: çıktı, önbellek isabetinden ≈200 kat pahalı.</li>
+   <li><b>Kodlama oturumlarında</b> tokenlerin ≈%96,6’sı önbellekten okunur, yazılan kod tokenlerin yalnızca ≈%0,3’ü. Faturayı çoğu zaman önbellek fiyatı belirler; uzun bir ajan oturumunda 40. turda 80 bin girdi tokenine karşılık 800 çıktı tokeni olabilir.</li>
+   <li><b>Sohbet</b> genelde %20–30 çıktı, <b>yazı üretimi</b> %40–60 çıktıdır. Sitede bu oran “çıktı payı” ayarıyla hesaba katılır.</li></ul>
+   <h2>2. Okuma (prefill) ve yazma (decode) hızı</h2>
+   <p>Okuma binlerce tokeni aynı anda işler; hesap gücüne (tensor çekirdekleri) bağlıdır. Yazma tokenleri tek tek üretir; bellek bant genişliğine bağlıdır. İkisi arasında çoğu zaman 10–30 kat fark vardır.</p>
+   <ul><li>12 GB kart + 64 GB RAM, DeepSeek 763B: okuma ≈110 tok/sn, yazma 4–6 tok/sn.</li><li>Aynı makinede Qwen 125B: okuma ≈2.090 tok/sn (32K), yazma 79–94 tok/sn.</li><li>RTX 5060 Ti’de Qwen 27B: 96 bin tokenlik metni ≈618 tok/sn okuyor; aynı bant genişliğine sahip PS5 yalnızca 35–50 tok/sn okuyor (matris donanımı yok).</li>
+   <li><b>İlk kelimeye kadar bekleme = bağlam ÷ okuma hızı.</b> Ajanların ilk isteği ≈30–33 bin token: 600 tok/sn’de ≈55 sn, 2.000 tok/sn’de ≈16 sn. Bir Mac’te sayaç 57 tok/sn gösterirken 8,5K bağlamla gerçek hız 3 tok/sn ölçüldü; beklemenin %94’ü okumaydı.</li></ul>
+   <h2>3. GPU verimi: bant genişliği ve hesap gücü</h2>
+   <ul><li><b>Yazma tavanı</b> = bant genişliği ÷ token başına okunan GB. Yoğun 27B 4 bit ≈16,5 GB okur: RTX 3090 (936 GB/sn) için tavan ≈57 tok/sn; Mac M5 Max (614) ≈38; M6 (170) ≈10.</li>
+   <li><b>MoE modeller</b> her tokende ağırlıkların küçük bir kısmını okur (Qwen 35B-A3B ≈2 GB, Qwen 125B ≈1 GB, gpt-oss 120B ≈5B parametre). Bu yüzden sistem RAM’inden bile hızlı çalışabilirler.</li>
+   <li><b>Çoklu token tahmini (MTP) / spekülatif çözme:</b> küçük bir taslak model birkaç tokeni tahmin eder, büyük model tek okumada doğrular. Gerçekte 1,5–3 kat hızlanma; “200 tok/sn” gibi başlıklar çoğu zaman en iyi senaryo projeksiyonudur (bir testte tahminlerin ≈1/3’ü tuttu: 30 → 80 tok/sn).</li>
+   <li><b>GeForce sınırı:</b> GeForce kartlar 16 bit hesabı 32 bit toplamayla yarım hızda yapar. llama.cpp’nin yazma hızını etkilemez; uzun bağlam okumayı (100K’da ≈%17), vLLM ve görüntü üretimini yavaşlatır.</li></ul>
+   <h2>4. Darboğaz zinciri</h2>
+   <table class="offers"><tbody><tr><td>Ekran kartı belleği</td><td class="num">450–1.800 GB/sn</td></tr><tr><td>Mac birleşik bellek</td><td class="num">170–1.200 GB/sn</td></tr><tr><td>DDR5 çift kanal (gerçek)</td><td class="num">≈60–80 GB/sn</td></tr><tr><td>DDR4 çift kanal (gerçek)</td><td class="num">≈33–35 GB/sn (kâğıtta 51)</td></tr><tr><td>PCIe 5 / 4 / 3 x16</td><td class="num">≈56 / 28 / 14 GB/sn</td></tr><tr><td>NVMe SSD</td><td class="num">≈3,5–7 GB/sn</td></tr></tbody></table>
+   <p class="small muted">Modelin bir kısmı RAM’deyse her token en yavaş katmanı bekler. Örnek: token başına 1 GB uzman verisi DDR4’ten (34 GB/sn) okunursa tavan ≈34 tok/sn; PCIe 3 üzerinden taşınırsa ≈14 tok/sn. Bu yüzden ekran kartında tutulan “uzman önbelleği” ve motor ayarları kritik.</p>
+   <h2>5. Bağlam (KV cache) belleği</h2>
+   <ul><li>Bağlam, model ağırlıklarının üstüne bellek ister. Token başına: DeepSeek V4.1 ≈890 bayt (1 milyon token &lt;1 GB), bazı büyük modeller 64–88 KB (1 milyon token 69–94 GB). Aynı bağlam için 100 kat fark.</li>
+   <li>16 GB kartta 3,5 bit 27B ile ≈110K token bağlam (8 bit önbellek) kalır; liderlik tablosu skorları 250–500K bağlamla ölçülür.</li>
+   <li>Yalnızca indirme boyutuna bakma: “512 GB gerekir” denen model, büyük tablosu SSD’de durunca ≈300 GB ile çalışabiliyor.</li></ul>
+   <h2>6. Tokenizer ve dil</h2>
+   <ul><li>Aynı metin yeni bir model sürümünde 1–1,35 kat daha fazla token tutabilir; model aynıyken fatura ≈%20 artabilir.</li><li>Aynı metin bazı dillerde İngilizceye göre 15 kata kadar fazla token tutar; Türkçe metinler İngilizceden genelde daha fazla token harcar.</li></ul>
+   <h2>7. Düşünme tokenleri ve görev başına token</h2>
+   <ul><li>Düşünme ayarı “çok yüksek” iken bir model, zor bir soruda ≈15 bin düşünme tokeni harcıyor; 45 tok/sn’de ≈5,5 dakika. “Orta” ayar birkaç bin token.</li>
+   <li>Bir ajan görevinde ortalama ≈52 bin token yazılabiliyor. Bir testte bir model görev başına 45 bin, diğeri 2,7 bin token harcadı: tok/sn’si %11 yüksek olan, 8 kat geç bitirdi.</li>
+   <li>Sağlayıcıların varsayılan düşünme ayarı genelde “orta”; tanıtım skorları en yüksek ayarla ölçülür (bir örnekte 57,8’e karşı 52,5).</li></ul>
+   <h2>8. Quant (sıkıştırma) ve kalite</h2>
+   <ul><li>Büyük bir modelde asıl modelle aynı kelimeyi seçme oranı: 2 bit ≈%91,2, 3 bit ≈%95,1, 4 bit ≈%98,5 (2 bitte yaklaşık her 11 kelimede bir farklı seçim).</li><li>Aynı bit sayısında farklı yapımcıların dosyaları belirgin fark gösterebiliyor (bir testte 20 hatanın 16’sına karşı 7’si düzeltildi).</li></ul>
+   <h2>9. Neden API ucuz? Veri merkezi verimi</h2>
+   <ul><li>Evdeki bilgisayar bellekten her okumada tek bir kişiye token üretir. Veri merkezi aynı okumayla yüzlerce kullanıcıya üretir: bir GPU 256 eş zamanlı konuşmayla ≈26.300 tok/sn; bir H100 toplamda ≈2.800 tok/sn, kullanıcı başına ≈112 tok/sn.</li>
+   <li>Üstüne önbellek: bir sağlayıcıda girdi tokenlerinin ≈%96’sı diskteki önbellekten geliyor; yeniden hesaplanan girdi 44’ten 4’e düştü. Aynı yılda donanım pahalanırken token fiyatları düştü.</li></ul></section>`;
+function resultsMetrikler() {
+  const d = MET_DEVICES[S.metDev ?? 2], m = MET_MODELS[S.metModel ?? 0];
+  const fits = m[2] <= d[2] * (/^(Mac|Ryzen|DGX)/.test(d[0]) ? 0.75 : 0.95);
+  // If the model does not fit, the part left in system RAM (≈70 GB/s DDR5) sets the ceiling; an expert cache on the card raises it.
+  const moe = m[1] < m[2], k = moe && fits ? 0.3 : 0.75;
+  const bw = fits ? d[1] : Math.min(d[1], 70), ceil = bw / m[1], real = ceil * k;
+  return `<div class="vstats" style="margin-top:12px"><div><span>Teorik tavan</span><b>${nf(ceil)} tok/sn</b><small>${bw} GB/sn ÷ ${nf(m[1], 1)} GB/token${fits ? '' : ' (sistem RAM’i, DDR5)'}</small></div><div><span>Gerçekçi (≈%${Math.round(k * 100)})</span><b>${nf(real)} tok/sn</b><small>1.000 token ≈ ${dur(1000 / real)}${moe && fits ? ' · MoE’de yönlendirme ve uzman erişimi ek yük getirir (ör. M5 Max 128 GB: tavan 614, ölçüm 87)' : ''}</small></div><div><span>Model belleğe sığıyor mu?</span><b>${fits ? 'Evet' : 'Hayır'}</b><small>dosya ≈${nf(m[2], 1)} GB · bellek ${d[2]} GB${fits ? '' : ' → kalanı RAM’de; MoE modellerde ekran kartındaki uzman önbelleği hızı bunun üstüne çıkarabilir'}</small></div></div>`;
+}
+
 const PROMPT = `Türkiye'de bugün satılan bilgisayar parçalarının güncel fiyatlarını web'de araştır. Her ürün için EN AZ 3 farklı mağazaya bak (akakçe, Vatan, İtopya, İnceHesap, Hepsiburada, Trendyol, Amazon TR, Sinerji, n11, Teknosa, MediaMarkt). Fiyatı sayfada gerçekten gördüysen yaz; tahmin etme.
 
 Parçalar (id: açıklama): gpu9060: RX 9060 XT 16 GB · gpu5060ti: RTX 5060 Ti 16 GB · gpu5070: RTX 5070 12 GB · gpu9070xt: RX 9070 XT 16 GB · gpu5070ti: RTX 5070 Ti 16 GB · gpu5080: RTX 5080 16 GB · gpu5090: RTX 5090 32 GB (hava soğutmalı) · gpuR9700: Radeon AI PRO R9700 32 GB · gpu3060used: RTX 3060 12 GB ikinci el (sahibinden/letgo ortanca) · gpu3090used: RTX 3090 24 GB ikinci el · cpu7500f: Ryzen 5 7500F · cpu9700x: Ryzen 7 9700X · cpu5500: Ryzen 5 5500 · moboB650: AM5 B650M anakart · moboA520: AM4 A520 anakart · moboX870E: x8/x8 destekli X870E · ram32: 32 GB (2x16) DDR5 · ram64: 64 GB (2x32) DDR5 · ram64ddr4: 64 GB (2x32) DDR4 · ram128: 128 GB DDR5 · ssd1: 1 TB NVMe · ssd2: 2 TB NVMe · psu750: 750 W Bronze · psu850: 850 W Gold · psu1200: 1200 W Gold · psu1300: 1300 W Platinum · caseMid: ATX mid tower kasa (PSU'suz) · cooler: AM5/AM4 kule tipi soğutucu
@@ -379,7 +439,7 @@ Parçalar (id: açıklama): gpu9060: RX 9060 XT 16 GB · gpu5060ti: RTX 5060 Ti 
 Çıktıyı SADECE şu JSON formatında ver: {"updated":"GG.AA.YYYY","offers":{"gpu5080":[{"store":"Mağaza","name":"ürün adı","price":88803,"url":"ürün sayfası","stock":"stokta|tükendi|bilinmiyor","date":"GG.AA.YYYY","source":"elle"}]}}`;
 
 /* ---------- render & events ---------- */
-const RESULTS = { elimde: resultsElimde, al: resultsAl, bulut: resultsBulut, karsilastir: resultsKarsilastir };
+const RESULTS = { metrikler: resultsMetrikler, elimde: resultsElimde, al: resultsAl, bulut: resultsBulut, karsilastir: resultsKarsilastir };
 function route() { return (location.hash.replace(/^#\/?/, '').split('?')[0]) || ''; }
 function render() {
   const v = VIEWS[route()] ? route() : '';
@@ -398,7 +458,7 @@ function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.ad
 
 document.addEventListener('input', e => {
   const k = e.target.dataset.k;
-  if (k && e.target.type !== 'checkbox') { const v = Number(e.target.value); if (e.target.value !== '' && Number.isFinite(v)) { set(k, v); if (k === 'monthlyTokens' || k === 'outputSharePercent') set('preset', null); updateResults(); } }
+  if (k && e.target.type !== 'checkbox') { const v = Number(e.target.value); if (e.target.value !== '' && Number.isFinite(v)) { set(k, v); if (k === 'usdTry') set('usdTryManual', true); if (k === 'monthlyTokens' || k === 'outputSharePercent') set('preset', null); updateResults(); } }
 });
 document.addEventListener('change', e => {
   const t = e.target, d = t.dataset;
@@ -408,6 +468,7 @@ document.addEventListener('change', e => {
   else if ('gpucount' in d) { S.build.gpuCount = Number(t.value); save(); $('#builderBox').innerHTML = builderHtml(); }
   else if (d.offer) { S.offerSel[d.offer] = t.value; save(); updateResults(); }
   else if (d.pickoffer) { S.offerSel[d.pickoffer] = t.value; save(); rerenderControls(); }
+  else if (d.met) { set(d.met === 'dev' ? 'metDev' : 'metModel', Number(t.value)); updateResults(); }
   else if ('cmplocal' in d) { set('cmpLocal', t.value); updateResults(); }
   else if ('cmpcloudsel' in d) { set('cmpCloud', t.value); updateResults(); }
 });
@@ -439,4 +500,11 @@ window.addEventListener('hashchange', () => { render(); scrollTo(0, 0); });
   Calc.init(catalog, live, manual);
   loadState();
   render();
+  // Live data straight from the visitor's browser: OpenRouter API prices and the USD/TRY rate.
+  const [or, fx] = await Promise.all([get('https://openrouter.ai/api/v1/models'), get('https://open.er-api.com/v6/latest/USD')]);
+  const n = or ? Calc.applyBrowserOpenRouter(or.data) : 0;
+  const rate = fx && fx.rates && fx.rates.TRY;
+  if (rate && !S.usdTryManual) S.usdTry = Math.round(rate * 10000) / 10000;
+  LIVE_STATUS = { at: new Date(), api: n, rate: rate || null };
+  updateResults(); const st = $('#liveStatus'); if (st) st.innerHTML = liveStatusText();
 })();

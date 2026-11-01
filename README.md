@@ -11,9 +11,8 @@ Site dört tip kullanıcı için tasarlandı:
 | **Satın almadan** (`#bulut`) | Bilgisayar almak istemeyen | Abonelik ve API seçeneklerini aylık maliyete göre sıralar |
 | **Almak mı, kiralamak mı?** (`#karsilastir`) | Kararsız olan | Bir bilgisayar ile bir bulut seçeneğini zaman içinde karşılaştırır; amorti ayı, gizlilik şartı, DeepSeek için “kirala” hesabı |
 
-Ayrıca **Fiyatlar** (`#fiyatlar`) her parçanın tüm mağaza tekliflerini, **Nasıl?** (`#nasil`) yöntem, gelişmiş ayarlar ve kaynakları içerir.
+Ayrıca **Fiyatlar** (`#fiyatlar`) her parçanın tüm mağaza tekliflerini, **Metrikler** (`#metrikler`) girdi/çıktı tokenleri, okuma/yazma hızı, bant genişliği ve yazma hızı tavanı hesaplayıcısını, **Nasıl?** (`#nasil`) yöntem, gelişmiş ayarlar ve kaynakları içerir.
 
-Fikir: Kai’nin [“You Don’t Need an Expensive GPU Anymore (Strata 100 tok/s)”](https://www.youtube.com/watch?v=mED-boddeWI) videosu ve [Strata](https://github.com/Niko1221/Strata).
 
 ## Yapı
 
@@ -37,8 +36,9 @@ python3 -m http.server 8000
 
 ## Fiyatlar nasıl güncellenir?
 
-- **Otomatik (her gün 07:17):** `scripts/update_prices.py` Gamegaraj ve Gaming.gen.tr (stoktaki en ucuz eşleşen ürün), Apple Türkiye (Mac yapılandırmaları), OpenRouter (açık model API fiyatları) ve TCMB’den (dolar kuru) okuyup `data/prices.json`’u günceller. Bir kaynak başarısız olursa önceki değerler korunur; dosya yalnızca bir değer değişince commit’lenir.
+- **Canlı, ziyaretçinin tarayıcısından:** API fiyatları (OpenRouter) ve dolar kuru her sayfa açılışında ziyaretçinin kendi tarayıcısından çekilir. Mağaza ve Apple siteleri tarayıcıların başka sitelerden okumasına izin vermediği (CORS) için onlar aşağıdaki iş akışıyla toplanır.
+- **Haftalık (pazartesi 07:17):** `scripts/update_prices.py` Gamegaraj ve Gaming.gen.tr (stoktaki en ucuz eşleşen ürün), Apple Türkiye (Mac yapılandırmaları), OpenRouter ve TCMB’den okuyup `data/prices.json`’u günceller. Bir kaynak başarısız olursa önceki değerler korunur; dosya yalnızca bir değer değişince commit’lenir.
 - **Elle:** akakçe, Vatan, Hepsiburada, n11, Sinerji, İnceHesap gibi mağazalar otomatik erişimi engelliyor. Sitedeki **Fiyatlar → Promptu kopyala** ile alınan promptu web araması açık bir yapay zekâya verin ve çıkan JSON’u `data/manual-offers.json` dosyasındaki `offers` altına ekleyin.
 - Sayfa her parça için tüm teklifleri birleştirir; varsayılan olarak stoktaki en ucuz teklif kullanılır, kullanıcı başka mağaza seçebilir.
 
-İş akışını hemen çalıştırmak için: GitHub → **Actions → Fiyatları güncelle → Run workflow**.
+Haftayı beklemeden çalıştırmak için: GitHub → **Actions → Fiyatları güncelle → Run workflow**.

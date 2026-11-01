@@ -51,7 +51,7 @@ const Calc = (() => {
       id, name, kind: 'pc', price, items, gpus: gpuCount, vram, ram, ramType,
       gpuVram: gpuItem.part.vram,
       watts: gpuItem.part.watts * gpuCount + (cpuItem ? cpuItem.part.watts : 65) + 60,
-      tps14: gpuItem.part.tps14, used: !!gpuItem.part.used, pp: gpuItem.part.pp, vendor: gpuItem.part.vendor,
+      tps14: gpuItem.part.tps14, used: !!gpuItem.part.used, pp: gpuItem.part.pp, vendor: gpuItem.part.vendor, bw: gpuItem.part.bw,
       estimatedPrice: items.some(i => i.offer.stock === 'bilinmiyor' && /2\. el|tahmin/.test(i.offer.name + i.offer.store)),
       ssd: (items.find(i => i.part.cat === 'ssd') || { part: { size: 1000 } }).part.size,
       ...extra
@@ -63,7 +63,7 @@ const Calc = (() => {
         const lp = LIVE.apple[b.id];
         const ssd = /256 GB/.test(b.apple.name) ? 256 : /512 GB/.test(b.apple.name) ? 512 : 1000;
         return { id: b.id, name: b.name, kind: 'mac', price: lp ? lp.price : b.apple.price, url: lp ? lp.url : b.apple.url,
-          appleName: b.apple.name, vram: 0, ram: b.ram, ramType: 'unified', gpus: 1, watts: b.watts, tps14: b.tps,
+          appleName: b.apple.name, vram: 0, ram: b.ram, ramType: 'unified', gpus: 1, watts: b.watts, tps14: b.tps, bw: b.bw,
           strata: b.strata, ssd, items: [] };
       }
       const keys = [b.gpu, ...CAT.platforms[b.platform]];
@@ -73,6 +73,7 @@ const Calc = (() => {
 
   /* ---------- Strata / speed estimates (Strata docs + community benchmarks, Nov 2026) ---------- */
   const MODELS = {
+    q27: { label: 'Qwen3.8 27B (yoğun model)', short: 'Qwen 27B', disk: 20 },
     qwen: { label: 'Qwen3.8-Flash-Next 125B', short: 'Qwen 125B', disk: 80 },
     deepseek: { label: 'DeepSeek V4.1 Flash 763B', short: 'DeepSeek 763B', disk: 265 },
     dense14: { label: 'Klasik 14B model', short: '14B', disk: 10 },
@@ -99,11 +100,20 @@ const Calc = (() => {
       const t = r >= 128 ? (v >= 48 ? 40 : v >= 24 ? 30 : v >= 16 ? 28.8 : 15) : (v >= 32 ? 12 : v >= 24 ? 10 : v >= 16 ? 7 : 5);
       return res(t * (hw.ramType === 'DDR4' ? 0.85 : 1), t >= 15 ? 'ok' : 'slow', r >= 128 ? (v >= 48 ? 'RTX 4090 48 GB + 128 GB ölçümü: 40 tok/sn' : v >= 16 ? 'RTX 5070 Ti + 128 GB ölçümü: 28,8 tok/sn' : '128 GB RAM ile çok daha hızlı') : '12 GB kart + 64 GB: ölçümler 4,7 (RTX 5070) – 10 (RTX 3060); CPU ve SSD belirleyici');
     }
+    if (id === 'q27') {
+      const bw = +hw.bw || (uni ? (r >= 192 ? 1200 : r >= 96 ? 614 : r >= 48 ? 307 : 170) : v >= 24 ? 900 : v >= 16 ? 450 : v >= 12 ? 360 : 300);
+      if (uni) return r * 0.75 >= 19 ? res(bw / 17 * 0.8, bw / 17 * 0.8 >= 15 ? 'ok' : 'slow', `4 bit (≈17 GB); hız bant genişliğine bağlı (≈${bw} GB/sn)`) : res(0, 'no', 'Bellek yetmez (4 bit ≈17 GB)');
+      if (v >= 20) return res(bw / 16.5 * 0.8, 'ok', '4 bit (≈16,5 GB) tamamı kartta; çoklu token tahmini (MTP) açıkken ≈1,5–2 kat hızlı');
+      if (v >= 16) return res(bw / 11.8 * 0.75, 'ok', '3,5 bit (≈11,8 GB); Q4 dosyası 16 GB karta sığmaz. MTP açıkken ≈1,5–2 kat hızlı');
+      if (v >= 12) return res(bw / 8.4 * 0.7, 'ok', '2–3 bit (≈8–10 GB); kalite quant yapımcısına göre değişir');
+      return v >= 6 ? res(4, 'slow', 'Kart küçük; model RAM’e taşar (8 GB kartta ölçüm ≈4 tok/sn). Qwen3.6-35B-A3B daha uygun') : res(0, 'no', 'Ekran kartı gerekir');
+    }
     if (id === 'dense14') { const need = 11; if (uni) return r - 5 >= need ? res(r >= 36 ? 40 : 25, 'ok', 'Birleşik bellekte') : res(0, 'no', 'Bellek yetmez'); return v >= need ? res(40, 'ok', 'Tamamı ekran kartında') : v >= 8 ? res(12, 'slow', 'RAM’e taşar, yavaş') : res(0, 'no', 'Ekran kartı belleği yetmez'); }
   }
   // speed of a computer for the chosen model; prebuilt systems carry measured values where they exist
   function speed(c, model) {
     const hw = { vram: c.vram, ram: c.ram, ramType: c.ramType, ssd: c.ssd };
+    if (model === 'q27') { const e = estimate('q27', { ...hw, bw: c.bw, vram: c.gpuVram || c.vram }); return { ...e, measured: false }; }
     if (model === 'dense14') { const e = c.tps14 ? { tps: c.tps14, status: 'ok', note: c.kind === 'mac' ? 'Birleşik bellekte' : 'Tamamı ekran kartında' } : estimate('dense14', hw); return { ...e, measured: false }; }
     if (model === 'qwen' && c.strata) return { tps: c.strata.tps, status: c.strata.tps >= 40 ? 'ok' : c.strata.tps >= 15 ? 'slow' : 'no', note: c.strata.note, measured: !!c.strata.measured };
     if (model === 'deepseek' && CAT.deepseekMeasured[c.id]) { const [t, n] = CAT.deepseekMeasured[c.id]; return { tps: t, status: t >= 15 ? 'ok' : 'slow', note: n, measured: !c.id.startsWith('r9700') }; }
@@ -118,7 +128,7 @@ const Calc = (() => {
   function prefill(c, model) {
     const uni = c.ramType === 'unified', d4 = c.ramType === 'DDR4' ? 0.85 : 1, base = c.pp || (c.vram >= 24 ? 2000 : c.vram >= 16 ? 900 : c.vram >= 12 ? 900 : 300);
     if (model === 'deepseek') { if (uni) return c.ram >= 128 ? 450 : 100; return Math.round((c.vram >= 24 ? 300 : c.vram >= 16 ? 220 : 180) * (c.ram >= 128 ? 1.5 : 1) * d4); }
-    if (model === 'dense14') return uni ? (c.ram >= 64 ? 900 : 400) : Math.round(base * 1.5);
+    if (model === 'dense14' || model === 'q27') return uni ? Math.round((c.bw || 300) * 1.3) : Math.round(base * 1.2);
     if (uni) return c.ram >= 96 ? 1800 : c.ram >= 64 ? 900 : c.ram >= 46 ? 500 : 94;
     const fits = c.ram >= 46 || (c.vram >= 24 && c.ram >= 32);
     return Math.round((fits ? base : 150) * d4);

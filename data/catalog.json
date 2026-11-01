@@ -255,7 +255,8 @@
     "source": "gömülü"
    },
    "pp": 700,
-   "vendor": "AMD"
+   "vendor": "AMD",
+   "bw": 320
   },
   "gpu5060ti": {
    "cat": "gpu",
@@ -273,7 +274,8 @@
     "source": "gömülü"
    },
    "pp": 600,
-   "vendor": "NVIDIA"
+   "vendor": "NVIDIA",
+   "bw": 448
   },
   "gpu5070": {
    "cat": "gpu",
@@ -291,7 +293,8 @@
     "source": "gömülü"
    },
    "pp": 2090,
-   "vendor": "NVIDIA"
+   "vendor": "NVIDIA",
+   "bw": 672
   },
   "gpu9070xt": {
    "cat": "gpu",
@@ -309,7 +312,8 @@
     "source": "gömülü"
    },
    "pp": 1110,
-   "vendor": "AMD"
+   "vendor": "AMD",
+   "bw": 640
   },
   "gpu5070ti": {
    "cat": "gpu",
@@ -327,7 +331,8 @@
     "source": "gömülü"
    },
    "pp": 2400,
-   "vendor": "NVIDIA"
+   "vendor": "NVIDIA",
+   "bw": 896
   },
   "gpu5080": {
    "cat": "gpu",
@@ -345,7 +350,8 @@
     "source": "gömülü"
    },
    "pp": 2700,
-   "vendor": "NVIDIA"
+   "vendor": "NVIDIA",
+   "bw": 960
   },
   "gpu5090": {
    "cat": "gpu",
@@ -363,7 +369,8 @@
     "source": "gömülü"
    },
    "pp": 5000,
-   "vendor": "NVIDIA"
+   "vendor": "NVIDIA",
+   "bw": 1792
   },
   "gpuR9700": {
    "cat": "gpu",
@@ -381,7 +388,8 @@
     "source": "gömülü"
    },
    "pp": 1200,
-   "vendor": "AMD"
+   "vendor": "AMD",
+   "bw": 640
   },
   "gpu3060used": {
    "cat": "gpu",
@@ -400,7 +408,8 @@
     "source": "gömülü"
    },
    "pp": 900,
-   "vendor": "NVIDIA"
+   "vendor": "NVIDIA",
+   "bw": 360
   },
   "cpu5500": {
    "cat": "cpu",
@@ -465,7 +474,8 @@
     "source": "gömülü"
    },
    "pp": 2000,
-   "vendor": "NVIDIA"
+   "vendor": "NVIDIA",
+   "bw": 936
   },
   "ram128": {
    "cat": "ram",
@@ -569,7 +579,8 @@
     "store": "Apple Türkiye",
     "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-16-gb-bellek-256gb-depolama"
    },
-   "estimated": true
+   "estimated": true,
+   "bw": 170
   },
   {
    "id": "macm6_24",
@@ -591,7 +602,8 @@
     "store": "Apple Türkiye",
     "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-24-gb-bellek-256gb-depolama"
    },
-   "estimated": true
+   "estimated": true,
+   "bw": 170
   },
   {
    "id": "macm6_32",
@@ -613,7 +625,8 @@
     "store": "Apple Türkiye",
     "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-32-gb-bellek-256gb-depolama"
    },
-   "estimated": true
+   "estimated": true,
+   "bw": 170
   },
   {
    "id": "rx9060",
@@ -835,7 +848,8 @@
     "store": "Apple Türkiye",
     "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini"
    },
-   "estimated": true
+   "estimated": true,
+   "bw": 307
   },
   {
    "id": "rtx5070ti32",
@@ -875,7 +889,8 @@
     "store": "Apple Türkiye",
     "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m5-pro-%C3%A7ip-15-%C3%A7ekirdekli-cpu-16-%C3%A7ekirdekli-gpu-48-gb-bellek-512gb-depolama"
    },
-   "estimated": true
+   "estimated": true,
+   "bw": 307
   },
   {
    "id": "rtx3090",
@@ -951,7 +966,8 @@
     "store": "Apple Türkiye",
     "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio"
    },
-   "estimated": true
+   "estimated": true,
+   "bw": 460
   },
   {
    "id": "rtx5070ti64",
@@ -991,7 +1007,8 @@
     "store": "Apple Türkiye",
     "url": "https://www.apple.com/tr/shop/buy-mac/mac-mini/m5-pro-%C3%A7ip-15-%C3%A7ekirdekli-cpu-16-%C3%A7ekirdekli-gpu-64-gb-bellek-512gb-depolama"
    },
-   "estimated": true
+   "estimated": true,
+   "bw": 307
   },
   {
    "id": "rtx5080_64",
@@ -1049,7 +1066,8 @@
     "store": "Apple Türkiye",
     "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-max-%C3%A7ip-18-%C3%A7ekirdekli-cpu-40-%C3%A7ekirdekli-gpu-64-gb-bellek-1tb-depolama"
    },
-   "estimated": true
+   "estimated": true,
+   "bw": 614
   },
   {
    "id": "dual3090",
@@ -1107,7 +1125,8 @@
     "store": "Apple Türkiye",
     "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-max-%C3%A7ip-18-%C3%A7ekirdekli-cpu-40-%C3%A7ekirdekli-gpu-128-gb-bellek-1tb-depolama"
    },
-   "estimated": true
+   "estimated": true,
+   "bw": 614
   },
   {
    "id": "macultra96",
@@ -1129,7 +1148,8 @@
     "store": "Apple Türkiye",
     "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-ultra-%C3%A7ip-30-%C3%A7ekirdekli-cpu-64-%C3%A7ekirdekli-gpu-96-gb-bellek-1tb-depolama"
    },
-   "estimated": true
+   "estimated": true,
+   "bw": 1200
   },
   {
    "id": "macultra256",
@@ -1151,7 +1171,8 @@
     "store": "Apple Türkiye",
     "url": "https://www.apple.com/tr/shop/buy-mac/mac-studio/m5-ultra-%C3%A7ip-30-%C3%A7ekirdekli-cpu-64-%C3%A7ekirdekli-gpu-256-gb-bellek-1tb-depolama"
    },
-   "estimated": true
+   "estimated": true,
+   "bw": 1200
   },
   {
    "id": "rtx5090",

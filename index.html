@@ -2,10 +2,683 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Yerel AI maliyet karşılaştırması</title>
-<link rel="canonical" href="ai-maliyet-karsilastirma-v11.html">
-<script>location.replace('ai-maliyet-karsilastirma-v11.html'+location.search+location.hash);</script>
-<style>body{font:15px/1.5 system-ui,sans-serif;margin:40px 16px;color:#18232e;background:#f7f8fa}@media(prefers-color-scheme:dark){body{color:#edf1f4;background:#151a20}a{color:#9ccde5}}</style>
-</head>
-<body><p>Yönlendiriliyor… <a href="ai-maliyet-karsilastirma-v11.html">Yerel AI maliyet karşılaştırması</a></p></body>
-</html>
+<meta name="color-scheme" content="light dark"><title>Yerel AI maliyet karşılaştırması</title>
+<meta name="description" content="Yerel AI donanımları, sınırlı abonelikler ve token başına API ücretlerini tek etkileşimli grafikte karşılaştırın.">
+<style>
+
+:root{color-scheme:light;--bg:#f7f8fa;--panel:#fff;--border:#dbe1e7;--text:#18232e;--muted:#5e6b78;--accent:#215b6b;--accent-bg:#e9f3f4;--soft:#f5f7f8;--line:#e8edf1;--warn:#a35d20;--bad:#b14040;--link:#205b82;--font:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#151a20;--panel:#1b2229;--border:#39444e;--text:#edf1f4;--muted:#a8b5bf;--accent:#82bdcb;--accent-bg:#26353d;--soft:#202a32;--line:#33404a;--warn:#f5be7a;--bad:#ff9da0;--link:#9ccde5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.55 var(--font)}
+button,input,select{font:inherit}button{cursor:pointer;color:inherit}a{color:var(--link);text-decoration:underline;text-underline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wrap{max-width:1460px;margin:auto;padding:28px 36px 72px}
+.heading,.header-actions{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font-size:13px;font-weight:700;letter-spacing:.01em}.date{color:var(--muted);font-size:12px}
+h1{font-size:clamp(31px,3.5vw,47px);line-height:1.12;letter-spacing:-.045em;margin:33px 0 12px;font-weight:660}header p{max-width:900px;color:var(--muted);font-size:15px;margin:0 0 24px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:21px 23px;margin-top:15px}
+.panel h2{font-size:17px;letter-spacing:-.015em;font-weight:650;margin:0 0 12px}.section-intro{color:var(--muted);font-size:12px;margin:-3px 0 15px}
+.fieldgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.field{background:var(--soft);border:1px solid var(--line);border-radius:5px;padding:12px;min-width:0}
+.field label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:7px}
+.field input,.field select{width:100%;min-width:0;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:8px 9px}
+.field small{display:block;font-size:11px;color:var(--muted);margin-top:5px}
+.field input[type=range]{background:transparent;padding:7px 0;accent-color:var(--accent);cursor:pointer}
+.budget-minmax{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:1px}
+.checks,.filtercontrols{display:flex;gap:11px;flex-wrap:wrap;margin-top:12px}.checks label{font-size:12px;color:var(--muted);display:flex;align-items:start;gap:6px}
+input[type=checkbox]{accent-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:15px}.grid2>.panel,.maincols>.panel{min-width:0}
+.note{background:var(--soft);border-left:2px solid var(--border);padding:10px 12px;font-size:12px;color:var(--muted)}
+.note.warn{border-left-color:var(--warn)}
+.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--border);border-radius:7px;background:var(--panel);margin-top:15px}
+.metric{padding:15px 18px;border-right:1px solid var(--border);min-width:0}.metric:last-child{border-right:0}.metric span{color:var(--muted);font-size:11px}.metric strong{display:block;font-size:20px;font-weight:650;letter-spacing:-.035em;margin:3px 0;word-wrap:break-word}.metric small{color:var(--muted);font-size:10px}
+.row-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}.row-head h2{margin-bottom:5px}
+.segmented{display:flex;border:1px solid var(--border);border-radius:5px;padding:3px;gap:1px;flex-wrap:wrap}.segmented button{border:0;background:transparent;padding:8px 11px;color:var(--muted);border-radius:3px;font-size:12px}.segmented button.active{background:var(--accent-bg);color:var(--accent);font-weight:700}
+.maincols{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:15px}.chart-panel{min-width:0}
+.chart-scroll{position:relative;overflow-x:auto}.chart-frame{width:100%;min-width:650px;min-height:450px}.chart-frame svg{display:block;width:100%;height:auto;touch-action:pan-y;cursor:crosshair}
+.chart-frame svg[data-zoomed="true"]{cursor:grab}.chart-frame svg.dragging{cursor:grabbing}
+/* The monthly view is a ranked comparison, not constant-valued time-series lines. */
+[hidden]{display:none!important}
+.chart-frame.bars{min-width:0;min-height:0}
+.chart-scroll.bars{max-height:900px;overflow-y:auto;overflow-x:hidden;border:1px solid var(--line);border-radius:4px}
+.monthly-bar-chart{padding:7px 13px 12px}
+.bar-scale-tools{display:flex;align-items:center;gap:9px;margin:5px 0 12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.bar-scale-tools select{border:1px solid var(--border);color:var(--text);background:var(--panel);border-radius:4px;padding:7px 10px}.bar-scale-tools small{font-size:11px;color:var(--muted)}
+.monthly-bar-head{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:11px;margin:7px 3px 9px;gap:10px}
+.monthly-bar-row{display:grid;grid-template-columns:minmax(160px,37%) minmax(80px,1fr) 92px;align-items:center;gap:12px;min-height:42px;padding:5px 3px;border-bottom:1px solid var(--line)}
+.monthly-bar-row:last-child{border-bottom:0}
+.monthly-bar-name{font-size:12px;line-height:1.25;min-width:0;overflow-wrap:anywhere}
+.monthly-bar-name small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.monthly-bar-track{height:15px;background:var(--soft);border-radius:2px;overflow:hidden;min-width:0}
+.monthly-bar-fill{height:100%;min-width:2px;border-radius:2px}
+.monthly-bar-fill.over{background-image:repeating-linear-gradient(135deg,transparent,transparent 5px,#ffffff55 5px,#ffffff55 8px)}
+.monthly-bar-price{font-size:12px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.chart-legend{margin-top:11px;border-top:1px solid var(--line);padding-top:12px}
+.chart-legend-header{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:8px;font-size:12px}
+.chart-legend-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 10px;max-height:240px;overflow:auto}
+.chart-legend button{display:flex;align-items:center;gap:7px;text-align:left;border:1px solid transparent;border-radius:3px;background:transparent;min-width:0;padding:5px 7px;font-size:11px;color:var(--text)}
+.chart-legend button:hover,.chart-legend button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-bg)}
+.chart-legend .legend-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.chart-legend .legend-value{font-size:10px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--muted)}
+.legend-line{width:17px;min-width:17px;height:3px;border-radius:2px}
+@media(max-width:700px){.chart-legend-list{grid-template-columns:1fr}.monthly-bar-row{grid-template-columns:minmax(120px,44%) minmax(50px,1fr) 83px;gap:7px}.monthly-bar-chart{padding:6px}.monthly-bar-name{font-size:11px}}
+
+.axisText{fill:var(--muted);font-size:11px;font-family:var(--font)}.gridLine{stroke:var(--line);stroke-width:1;stroke-dasharray:3 4}.axisStroke{stroke:var(--muted);stroke-opacity:.7}
+.chart-note{color:var(--muted);font-size:12px;margin:10px 0 0}
+.chartTip{display:none;position:absolute;pointer-events:none;z-index:3;max-width:250px;white-space:normal;background:var(--panel);border:1px solid var(--border);box-shadow:0 8px 24px #0002;border-radius:5px;padding:9px 11px;font-size:12px}
+.chart-tools{display:flex;align-items:center;gap:5px;margin:12px 0 9px;flex-wrap:wrap}.zoom-label{color:var(--muted);font-size:11px;margin-right:7px}.zoom-readout{min-width:47px;text-align:center;font-size:11px;font-variant-numeric:tabular-nums}
+.smallbtn,.chip,.toolbutton{border:1px solid var(--border);border-radius:4px;background:var(--panel);color:var(--text);padding:6px 10px;font-size:12px}
+.chip.on{border-color:var(--accent);background:var(--accent-bg);color:var(--accent)}.toolbutton{min-width:31px;font-size:14px;padding:4px 8px}
+.filtersearch{width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:10px}
+.filters{max-height:425px;overflow-y:auto;margin-top:8px}.filter-item{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px 2px;border-bottom:1px solid var(--line)}
+.filter-name{font-size:12px;font-weight:600}.filter-description{font-size:11px;color:var(--muted)}.filter-price{font-size:11px;color:var(--muted);white-space:nowrap}
+.color-dot{display:inline-block;vertical-align:middle;width:8px;height:8px;margin-right:7px;border-radius:2px}.tiny{font-size:11px;color:var(--muted)}
+.settings-head{display:flex;justify-content:space-between;gap:9px;align-items:center}
+.tablewrap{overflow:auto;margin-top:10px}table{border-collapse:collapse;width:100%;min-width:840px;text-align:left}th,td{padding:10px 11px;border-bottom:1px solid var(--line);font-size:12px}
+th{color:var(--muted);font-weight:600;white-space:nowrap}td.numeric,th.numeric{text-align:right;font-variant-numeric:tabular-nums}tr:hover td{background:var(--soft)}td small{display:block;font-size:10px;color:var(--muted)}
+.warn-text{color:var(--warn)}.bad-text{color:var(--bad)}.ok-text{color:var(--accent)}
+.caprow{display:grid;grid-template-columns:minmax(0,1fr) 105px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.caprow strong{font-size:12px}.caprow p{font-size:10px;color:var(--muted);margin:3px 0 0}.caprow input{width:100%;padding:7px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px}
+.hardware-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.hardware-option{padding:13px;background:var(--soft);border:1px solid var(--line);border-radius:4px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
+.hardware-option>b{font-size:12px;font-weight:600}.hardware-option>span{font-size:12px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}.hardware-option>small{grid-column:1/-1;color:var(--muted);font-size:11px}.catalogue-item{min-height:86px}.catalogue-item.exceeds{display:none}
+.bill-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin:11px 0}.bill-item{background:var(--panel);padding:11px}.bill-item small{display:block;color:var(--muted);font-size:11px}.bill-item strong{font-size:15px}
+.pill{font-size:10px;color:var(--muted);border:1px solid var(--border);padding:3px 7px;border-radius:3px;letter-spacing:.02em}
+.foot{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}.foot h3{color:var(--text);font-size:14px}.footerlinks{display:flex;flex-wrap:wrap;gap:8px 17px}.footerlinks a{word-break:break-all}
+/* Scenario guide: compact functional examples, no decorative panels. */
+.guide-link{font-size:11px;margin-left:7px;white-space:nowrap;font-weight:500}
+.guide-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:12px}
+.guide-column{min-width:0}
+.guide-column h3{font-size:13px;font-weight:650;margin:0 0 7px}
+.guide-desc{color:var(--muted);font-size:12px;margin:0 0 10px}
+.guide-presets,.guide-anchors{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+.guide-presets button,.guide-anchors button{border:1px solid var(--border);border-radius:4px;background:var(--panel);padding:8px 10px;font-size:12px;color:var(--text);text-align:left}
+.guide-presets button:hover,.guide-anchors button:hover{border-color:var(--accent)}
+.guide-presets button[aria-pressed="true"],.guide-anchors button[aria-pressed="true"]{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.guide-presets button b{display:block;font-size:12px;font-weight:650}.guide-presets button small{display:block;font-size:10px;color:var(--muted)}
+.guide-calculator{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.guide-calculator label{font-size:11px;color:var(--muted);display:block}
+.guide-calculator input{width:100%;margin-top:3px;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px;border-radius:4px}
+.guide-outcome{font-size:12px;background:var(--soft);border:1px solid var(--line);padding:10px;margin:9px 0;min-height:47px}
+.guide-outcome strong{font-size:15px;font-variant-numeric:tabular-nums}
+.guide-apply{background:var(--accent);border:1px solid var(--accent);color:var(--panel);padding:8px 12px;border-radius:4px;font-size:12px;font-weight:600}
+.guide-apply:hover{filter:brightness(.92)}
+.guide-anchor-explain{font-size:12px;color:var(--muted);margin:9px 0}
+#usageGuide{scroll-margin-top:12px}
+@media(max-width:850px){.guide-grid{grid-template-columns:1fr}}
+@media(max-width:420px){.guide-calculator{grid-template-columns:repeat(3,minmax(0,1fr))}.guide-presets button{flex:1 1 44%}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+@media(max-width:1100px){.maincols{grid-template-columns:1fr}.fieldgrid{grid-template-columns:repeat(3,minmax(0,1fr))}.summary{grid-template-columns:repeat(3,minmax(0,1fr))}.metric:nth-child(3){border-right:0}.metric:nth-child(n+4){border-top:1px solid var(--border)}.hardware-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.wrap{padding:19px 14px 50px}h1{margin-top:22px;font-size:32px}.panel{padding:15px}.fieldgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.grid2{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.metric{padding:12px;border-top:1px solid var(--border)}.metric:first-child,.metric:nth-child(2){border-top:0}.metric:nth-child(2n){border-right:0}.metric strong{font-size:17px}.bill-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hardware-list{grid-template-columns:1fr}.chart-frame{min-height:370px}.date{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* Model compatibility: descriptive table, no status conveyed through color alone */
+.model-tools{display:grid;grid-template-columns:2fr repeat(3,minmax(120px,1fr));gap:10px;margin:14px 0}
+.model-tools label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:650}
+.model-tools select{width:100%;padding:8px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:4px}
+.model-key{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 14px;font-size:11px;color:var(--muted)}
+.model-key span{display:inline-flex;gap:5px;align-items:center}
+.fit{border:1px solid var(--border);background:var(--soft);color:var(--text);padding:7px;min-width:110px;width:100%;border-radius:3px;display:grid;gap:2px;text-align:left;line-height:1.3}
+.fit:hover,.fit:focus-visible{border-color:var(--accent)}
+.fit strong{font-size:12px;font-weight:650}.fit small{font-size:10px;color:var(--muted)}
+.fit.gpu{border-left:3px solid #347b5d}.fit.offload{border-left:3px solid #bd8d43}.fit.insufficient{border-left:3px solid #a55252}
+.fit.selected{outline:2px solid var(--accent);outline-offset:-1px;background:var(--accent-bg)}
+.model-table{min-width:970px}.model-table th{min-width:124px}.model-table td{padding:7px}.model-table td:first-child{min-width:190px}
+.model-table td strong{font-size:12px}.model-table td small{display:block;font-size:10px;color:var(--muted)}
+.model-stat{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+.model-stat div{background:var(--soft);padding:11px;border:1px solid var(--line);border-radius:4px}.model-stat strong{font-size:17px;display:block;font-variant-numeric:tabular-nums}.model-stat small{font-size:11px;color:var(--muted)}
+.model-details{border:1px solid var(--border);border-radius:4px;padding:14px;margin:14px 0;background:var(--soft)}
+.model-details p{margin:5px 0;font-size:12px}
+.model-details .smallbtn{margin:4px 6px 0 0}
+.model-status{font-weight:650}.model-rationale{color:var(--muted);font-size:11px}.hardware-model-link{border:1px solid var(--border);background:var(--panel);border-radius:4px;padding:3px 8px;font-size:11px;color:var(--accent);margin-top:5px}
+@media(max-width:900px){.model-tools{grid-template-columns:repeat(2,minmax(0,1fr))}.model-stat{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.model-tools{grid-template-columns:1fr}.model-stat{grid-template-columns:1fr 1fr}}
+
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#151a20;--panel:#1b2229;--border:#39444e;--text:#edf1f4;--muted:#a8b5bf;--accent:#82bdcb;--accent-bg:#26353d;--soft:#202a32;--line:#33404a;--warn:#f5be7a;--bad:#ff9da0;--link:#9ccde5}}
+/* Break-even, tooltip, sorting, sharing, print */
+.field.invalid input{border-color:var(--bad)}.field.invalid label{color:var(--bad)}
+.crosshair{stroke:var(--muted);stroke-width:1;stroke-dasharray:2 3;pointer-events:none}
+.be-marker{stroke:var(--panel);stroke-width:2}
+.chartTip{max-width:310px}.chartTip .tip-row{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:6px;align-items:center;font-size:11px;line-height:1.5}.chartTip .tip-row.hit{font-weight:700}.chartTip .tip-row span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chartTip .tip-row b{font-variant-numeric:tabular-nums;font-weight:inherit}.chartTip .tip-head{font-size:11px;color:var(--muted);margin-bottom:4px}
+th button.sort{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}th button.sort:focus-visible{outline:2px solid var(--accent);outline-offset:2px}th button.sort::after{content:'↕';opacity:.35;font-size:10px}th button.sort[data-dir="1"]::after{content:'↑';opacity:1}th button.sort[data-dir="-1"]::after{content:'↓';opacity:1}
+.table-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.be-select{min-width:260px}.be-select label{display:block;font-size:11px;color:var(--muted);font-weight:650;margin-bottom:5px}.be-select select{width:100%;padding:8px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:4px}
+.be-table{min-width:880px}.be-cell{display:grid;gap:4px;min-width:150px}.be-track{position:relative;height:6px;background:var(--soft);border:1px solid var(--line);border-radius:3px;overflow:hidden}.be-track i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:3px}.be-track.late i{background:var(--warn)}.be-track.never i{background:var(--border)}
+.resale-inline{display:inline-flex;align-items:center;gap:6px}.resale-inline input[type=number]{width:70px;padding:3px 6px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 14px;border-radius:5px;font-size:12px;z-index:10;opacity:0;pointer-events:none;transition:opacity .2s}.toast.show{opacity:1}
+@media print{body{background:#fff}.header-actions button,.chart-tools,.bar-scale-tools,#reset,aside.panel,#usageGuide,.guide-link,details>summary.smallbtn,#exportCsv,.hardware-model-link,.toast{display:none!important}.maincols{grid-template-columns:1fr}.panel,.summary{break-inside:avoid;border-color:#ccc}.chart-frame{min-width:0}.wrap{padding:0;max-width:none}}
+</style></head>
+<body><div class="wrap">
+<header><div class="heading"><div class="logo">Yerel AI / Maliyet karşılaştırması</div><div class="header-actions"><span class="date">Kasım 2026 · çevrimdışı HTML</span><button id="shareLink" class="smallbtn" type="button" title="Mevcut senaryoyu içeren bağlantıyı kopyalar">Bağlantıyı kopyala</button><button id="printPage" class="smallbtn" type="button">Yazdır / PDF</button><button id="themeToggle" class="smallbtn" type="button" aria-label="Koyu temaya geç">Koyu tema</button></div></div><h1>Yerel AI maliyet karşılaştırması</h1><p>200.000 TL’ye kadar sistemleri, kullanımı sınırlı abonelikleri ve API model fiyatlarını aynı grafikte inceleyin. Bütçeyi 0–200.000 TL arasında belirleyin; daha ucuz sistemler listede kalır.</p></header>
+<section class="panel" aria-labelledby="settings-title"><div class="settings-head"><h2 id="settings-title">Senaryo ayarları</h2><button class="smallbtn" id="reset" type="button">Sıfırla</button></div><div class="fieldgrid">
+<div class="field"><label for="hardwareBudget">Azami donanım bütçesi (TL)</label><input type="number" id="hardwareBudget" value="200000" min="0" max="200000" step="1000"><input id="budgetSlider" type="range" min="0" max="200000" step="1000" value="200000" aria-label="Azami donanım bütçesi kaydırıcısı"><div class="budget-minmax"><span>0 TL</span><span>200.000 TL</span></div><small>Bu tutarın altındaki tüm sistemler gösterilir.</small></div>
+<div class="field"><label for="monthlyTokens">Aylık üretilen çıktı tokeni (milyon)</label><input type="number" id="monthlyTokens" value="10" min="0.01" max="1000" step="0.5"><small>10 = her ay 10 milyon çıktı tokeni. <a class="guide-link" href="#usageGuide">Örneklerden seç ↓</a></small></div>
+<div class="field"><label for="horizon">Karşılaştırma süresi (ay)</label><input type="number" id="horizon" value="24" min="1" max="120" step="1"><small>Donanım ay 0'da satın alınır</small></div>
+<div class="field"><label for="normalKwh">Evin normal tüketimi (kWh)</label><input type="number" id="normalKwh" value="298.445" min="0" step="0.001"><small>Örnek faturadaki 34 günlük tüketim</small></div>
+<div class="field"><label for="monthlyHours">AI için günlük çalışma (saat)</label><input type="number" id="monthlyHours" value="8" min="0.5" max="24" step="0.5"><small>Yerel üretim kapasitesi denetimi</small></div>
+<div class="field"><label for="billingDays">Örnek fatura dönemi (gün)</label><input type="number" id="billingDays" value="34" min="1" max="60" step="1"><small>Alt kademe günlük 8 kWh</small></div>
+<div class="field"><label for="usdTry">Döviz kuru (USD/TRY)</label><input type="number" id="usdTry" value="49.9338" min="1" step="0.0001"><small>Değiştirilebilir referans kur</small></div>
+<div class="field"><label for="outputSharePercent">Çıktı token oranı (%)</label><input type="number" id="outputSharePercent" value="25" min="1" max="100" step="1"><small id="tokenSplitNote" aria-live="polite">%25 çıktı = 10M çıktı + 30M girdi</small><small><a class="guide-link" href="#usageGuide">Yüzde nasıl seçilir? ↓</a></small></div>
+<div class="field"><label for="cachedInputSharePercent">API önbellekten okunan girdi (%)</label><input id="cachedInputSharePercent" type="number" value="0" min="0" max="100" step="5"><small>Sadece API'lerde; %0 = tüm girdi normal ücretli. Cache yazımı dahil değil.</small></div>
+<div class="field"><label for="subscriptionTax">USD abonelik/API ek vergi (%)</label><input type="number" id="subscriptionTax" value="0" min="0" max="100" step="1"><small>Yalnızca USD tutarlara uygulanır; TL plan fiyatları değiştirilmez</small></div>
+<div class="field"><label for="usdYearly">Yıllık kur artışı (USD/TRY %)</label><input type="number" id="usdYearly" value="0" min="-50" max="300" step="1"><small>USD abonelik ve API tutarları her ay bu hızla artar; %0 = sabit kur</small></div>
+<div class="field"><label for="tlYearly">Yıllık TL fiyat artışı (%)</label><input type="number" id="tlYearly" value="0" min="-50" max="300" step="1"><small>Elektrik tarifesi ve TL abonelikler; %0 = bugünkü fiyatlar</small></div>
+</div><div class="checks"><label><input id="includeHome" type="checkbox"> Grafik maliyetine evin normal elektrik faturasını da ekle</label><label><input id="homeKwhIsBilling" type="checkbox" checked> Ev tüketimi fatura dönemine (<span id="billingDaysLabel">34</span> gün) ait; 30 güne normalize et</label><label><input id="includeResale" type="checkbox"> <span>Dönem sonunda donanımın ikinci el değerini düş (satışta ilk %15 kayıp) · <span class="resale-inline">yıllık değer kaybı <input id="depreciation" type="number" value="25" min="0" max="95" step="1" aria-label="Donanımın yıllık değer kaybı yüzdesi">%</span></span></label></div>
+<details style="margin-top:13px"><summary class="tiny" style="cursor:pointer">Örnek fatura ve elektrik tarifesi ayarları</summary><div class="fieldgrid" style="margin-top:12px">
+<div class="field"><label for="lowKwh">Örnek alt kademe kWh</label><input id="lowKwh" type="number" value="272" min="0" step="0.001"></div>
+<div class="field"><label for="highKwh">Örnek üst kademe kWh</label><input id="highKwh" type="number" value="26.445" min="0" step="0.001"></div>
+<div class="field"><label for="rateLow">Alt kademe vergi öncesi TL/kWh</label><input id="rateLow" type="number" value="2.918965" min="0" step="0.000001"></div>
+<div class="field"><label for="rateHigh">Üst kademe vergi öncesi TL/kWh</label><input id="rateHigh" type="number" value="4.320708" min="0" step="0.000001"></div>
+<div class="field"><label for="refLevy">Örnek elektrik ve havagazı tüketim vergisi (TL)</label><input id="refLevy" type="number" value="9.23" min="0" step="0.01"></div>
+<div class="field"><label for="vat">KDV (%)</label><input id="vat" type="number" value="10" min="0" step="0.1"></div>
+</div></details>
+</section>
+<section class="panel" id="usageGuide" aria-labelledby="usage-guide-title">
+<div class="row-head"><div><h2 id="usage-guide-title">Aylık token ve çıktı yüzdesini seç</h2><p class="section-intro">Buradaki tüm profiller örnektir, ölçülmüş kullanım verisi veya abonelik kotası değildir. Birini seçebilir ya da günlük çağrı sayısından kendi hesabını yapabilirsin.</p></div><a href="#settings-title" class="tiny">Yukarıdaki ayarlara dön ↑</a></div>
+<div class="guide-grid">
+<div class="guide-column"><h3>1. Çıktı miktarını belirle</h3><p class="guide-desc"><b>Çıktı tokeni</b>, modelin oluşturduğu metin ve API'de ücretlendirilen olası düşünme tokenlarıdır. Mesaj sayısı tek başına yeterli değildir; cevap uzunluğu önemli.</p>
+<div class="guide-presets" aria-label="Örnek aylık kullanım profilleri">
+<button type="button" data-usage-preset="casual"><b>Gündelik sohbet</b><small>20 çağrı/gün × 500 çıktı</small></button>
+<button type="button" data-usage-preset="study"><b>Araştırma / ders</b><small>40 çağrı/gün × 1.500 çıktı</small></button>
+<button type="button" data-usage-preset="coding"><b>Kodlama ajanı</b><small>150 çağrı/gün × 1.200 çıktı</small></button>
+<button type="button" data-usage-preset="writing"><b>Uzun içerik</b><small>60 çağrı/gün × 2.000 çıktı</small></button>
+<button type="button" data-usage-preset="batch"><b>Yoğun otomasyon</b><small>1.000 çağrı/gün × 2.000 çıktı</small></button>
+</div>
+<div class="guide-calculator">
+<label for="usageDaily">Günlük çağrı<input id="usageDaily" type="number" min="0" max="10000000" step="1" value="20"></label>
+<label for="usageOutput">Çağrı başına çıktı tokeni<input id="usageOutput" type="number" min="0" max="10000000" step="50" value="500"></label>
+<label for="usageDays">Ayda gün<input id="usageDays" type="number" min="1" max="31" step="1" value="30"></label>
+</div>
+<div id="usageCalculation" class="guide-outcome" aria-live="polite"></div>
+<button class="guide-apply" id="usageApply" type="button">Bu hesaplanan miktarı uygula</button>
+</div>
+<div class="guide-column"><h3>2. Çıktının toplam içindeki payını seç</h3><p class="guide-desc">API maliyetinde <b>girdi</b> = yönergeler, önceki sohbet, dosyalar ve kod; <b>çıktı</b> = modelin oluşturdukları. Yüzde, çıktı ÷ (girdi + çıktı) oranıdır.</p>
+<div class="guide-anchors" aria-label="Örnek çıktı oranları">
+<button type="button" data-output-anchor="10">%10 · uzun kod/bağlam</button>
+<button type="button" data-output-anchor="25">%25 · genel sohbet</button>
+<button type="button" data-output-anchor="50">%50 · dengeli</button>
+<button type="button" data-output-anchor="60">%60 · yazı üretimi</button>
+</div>
+<p id="guideAnchorNote" class="guide-outcome" aria-live="polite"></p>
+<p class="guide-anchor-explain">Örnek: 1.000 çıktı + 3.000 girdi tokeni = <b>%25 çıktı</b>. %10 çıktı, girdinin çıktıdan 9 kat fazla olduğu anlamına gelir. Yalnızca çıktı yüzdesini değiştirmen üretilen çıktı miktarını değiştirmez, API'nin hesaplanan girdi miktarını değiştirir.</p>
+<div class="note">Tahmini profil değerleri abonelik sağlayıcılarının kesin aylık token hakları değildir. Tek bir uzun belgeyi veya büyük bir kod deposunu sık tekrar gönderiyorsan daha düşük çıktı yüzdesi kullan. Önbellek kullanımı ayrıca ayarlanır.</div>
+</div></div>
+</section>
+<section class="summary" id="summary" aria-live="polite"></section>
+<section class="panel" aria-label="Elektrik faturası hesabı"><div class="row-head"><div><h2>Elektrik faturası hesabı</h2><p class="section-intro">Örnek tüketim: <span id="sampleUsage"></span> kWh. Örnek fatura dönemi ile aylık senaryo birbirinden ayrıdır.</p></div></div><div class="bill-grid" id="billBreakdown"></div><div id="billNote" class="note"></div></section>
+<section class="maincols">
+<div class="panel chart-panel"><div class="row-head"><div><h2>Maliyet eğrileri</h2><p class="section-intro">Aylık görünümde isimli, sıralı çubuklar; diğer görünümlerde zaman eğrileri ve seçilebilir çizgi adları. Modellerin kalitesi aynı değildir.</p></div><div class="segmented" id="mode" role="group" aria-label="Grafik türü"><button type="button" data-mode="total" class="active">Birikimli toplam</button><button type="button" data-mode="monthly">Aylık maliyet</button><button type="button" data-mode="perM">TL / 1M çıktı</button></div></div><div class="chart-tools" id="chartZoomTools" role="group" aria-label="Grafik yakınlaştırma"><span class="zoom-label">Yakınlaştırma</span><button id="zoomOut" class="toolbutton" type="button" aria-label="Grafiği uzaklaştır">−</button><span id="zoomReadout" class="zoom-readout" aria-live="polite">100%</span><button id="zoomIn" class="toolbutton" type="button" aria-label="Grafiği yakınlaştır">+</button><button id="zoomReset" class="smallbtn" type="button">Sıfırla</button><span class="tiny">Ctrl/⌘ + tekerlek · yakınken sürükle · çift tıkla</span></div><div id="barScaleTools" class="bar-scale-tools" hidden><label for="monthlyScale">Çubuk ölçeği</label><select id="monthlyScale" aria-label="Aylık çubuk grafik ölçeği"><option value="log" selected>Logaritmik</option><option value="linear">Doğrusal</option></select><small id="monthlyScaleNote">Logaritmik uzunluk küçük değerleri görünür kılar; gerçek tutarlar sağdadır.</small></div><div class="chart-scroll"><div class="chart-frame" id="mainChart"><svg id="svgChart" viewBox="0 0 1050 490" role="img" aria-label="Sistemlerin birikimli maliyet çizgileri"></svg><div id="monthlyBars" class="monthly-bar-chart" role="img" aria-label="Aylık maliyetleri düşükten yükseğe gösteren isimli çubuk grafik" hidden></div></div><div id="tooltip" class="chartTip" role="status"></div></div><div id="chartLegend" class="chart-legend" aria-label="Grafik çizgi adları ve değerleri"></div><p class="chart-note" id="chartNote"></p><div class="note warn" id="capacityWarning" style="margin-top:12px"></div></div>
+<aside class="panel"><div class="row-head"><h2>Grafik filtreleri</h2><span id="selectedCount" class="tiny"></span></div><input id="filterSearch" class="filtersearch" type="search" placeholder="GPU, abonelik, API ara..." aria-label="Serilerde ara"><div class="filtercontrols"><button class="chip on" type="button" data-category="local">Donanım</button><button class="chip on" type="button" data-category="subscription">Abonelik</button><button class="chip on" type="button" data-category="api">API</button></div><div class="filtercontrols"><button id="allToggle" class="smallbtn" type="button">Tümünü seç</button><button id="noneToggle" class="smallbtn" type="button">Tümünü kaldır</button></div><div id="lines" class="filters" aria-label="Çizgi seçimi"></div><p class="tiny">Kesik çizgi = senaryo hedefi karşılanamıyor; çizilen maliyet o kullanımın sağlanacağını göstermez. ≈ = varsayımsal hız / maliyet. Abonelikler <b>sınırsız değildir</b>.</p></aside>
+</section>
+<section class="panel" id="breakEven" aria-labelledby="be-title"><div class="row-head"><div><h2 id="be-title">Donanım ne zaman kendini amorti eder?</h2><p class="section-intro">Seçili donanımın birikimli maliyetinin, grafikte seçili her abonelik veya API’nin altına indiği ay. Senaryo ayarları (kur, TL artışı, ikinci el değeri) dahildir.</p></div><div class="be-select"><label for="beHardware">Karşılaştırılacak donanım</label><select id="beHardware"></select></div></div><div id="beHeadline" class="note" aria-live="polite"></div><div class="tablewrap"><table class="be-table"><thead><tr><th>Alternatif</th><th class="numeric">İlk ay gideri</th><th>Başabaş noktası</th><th class="numeric" id="beHorizonHead">Süre sonunda fark</th><th class="numeric">API başabaş kullanımı</th><th>Not</th></tr></thead><tbody id="beBody"></tbody></table></div><p class="tiny">“API başabaş kullanımı”: seçilen süre sonunda donanım ile API’nin eşit maliyete geldiği aylık çıktı tokeni. Bunun üstünde donanım daha ucuzdur; donanımın günlük çalışma saatine göre üretim kapasitesi ayrıca gösterilir. Yerel 14B Q4 model ile bulut modellerinin kalitesi eşdeğer değildir. Grafikte bir donanım çizgisini adından öne çıkarınca başabaş noktaları daire olarak işaretlenir.</p></section>
+<section class="panel" id="hardwareSources"><div class="row-head"><div><h2>Donanımlar · düşük fiyattan yükseğe</h2><p class="section-intro">Seçtiğiniz bütçeyi aşmayan tüm sistemler. Fiyatlar güncel stok/teklif garantisi değildir.</p></div><span id="catalogueCount" class="tiny"></span></div>
+<div class="hardware-list" id="hardwareCatalogue"></div><details style="margin-top:18px"><summary class="tiny" style="cursor:pointer">150.000–200.000 TL sistemlerinin bileşen bağlantıları ve notlar</summary><div class="hardware-list" style="margin-top:12px">
+<div class="hardware-option"><b>RTX 5070 Ti · 64 GB RAM · 2 TB SSD</b><span>155.341 TL</span><small>Önceki 1 TB sistem + <a href="https://www.akakce.com/ssd/en-ucuz-kingston-nv3-snv3s-2000g-pci-express-4-0-2-tb-m-2-fiyati%2C734994021.html" target="_blank" rel="noopener">2 TB SSD fiyatı</a>. 16 GB VRAM değişmez.</small></div>
+<div class="hardware-option"><b>Mac Studio M5 Max · 36 GB birleşik</b><span>167.999 TL</span><small><a href="https://www.apple.com/tr/shop/buy-mac/mac-studio" target="_blank" rel="noopener">Apple Türkiye başlangıç fiyatı</a>. CUDA desteklemez. 14B hız değeri ölçülmüş değil, senaryodur.</small></div>
+<div class="hardware-option"><b>R9700 · 32 GB VRAM + 64 GB RAM · 2 TB</b><span>180.244 TL</span><small><a href="https://www.novabilgisayar.com/powercolor-radeon-ai-pro-r9700-ai-pro-r9700-32g-b-ekran-karti-n-18882" target="_blank" rel="noopener">R9700 GPU</a>, <a href="https://www.akakce.com/ssd/en-ucuz-kingston-nv3-snv3s-2000g-pci-express-4-0-2-tb-m-2-fiyati%2C734994021.html" target="_blank" rel="noopener">SSD</a> ve önceki CPU/diğer parçalarla bileşen tahmini. ROCm uyumluluğunu doğrulayın.</small></div>
+<div class="hardware-option"><b>Mac mini M5 Pro · 64 GB birleşik · 1 TB</b><span>185.999 TL</span><small><a href="https://www.pt.com.tr/mac-mini-m5-pro-18cpu-20gpu-64gb-1tb-z1ud001gb" target="_blank" rel="noopener">Satıcı: stokta yok</a>; 4–12 hafta özel sipariş ibaresi mevcut. Token/sn önceki M5 Pro senaryosundan alınmıştır.</small></div>
+<div class="hardware-option"><b>2× RTX 3090 · 48 GB toplam VRAM · 64 GB RAM</b><span>192.711 TL ≈</span><small><a href="https://www.letgo.com/item/rtx-3090-24-gb-ekran-karti-iid-1720286888" target="_blank" rel="noopener">58.000 TL ikinci el GPU örneği</a> × 2 + yaklaşık 76.711 TL çift GPU kasası. Anakart x8/x8 yuva düzeni, en az 1500 W sınıfında güç kaynağı, soğutma ve NVLink uyumluluğu doğrulanmadı. <b>48 GB toplam VRAM, tek bir bellek havuzu değildir</b>; 14B hesaplaması tek RTX 3090 kartındaki hızı kullanır.</small></div>
+</div></details><p class="tiny">Yukarıdaki yeni konfigürasyonların fiyatları statik karşılaştırma girdileridir, anlık stok garantisi değildir. Aylık elektrik, 14B Q4 token/sn varsayımları üzerinden hesaplanır; 70B model için aynı hız geçerli değildir.</p>
+</section>
+<section class="panel" id="modelCompatibility" aria-labelledby="modelCompatHeading">
+<div class="row-head"><div><h2 id="modelCompatHeading">Hangi model, hangi quant, hangi donanımda?</h2><p class="section-intro">GGUF dosyalarının doğrulanmış boyutları + FP16 KV cache bellek tahmini. Bu bir <b>bellek uygunluk</b> kontrolüdür; token/sn benchmarkı veya kesin çalıştırma garantisi değildir.</p></div><a class="smallbtn" href="#hardwareSources">Donanımlara dön</a></div>
+<div class="model-tools">
+ <div><label for="modelHardware">Donanım</label><select id="modelHardware"></select></div>
+ <div><label for="modelContext">Bağlam (context)</label><select id="modelContext"><option value="4096">4K</option><option value="8192">8K</option><option value="16384" selected>16K</option><option value="32768">32K</option><option value="40960">40K</option><option value="65536">64K*</option></select></div>
+ <div><label for="modelQuant">Quant gösterimi</label><select id="modelQuant"><option value="all">Tüm quant'lar</option><option value="Q2_K">Q2_K</option><option value="Q3_K_M">Q3_K_M</option><option value="Q4_K_M">Q4_K_M</option><option value="Q5_K_M">Q5_K_M</option><option value="Q6_K">Q6_K</option><option value="Q8_0">Q8_0</option></select></div>
+ <div><label for="modelView">Görünüm</label><select id="modelView"><option value="hardware">Seçili donanım × tüm modeller</option><option value="compare">Tüm donanımlar × seçili model</option></select></div>
+</div>
+<div id="modelCompareTools" class="model-tools" hidden><div><label for="modelFocus">Karşılaştırılacak model</label><select id="modelFocus"></select></div></div>
+<p class="tiny">Quant tercihi: <b>Q2_K belirgin kalite kaybı</b> riski taşır; <b>Q4_K_M bellek/kalite dengesi</b> sağlar. Q5/Q6/Q8 genellikle daha fazla bellek kullanır, kalite artışı modele göre değişir.</p>
+<div class="model-key"><span>🟩 GPU belleğinde (tahmini)</span><span>🟨 RAM offload / sınırda</span><span>🟥 Bellek yetersiz</span><span>* Doğal bağlam sınırı aşılabilir; model/engine desteği gerekir</span></div>
+<div id="modelSummary" class="note" aria-live="polite"></div>
+<div class="tablewrap"><table class="model-table"><thead id="modelFitHead"></thead><tbody id="modelFitBody"></tbody></table></div>
+<div id="modelDetails" class="model-details" aria-live="polite"><p>Bir quant hücresi seçince kullanılan bellek hesabı ve kaynak bağlantısı burada görünür.</p></div>
+<div class="note" style="margin-top:13px">Hesap: <b>GGUF dosyası (GB → GiB) + FP16 KV cache + çalışma payı</b>. Ayrık GPU için 2 GiB, Mac birleşik bellek için sistem ve çalışma payı toplam 5 GiB bırakılır; bunlar yapılandırmaya göre değişebilen varsayımlardır. Çoklu GPU'da model bölme desteği ve kart başına dağılım ayrıca doğrulanmalıdır. CPU offload mümkün görünse de hız önemli ölçüde düşebilir. Gemma 3'ün yerel kayan pencere cache'i yaklaşık modellenir; görsel projector maliyeti hariçtir. *64K, Qwen3 40.960 native bağlam sınırını aşar. GGUF boyutları ilgili depolardan, model mimarileri sağlayıcı yapılandırmalarından alınmıştır; çevrimdışı kopyada veri otomatik güncellenmez.</div>
+</section>
+<section class="grid2">
+<div class="panel"><div class="table-tools"><h2 id="costTitle">Seçilen ay sonunda maliyetler</h2><button id="exportCsv" class="smallbtn" type="button">CSV indir</button></div><p class="section-intro">Hedefi karşılamayanlar kırmızıyla işaretlenir. Sütun başlığına basarak sıralayın. Kullanım kotaları aboneliklerde sağlayıcı garantisi değildir.</p><div class="tablewrap"><table id="costTable"><thead><tr><th><button class="sort" type="button" data-sort="name">Sistem</button></th><th class="numeric"><button class="sort" type="button" data-sort="ram">RAM</button></th><th class="numeric"><button class="sort" type="button" data-sort="vram">VRAM</button></th><th class="numeric"><button class="sort" type="button" data-sort="tps">tok/sn</button></th><th class="numeric"><button class="sort" type="button" data-sort="price">Başlangıç</button></th><th class="numeric"><button class="sort" type="button" data-sort="monthly">Aylık AI gideri (ilk ay)</button></th><th class="numeric"><button class="sort" type="button" data-sort="total" data-dir="1">Toplam (TL)</button></th><th class="numeric"><button class="sort" type="button" data-sort="perM">TL / 1M çıktı</button></th><th>Limit</th></tr></thead><tbody id="costBody"></tbody></table></div></div>
+<div class="panel"><h2>Abonelik limitleri</h2><p class="section-intro">Gerçek sınır türü aşağıda. Karşılaştırmadaki aylık <b>çıktı token karşılığı</b> varsayımsal olup değiştirilebilir, <b>sağlayıcının sunduğu kesin bir token kotası değildir</b>.</p><div class="note warn">Bir aboneliğin sabit fiyatı, istediğiniz kadar model çıktısını garanti etmez. Beş saatlik/haftalık pencereler, AI kredileri, model seçimi ve bağlam uzunluğu sınırı tüketir. Belirlediğiniz aylık senaryo kotası aşılırsa abonelik çizgisi kesikli ve “kota aşıldı” olarak gösterilir.</div><div id="caps"></div></div>
+</section>
+<section class="panel" aria-label="Doğrulanmış API fiyat kataloğu"><div class="row-head"><div><h2>API fiyat kataloğu <span class="pill" id="apiCount"></span></h2><p class="section-intro">1 milyon token başına USD. Standart metin tarifesi. Modelin resmî sayfasına ulaşmak için Kaynak'a basın.</p></div></div><details><summary class="smallbtn" style="display:inline-block;cursor:pointer;list-style-position:inside">Tüm API modellerini ve ücretlerini göster</summary><div class="tablewrap"><table><thead><tr><th>Sağlayıcı · Model</th><th class="numeric">Girdi $/1M</th><th class="numeric">Cache okuma $/1M</th><th class="numeric">Çıktı $/1M</th><th>Koşullar</th><th>Kaynak</th></tr></thead><tbody id="apiCatalogue"></tbody></table></div></details></section><footer class="foot"><h3>Hesap yöntemleri ve sınırlamalar</h3><p>Örnek faturadaki 2,918965 ve 4,320708 TL/kWh fiyatları <b>vergi öncesi</b>; 9,23 TL elektrik ve havagazı tüketim vergisi, %10 KDV'den önce ekleniyor. Başka dönemler için bu vergi, örnek tüketim başına düşen tutarla orantılı <b>modelleme varsayımı</b> olarak ölçekleniyor; resmi tarife formülü iddiası değildir. 8 kWh/gün kademe sınırı, seçilen fatura gün sayısına göre uygulanıyor. Hesap doğrudan girilen tüketim, birim fiyat ve vergi değerlerinden yapılır; dışarıdan bildirilen toplam tutar hedef alınmaz. Yeni 200.000 TL seçeneklerinde 14B Q4 hızları karşılaştırma senaryosudur: özellikle Mac Studio 40 tok/sn ölçülmemiştir; 2× RTX 3090 için tek kartın 14B hızı kullanılmıştır. Birden fazla kartın toplam VRAM kapasitesi bellek birleştirme değildir. Yerel GPU gücü ve bazı token/s sonuçları tahmindir; ayrıca boşta enerji, kasa/oda soğutması, servis, model indirme ve kredi faizi hariçtir. Değer kaybı yalnızca “ikinci el değerini düş” seçiliyse modellenir: satış anında %15 ilk kayıp, ardından yıllık sabit oranlı üstel düşüş. Kur ve TL fiyat artışları, girilen yıllık oranların aylık bileşik karşılığıyla uygulanır; varsayılan %0 bugünkü fiyatları sabit tutar. Fatura/abonelik verileri, güncellenebilir girdiler olarak saklanmaz: HTML dosyası çevrimdışı çalışır.</p><p>Google AI Pro, Plus ve Ultra için Türkiye TL fiyatı kullanılır; USD vergisi TL plan fiyatına eklenmez; Ultra 5× fiyatı başlangıç/teklif niteliğinde olabilir. API fiyatları 1 Kasım 2026 kaynak taraması üzerinden alınmıştır ve sabit karşılaştırma girdileridir; DeepSeek pik/pik dışı ile Gemini 4 Argon kampanyası farklı satırlarda gösterilir. Aynı modelin farklı sağlayıcıdaki API fiyatı değişebilir. Yalnızca metin token ücretleri hesaplanır. Modelin düşünme tokenları faturalanan çıktı tokenlarına dahil olabilir; kullanıcıya görünen çıktı uzunluğundan fazla faturalandırma oluşabilir. 14B Q4 yerel model hızları ile bulut modellerinin kalitesi ve hizmet kapasitesi eşdeğer değildir. Abonelikler API değildir. ChatGPT, Claude, Gemini, Cursor veya Copilot aboneliği kullanıcıya garanti edilmiş değişmez token/s ya da aylık token kotası sağlamaz; aylık eşdeğerler sadece değiştirilebilir varsayımdır. GitHub Copilot kredi sınırı doğrudan output-token kotasına çevrilemez. API maliyeti seçilen çıktı yüzdesinden hesaplanan girdi tokenleri ile çıktı tokenleri üzerinden belirlenir; önbellekten okunan girdi için seçilebilir oran kullanılır; önbelleğe yazma, araç kullanım bedeli, bağlam üst kademesi ve kur değişimi modellenmez. ABD doları bazlı fiyatlar Türkiye'ye özel ödeme fiyatı olmayabilir.</p><h3>Resmî kaynaklar</h3><div class="footerlinks" id="sources"><a href="https://help.openai.com/en/articles/6950777-what-is-chatgpt-plus" target="_blank" rel="noopener">ChatGPT Plus / sınırlar</a><a href="https://help.openai.com/en/articles/9793128-about-chatgpt-pro-tiers" target="_blank" rel="noopener">ChatGPT Pro</a><a href="https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work" target="_blank" rel="noopener">Claude kullanım sınırları</a><a href="https://support.claude.com/en/articles/11049762-choose-a-claude-plan" target="_blank" rel="noopener">Claude fiyatları</a><a href="https://gemini.google/subscriptions/" target="_blank" rel="noopener">Google AI abonelikleri</a><a href="https://cursor.com/pricing" target="_blank" rel="noopener">Cursor güncel planları</a><a href="https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing" target="_blank" rel="noopener">GitHub AI kredileri</a><a href="https://developers.openai.com/api/docs/pricing" target="_blank" rel="noopener">OpenAI API</a><a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener">Claude API</a><a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">Gemini API</a><a href="https://www.hardware-corner.net/gpu-llm-benchmarks/" target="_blank" rel="noopener">GPU benchmarkları</a><a href="https://www.apple.com/tr/mac-studio/specs/" target="_blank" rel="noopener">Mac Studio M5 Max özellikleri</a></div></footer>
+</div><div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+// BEGIN_CALC
+const systems = [
+{id:'rx9060',name:'RX 9060 XT 16 GB · 32 GB RAM',type:'local',price:82052,ram:32,vram:16,tps:28.5,watts:250,estimated:true},
+{id:'rtx5060',name:'RTX 5060 Ti 16 GB · 32 GB RAM',type:'local',price:94571,ram:32,vram:16,tps:32.9,watts:290},
+{id:'rx9070',name:'RX 9070 XT 16 GB · 32 GB RAM',type:'local',price:107559,ram:32,vram:16,tps:54.3,watts:410,estimated:true},
+{id:'mac24',name:'Mac mini M5 Pro 24 GB',type:'local',price:114999,ram:24,vram:0,tps:25.5,watts:100,estimated:true},
+{id:'rtx3090',name:'RTX 3090 24 GB · 64 GB RAM',type:'local',price:116401,ram:64,vram:24,tps:52.1,watts:470,estimated:true},
+{id:'rtx5070',name:'RTX 5070 12 GB · 64 GB RAM',type:'local',price:119411,ram:64,vram:12,tps:40.6,watts:350},
+{id:'rtx5070ti32',name:'RTX 5070 Ti 16 GB · 32 GB RAM',type:'local',price:132512,ram:32,vram:16,tps:58,watts:400},
+{id:'rtx5070ti64',name:'RTX 5070 Ti 16 GB · 64 GB RAM',type:'local',price:147111,ram:64,vram:16,tps:58,watts:400},
+{id:'r9700',name:'Radeon AI PRO R9700 32 GB',type:'local',price:147941,ram:32,vram:32,tps:50,watts:400,estimated:true},
+{id:'mac48',name:'Mac mini M5 Pro 48 GB',type:'local',price:149039,ram:48,vram:0,tps:25.5,watts:100,estimated:true},
+{id:'rtx5070ti64_2tb',name:'RTX 5070 Ti 16 GB · 64 GB RAM · 2 TB',type:'local',price:155341,ram:64,vram:16,tps:58,watts:400,estimated:true},
+{id:'macstudio36',name:'Mac Studio M5 Max · 36 GB birleşik',type:'local',price:167999,ram:36,vram:0,tps:40,watts:145,estimated:true},
+{id:'r9700_64',name:'R9700 32 GB · 64 GB RAM · 2 TB',type:'local',price:180244,ram:64,vram:32,tps:50,watts:420,estimated:true},
+{id:'macmini64',name:'Mac mini M5 Pro · 64 GB birleşik',type:'local',price:185999,ram:64,vram:0,tps:25.5,watts:115,estimated:true},
+{id:'dual3090',name:'2× RTX 3090 · 48 GB toplam · 64 GB RAM',type:'local',price:192711,ram:64,vram:48,tps:52.1,watts:550,estimated:true}];
+const subscriptions = [
+{id:"chatgpt-plus",type:"subscription",name:"ChatGPT Plus",monthly:20,currency:"USD",capM:2,defaultCapM:2,limit:"Model ve 5 saatlik kullanım pencereleri; araçlarda ayrı limitler",source:"https://help.openai.com/en/articles/6950777-what-is-chatgpt-plus"},
+{id:"chatgpt-pro100",type:"subscription",name:"ChatGPT Pro 100",monthly:100,currency:"USD",capM:8,defaultCapM:8,limit:"Kullanım sınırı model ve göreve bağlı; sabit token hakkı yok",source:"https://help.openai.com/en/articles/9793128-about-chatgpt-pro-tiers"},
+{id:"chatgpt-pro200",type:"subscription",name:"ChatGPT Pro 200",monthly:200,currency:"USD",capM:16,defaultCapM:16,limit:"Pro 100’den yüksek kullanım; yine kötüye kullanım ve model sınırları",source:"https://help.openai.com/en/articles/9793128-about-chatgpt-pro-tiers"},
+{id:"claude-pro",type:"subscription",name:"Claude Pro",monthly:20,currency:"USD",capM:2,defaultCapM:2,limit:"5 saatlik oturum + haftalık limit; bağlam uzunluğuna bağlı",source:"https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work"},
+{id:"claude-max5",type:"subscription",name:"Claude Max 5×",monthly:100,currency:"USD",capM:10,defaultCapM:10,limit:"Pro’nun 5× oturum kullanımı, haftalık limitler de geçerli",source:"https://support.claude.com/en/articles/11049762-choose-a-claude-plan"},
+{id:"claude-max20",type:"subscription",name:"Claude Max 20×",monthly:200,currency:"USD",capM:20,defaultCapM:20,limit:"Pro’nun 20× oturum kullanımı, haftalık limitler de geçerli",source:"https://support.claude.com/en/articles/11049762-choose-a-claude-plan"},
+{id:"google-ai-plus",type:"subscription",name:"Google AI Plus (Türkiye)",monthly:199.99,currency:"TRY",capM:1,defaultCapM:1,limit:"Ücretsiz plana göre 2× kullanım; Flash modeli, istek limiti",source:"https://gemini.google/tr/subscriptions/?hl=tr"},
+{id:"google-ai-pro",type:"subscription",name:"Google AI Pro (Türkiye)",monthly:869.99,currency:"TRY",capM:2,defaultCapM:2,limit:"Ücretsiz plana göre 4× kullanım; modele göre farklı limit",source:"https://gemini.google/tr/subscriptions/?hl=tr"},
+{id:"google-ai-ultra5",type:"subscription",name:"Google AI Ultra 5× (başlangıç)",monthly:1479.99,currency:"TRY",capM:10,defaultCapM:10,limit:"Başlangıç/teklif fiyatı; Pro’nun 5× kullanımı, süreli koşullar",source:"https://gemini.google/tr/subscriptions/?hl=tr"},
+{id:"google-ai-ultra20",type:"subscription",name:"Google AI Ultra 20× (Türkiye)",monthly:8999.99,currency:"TRY",capM:30,defaultCapM:30,limit:"Pro’nun 20× kullanımı; model ve özellik limitleri",source:"https://gemini.google/tr/subscriptions/?hl=tr"},
+{id:"cursor-plus",type:"subscription",name:"Cursor Plus",monthly:8,currency:"USD",capM:1,defaultCapM:1,limit:"Temel paylaşılan Grok kullanım havuzu; üçüncü taraf modeller dahil değil",source:"https://cursor.com/pricing"},
+{id:"cursor-premium",type:"subscription",name:"Cursor Premium",monthly:30,currency:"USD",capM:2,defaultCapM:2,limit:"Plus’a göre 4× kullanım; üçüncü taraf modeller ayrıca ücretli",source:"https://cursor.com/pricing"},
+{id:"cursor-super",type:"subscription",name:"Cursor Super",monthly:100,currency:"USD",capM:8,defaultCapM:8,limit:"Plus’a göre 15× kullanım; üçüncü taraf modeller ayrıca ücretli",source:"https://cursor.com/pricing"},
+{id:"cursor-ultra",type:"subscription",name:"Cursor Ultra",monthly:200,currency:"USD",capM:20,defaultCapM:20,limit:"Plus’a göre 50× kullanım; üçüncü taraf modeller ayrıca ücretli",source:"https://cursor.com/pricing"},
+{id:"copilot-pro",type:"subscription",name:"GitHub Copilot Pro",monthly:10,currency:"USD",capM:2,defaultCapM:2,limit:"Aylık 1.500 AI kredisi (1.000 temel + 500 esnek); token kotası değil",source:"https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing"},
+{id:"copilot-proplus",type:"subscription",name:"GitHub Copilot Pro+",monthly:39,currency:"USD",capM:5,defaultCapM:5,limit:"Aylık 7.000 AI kredisi (3.900 temel + 3.100 esnek); token kotası değil",source:"https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing"},
+{id:"copilot-max",type:"subscription",name:"GitHub Copilot Max",monthly:100,currency:"USD",capM:15,defaultCapM:15,limit:"Aylık 20.000 AI kredisi (10.000 temel + 10.000 esnek); token kotası değil",source:"https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing"}
+];
+const apiModels = [
+{id:"api-openai-luna",type:"api",name:"OpenAI · GPT-6 Luna",inputUsd:0.1,outputUsd:0.5,cachedUsd:0.01,source:"https://developers.openai.com/api/docs/pricing",note:"Standart fiyat; >272K girdi ve bölgesel işleme farklı tarifeli",provider:"OpenAI"},
+{id:"api-openai-terra",type:"api",name:"OpenAI · GPT-6.1 Terra",inputUsd:1,outputUsd:5,cachedUsd:0.05,source:"https://developers.openai.com/api/docs/pricing",note:"Standart fiyat; >272K uzun bağlam tarifesi farklı",provider:"OpenAI"},
+{id:"api-openai-sol",type:"api",name:"OpenAI · GPT-6.1 Sol",inputUsd:2,outputUsd:10,cachedUsd:0.1,source:"https://developers.openai.com/api/docs/pricing",note:"Standart fiyat; uzun bağlam ek ücrete tabi",provider:"OpenAI"},
+{id:"api-openai-astra",type:"api",name:"OpenAI · GPT-6 Astra",inputUsd:10,outputUsd:50,cachedUsd:1,source:"https://developers.openai.com/api/docs/pricing",note:"Standart fiyat; uzun bağlam ek ücrete tabi",provider:"OpenAI"},
+{id:"api-openai-gpt54",type:"api",name:"OpenAI · GPT-5.4",inputUsd:2.5,outputUsd:15,cachedUsd:0.25,source:"https://developers.openai.com/api/docs/models/gpt-5.4",note:"272K üzeri bağlam için ek tarife",provider:"OpenAI"},
+{id:"api-claude-haiku",type:"api",name:"Claude · Haiku 5.5",inputUsd:0.1,outputUsd:0.5,cachedUsd:0.01,source:"https://platform.claude.com/docs/en/about-claude/pricing",note:"En çok 100K girişlik istem; daha büyük istemde fiyat artar",provider:"Claude"},
+{id:"api-claude-sonnet",type:"api",name:"Claude · Sonnet 5.5",inputUsd:2,outputUsd:10,cachedUsd:0.1,source:"https://platform.claude.com/docs/en/about-claude/pricing",note:"Önbellek okuma fiyatı; cache yazımı ayrıca ücretli",provider:"Claude"},
+{id:"api-claude-opus",type:"api",name:"Claude · Opus 5.5",inputUsd:4,outputUsd:20,cachedUsd:0.2,source:"https://platform.claude.com/docs/en/about-claude/pricing",note:"Önbellek yazımı ve bölgesel işleme ayrıca ücretli",provider:"Claude"},
+{id:"api-gemini-argon-nov",type:"api",name:"Gemini · 4 Argon (Kasım 2026)",inputUsd:2,outputUsd:10,cachedUsd:0.1,source:"https://ai.google.dev/gemini-api/docs/pricing",note:"Kampanya 30 Kasım 2026’da bitiyor; uzun vadeli grafik bu fiyatı sabit varsayar",provider:"Gemini"},
+{id:"api-gemini-argon-dec",type:"api",name:"Gemini · 4 Argon (Aralık 2026+)",inputUsd:4,outputUsd:20,cachedUsd:0.2,source:"https://ai.google.dev/gemini-api/docs/pricing",note:"Resmî açıklanan 1 Aralık 2026 sonrası standart fiyat",provider:"Gemini"},
+{id:"api-gemini-31pro",type:"api",name:"Gemini · 3.1 Pro Preview",inputUsd:2,outputUsd:12,cachedUsd:0.2,source:"https://ai.google.dev/gemini-api/docs/pricing",note:"200K üzeri istemde fiyat daha yüksek",provider:"Gemini"},
+{id:"api-gemini-3flash",type:"api",name:"Gemini · 3 Flash Preview",inputUsd:0.5,outputUsd:3,cachedUsd:0.05,source:"https://ai.google.dev/gemini-api/docs/pricing",note:"Önizleme modeli, değişebilir",provider:"Gemini"},
+{id:"api-gemini-31lite",type:"api",name:"Gemini · 3.1 Flash-Lite",inputUsd:0.25,outputUsd:1.5,cachedUsd:0.025,source:"https://ai.google.dev/gemini-api/docs/pricing",note:"Metin girdi/çıktı",provider:"Gemini"},
+{id:"api-gemini-flash",type:"api",name:"Gemini · 2.5 Flash",inputUsd:0.3,outputUsd:2.5,cachedUsd:0.03,source:"https://ai.google.dev/gemini-api/docs/pricing",note:"Metin fiyatı; düşünme tokenları çıktıya dahil",provider:"Gemini"},
+{id:"api-gemini-pro25",type:"api",name:"Gemini · 2.5 Pro",inputUsd:1.25,outputUsd:10,cachedUsd:0.125,source:"https://ai.google.dev/gemini-api/docs/pricing",note:"200K üzeri istemlerde giriş $2.50, çıktı $15",provider:"Gemini"},
+{id:"api-deepseek-flash-peak",type:"api",name:"DeepSeek · V4.1 Flash (pik)",inputUsd:0.3,outputUsd:1.2,cachedUsd:0.006,source:"https://api-docs.deepseek.com/quick_start/pricing/",note:"Pik: Hafta içi 01:00–04:00 ve 06:00–10:00 UTC",provider:"DeepSeek"},
+{id:"api-deepseek-flash-off",type:"api",name:"DeepSeek · V4.1 Flash (pik dışı)",inputUsd:0.15,outputUsd:0.6,cachedUsd:0.003,source:"https://api-docs.deepseek.com/quick_start/pricing/",note:"Pik dışı saatler/hafta sonu; UTC zaman dilimi",provider:"DeepSeek"},
+{id:"api-deepseek-pro-peak",type:"api",name:"DeepSeek · V4 Pro (pik)",inputUsd:1.32,outputUsd:3.96,cachedUsd:0.044,source:"https://api-docs.deepseek.com/quick_start/pricing/",note:"Pik: Hafta içi 01:00–04:00 ve 06:00–10:00 UTC",provider:"DeepSeek"},
+{id:"api-deepseek-pro-off",type:"api",name:"DeepSeek · V4 Pro (pik dışı)",inputUsd:0.66,outputUsd:1.98,cachedUsd:0.022,source:"https://api-docs.deepseek.com/quick_start/pricing/",note:"Pik dışı saatler/hafta sonu; UTC zaman dilimi",provider:"DeepSeek"},
+{id:"api-mistral-large",type:"api",name:"Mistral · Large 3",inputUsd:0.5,outputUsd:1.5,cachedUsd:0.05,source:"https://docs.mistral.ai/inference/pricing",note:"Standart metin API",provider:"Mistral"},
+{id:"api-mistral-medium",type:"api",name:"Mistral · Medium 3.5",inputUsd:1.5,outputUsd:7.5,cachedUsd:0.15,source:"https://docs.mistral.ai/inference/pricing",note:"Standart metin API",provider:"Mistral"},
+{id:"api-mistral-small",type:"api",name:"Mistral · Small 4",inputUsd:0.15,outputUsd:0.6,cachedUsd:0.015,source:"https://docs.mistral.ai/inference/pricing",note:"Standart metin API",provider:"Mistral"},
+{id:"api-ministral14",type:"api",name:"Mistral · Ministral 3 14B",inputUsd:0.2,outputUsd:0.2,cachedUsd:0.02,source:"https://docs.mistral.ai/inference/pricing",note:"Standart metin API",provider:"Mistral"},
+{id:"api-groq-120",type:"api",name:"Groq · GPT-OSS 120B",inputUsd:0.15,outputUsd:0.6,cachedUsd:0.075,source:"https://console.groq.com/docs/models",note:"GroqCloud hosted API; sağlayıcının hız/sınırlamaları geçerli",provider:"Groq"},
+{id:"api-groq-20",type:"api",name:"Groq · GPT-OSS 20B",inputUsd:0.075,outputUsd:0.3,cachedUsd:0.037,source:"https://console.groq.com/docs/models",note:"GroqCloud hosted API; sağlayıcının hız/sınırlamaları geçerli",provider:"Groq"},
+{id:"api-xai-grok47",type:"api",name:"xAI · Grok 4.7",inputUsd:2,outputUsd:6,cachedUsd:0.5,source:"https://docs.x.ai/developers/pricing",note:"200K+ uzun bağlam isteğinde fiyat artar",provider:"xAI"}
+];
+const candidates = [...systems,...subscriptions,...apiModels];
+function billDaysThreshold(days){return 8*Math.max(1,Number(days)||30)}
+function energyBill(kwh,s,days=s.billingDays){const amount=Math.max(0,Number(kwh)||0);const threshold=billDaysThreshold(days);const netEnergy=Math.min(amount,threshold)*s.lowRate+Math.max(0,amount-threshold)*s.highRate;const reference=Math.max(0,s.lowKwh+s.highKwh);const levy=reference ? amount/reference*s.refLevy : 0;const vat=(netEnergy+levy)*s.vat/100;return {netEnergy,levy,vat,total:netEnergy+levy+vat,threshold,amount}}
+function reconcileSample(s){const b=energyBill(s.lowKwh+s.highKwh,s,s.billingDays);return {calculated:b.total,...b}}
+function homeMonthlyKwh(s){const h=Math.max(0,s.homeKwh);return s.homeKwhIsBilling?h*30/Math.max(1,s.billingDays):h}
+function gpuMonthlyKwh(millionTokens,plan){return Math.max(0,millionTokens)*1000000/Math.max(0.001,plan.tps*3600)*(plan.watts/1000)}
+function apiInputMillions(outputMillions,outputSharePercent){const pct=Math.min(100,Math.max(1,Number(outputSharePercent)||25));return Math.max(0,outputMillions)*(100-pct)/pct}
+function apiTokenCostUsd(plan,outputMillions,outputSharePercent,cachedInputSharePercent=0){
+ const inTotal=apiInputMillions(outputMillions,outputSharePercent);
+ const cachedFraction=Math.min(1,Math.max(0,(Number(cachedInputSharePercent)||0)/100));
+ const cachePrice=Number.isFinite(plan.cachedUsd)?plan.cachedUsd:plan.inputUsd;
+ return outputMillions*plan.outputUsd+inTotal*((1-cachedFraction)*plan.inputUsd+cachedFraction*cachePrice)
+}
+function monthlyCosts(plan,s){const baseHome=energyBill(homeMonthlyKwh(s),s,30).total;let ai=0,incrementalElectric=0,withAiHome=baseHome;
+ if(plan.type==='local'){const electricity=gpuMonthlyKwh(s.monthlyTokens,plan);withAiHome=energyBill(homeMonthlyKwh(s)+electricity,s,30).total;incrementalElectric=withAiHome-baseHome;ai=incrementalElectric}
+ else if(plan.type==='subscription'){ai=plan.monthly*(plan.currency==='USD'?s.usdTry*(1+s.foreignTax/100):1)}
+ else if(plan.type==='api'){ai=apiTokenCostUsd(plan,s.monthlyTokens,s.outputSharePercent,s.cachedInputSharePercent)*s.usdTry*(1+s.foreignTax/100)}
+ return {baseHome,withAiHome,incrementalElectric,ai,monthlyTotal:ai+(s.includeHome?baseHome:0)}
+}
+// Price growth: yearly % -> compound monthly rate. accum(g,t) is the discrete geometric sum, smooth between whole months.
+function growthRate(yearlyPct){const y=Math.max(-99,Number(yearlyPct)||0);return Math.pow(1+y/100,1/12)-1}
+function accum(g,t){return Math.abs(g)<1e-12?t:(Math.pow(1+g,t)-1)/g}
+function costParts(plan,s){const m=monthlyCosts(plan,s),gU=growthRate(s.usdYearly),gT=growthRate(s.tlYearly),parts=[];
+ if(plan.type==='local')parts.push([m.incrementalElectric,gT]);
+ else if(plan.type==='subscription')parts.push([m.ai,plan.currency==='USD'?gU:gT]);
+ else if(plan.type==='api')parts.push([m.ai,gU]);
+ if(s.includeHome)parts.push([m.baseHome,gT]);
+ return parts}
+// Resale: a used system sells below new price immediately (RESALE_FIRST_LOSS), then loses `depreciation` % per year.
+const RESALE_FIRST_LOSS=0.15;
+function residualValue(plan,months,s){if(plan.type!=='local'||!s.includeResale||!(months>0))return 0;const d=Math.min(95,Math.max(0,Number(s.depreciation)||0))/100;return plan.price*(1-RESALE_FIRST_LOSS)*Math.pow(1-d,months/12)}
+function cumulativeCost(plan,months,s){const n=Math.max(0,Number(months)||0);const sunk=plan.type==='local'?plan.price-residualValue(plan,n,s):0;return sunk+costParts(plan,s).reduce((a,[m,g])=>a+m*accum(g,n),0)}
+function monthlyAt(plan,month,s){return costParts(plan,s).reduce((a,[m,g])=>a+m*Math.pow(1+g,Math.max(0,month-1)),0)}
+function averageMonthly(plan,months,s){const n=Math.max(1e-9,Number(months)||0);return costParts(plan,s).reduce((a,[m,g])=>a+m*accum(g,n),0)/n}
+// Month at which a hardware purchase becomes cheaper than an alternative (0 = immediately, Infinity = not within maxMonths).
+function breakEvenMonth(local,other,s,maxMonths=120){
+ const diff=t=>cumulativeCost(local,t,s)-cumulativeCost(other,t,s);
+ if(diff(1e-4)<=0)return 0;
+ let prev=1e-4;
+ for(let t=0.25;t<=maxMonths+1e-9;t+=0.25){if(diff(t)<=0){let a=prev,b=t;for(let i=0;i<40;i++){const m=(a+b)/2;if(diff(m)<=0)b=m;else a=m}return b}prev=t}
+ return Infinity}
+// Monthly output (millions) at which hardware and an API cost the same over `months`.
+function breakEvenTokens(local,other,s,months){
+ if(other.type!=='api')return NaN;
+ const diff=T=>{const ss={...s,monthlyTokens:T};return cumulativeCost(local,months,ss)-cumulativeCost(other,months,ss)};
+ let lo=0,hi=1000;if(diff(lo)<=0)return 0;if(diff(hi)>0)return Infinity;
+ for(let i=0;i<60;i++){const m=(lo+hi)/2;if(diff(m)>0)lo=m;else hi=m}
+ return hi}
+function perMillionCost(plan,months,s){const tokens=Math.max(0,months)*s.monthlyTokens;return tokens?cumulativeCost(plan,months,s)/tokens:NaN}
+function capacityMillions(plan,s){return (plan.type==='local'||(plan.tps>0&&plan.type!=='subscription'&&plan.type!=='api'))?plan.tps*s.monthlyHours*30*3600/1000000:plan.type==='subscription'?plan.capM:Infinity}
+function visibleCandidates(arr,categories,selected,search,budget=Infinity){const query=(search||'').toLocaleLowerCase('tr');return arr.filter(p=>categories[p.type]&&selected.has(p.id)&&p.name.toLocaleLowerCase('tr').includes(query)&&(p.type!=='local'||p.price==null||p.price<=budget)).sort((a,b)=>(a.type==='local'?0:a.type==='subscription'?1:2)-(b.type==='local'?0:b.type==='subscription'?1:2)||(a.type==='local'&&b.type==='local'?a.price-b.price:0))}
+
+// Model catalogue: recorded GGUF file sizes in decimal GB from linked quant repositories.
+// KV cache uses FP16 keys/values and model-config head geometry, not a single generic GB-per-token ratio.
+const localModels = [
+{id:'qwen3-1.7b',name:'Qwen3 1.7B',params:'1.7B',layers:28,kvHeads:8,headDim:128,nativeCtx:40960,source:'https://huggingface.co/tensorblock/Qwen_Qwen3-1.7B-GGUF',config:'https://huggingface.co/Qwen/Qwen3-1.7B/blob/main/config.json',quants:{Q2_K:0.880,Q3_K_M:1.073,Q4_K_M:1.282,Q5_K_M:1.472,Q6_K:1.673,Q8_0:2.165}},
+{id:'qwen3-4b',name:'Qwen3 4B',params:'4B',layers:36,kvHeads:8,headDim:128,nativeCtx:40960,source:'https://huggingface.co/tensorblock/Qwen_Qwen3-4B-GGUF',config:'https://huggingface.co/Qwen/Qwen3-4B/blob/main/config.json',quants:{Q2_K:1.669,Q3_K_M:2.076,Q4_K_M:2.497,Q5_K_M:2.890,Q6_K:3.306,Q8_0:4.280}},
+{id:'qwen3-8b',name:'Qwen3 8B',params:'8B',layers:36,kvHeads:8,headDim:128,nativeCtx:40960,source:'https://huggingface.co/tensorblock/Qwen_Qwen3-8B-GGUF',config:'https://huggingface.co/Qwen/Qwen3-8B/blob/main/config.json',quants:{Q2_K:3.282,Q3_K_M:4.124,Q4_K_M:5.028,Q5_K_M:5.851,Q6_K:6.726,Q8_0:8.710}},
+{id:'qwen3-14b',name:'Qwen3 14B',params:'14B',layers:40,kvHeads:8,headDim:128,nativeCtx:40960,source:'https://huggingface.co/tensorblock/Qwen_Qwen3-14B-GGUF',config:'https://huggingface.co/Qwen/Qwen3-14B/blob/main/config.json',quants:{Q2_K:5.754,Q3_K_M:7.321,Q4_K_M:9.002,Q5_K_M:10.515,Q6_K:12.122,Q8_0:15.699}},
+{id:'qwen3-30a3',name:'Qwen3 30B-A3B (MoE)',params:'30B / 3B etkin',layers:48,kvHeads:4,headDim:128,nativeCtx:40960,source:'https://huggingface.co/tensorblock/Qwen_Qwen3-30B-A3B-GGUF',config:'https://huggingface.co/Qwen/Qwen3-30B-A3B/blob/main/config.json',quants:{Q2_K:11.259,Q3_K_M:14.712,Q4_K_M:18.557,Q5_K_M:21.726,Q6_K:25.093,Q8_0:32.484}},
+{id:'gemma3-27b',name:'Gemma 3 27B (metin)',params:'27B',layers:62,kvHeads:16,headDim:128,nativeCtx:131072,slidingWindow:1024,slidingEvery:6,source:'https://huggingface.co/second-state/gemma-3-27b-it-GGUF',config:'https://huggingface.co/unsloth/gemma-3-27b-it/blob/main/config.json',quants:{Q2_K:10.5,Q3_K_M:13.4,Q4_K_M:16.5,Q5_K_M:19.3,Q6_K:22.2,Q8_0:28.7}},
+{id:'qwen3-32b',name:'Qwen3 32B',params:'32B',layers:64,kvHeads:8,headDim:128,nativeCtx:40960,source:'https://huggingface.co/tensorblock/willcb_Qwen3-32B-GGUF',config:'https://huggingface.co/Qwen/Qwen3-32B/blob/main/config.json',quants:{Q2_K:12.345,Q3_K_M:15.972,Q4_K_M:19.762,Q5_K_M:23.215,Q6_K:26.883,Q8_0:34.818}},
+{id:'llama33-70b',name:'Llama 3.3 70B',params:'70B',layers:80,kvHeads:8,headDim:128,nativeCtx:131072,source:'https://huggingface.co/tensorblock/Llama-3.3-70B-Instruct-GGUF',config:'https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct',quants:{Q2_K:26.375,Q3_K_M:34.267,Q4_K_M:42.520,Q5_K_M:49.950,Q6_K:57.888,Q8_0:74.975}}
+];
+const quantTypes=['Q2_K','Q3_K_M','Q4_K_M','Q5_K_M','Q6_K','Q8_0'];
+function kvCacheGiB(m,context){
+ const tokens=Math.max(0,Number(context)||0), bytes=2 /* key+value */ * m.kvHeads*m.headDim*2 /* FP16 */;
+ if(m.slidingWindow){const globalLayers=Math.ceil(m.layers/m.slidingEvery);const localLayers=m.layers-globalLayers;return (globalLayers*tokens+localLayers*Math.min(tokens,m.slidingWindow))*bytes/1073741824;}
+ return m.layers*tokens*bytes/1073741824;
+}
+function modelFit(system,model,quant,context){
+ const weightGB=model.quants[quant];
+ if(!Number.isFinite(weightGB))return {status:'insufficient',reason:'Quant dosyası doğrulanamadı'};
+ const weightsGiB=weightGB/1.073741824,kvGiB=kvCacheGiB(model,context);
+ const memoryKind=system.vram===0?'unified':system.id==='dual3090'?'multi':'discrete';
+ const overheadGiB=memoryKind==='unified'?5:memoryKind==='multi'?3:2;
+ const availableGiB=memoryKind==='unified'?system.ram:system.vram;
+ const requestedGiB=weightsGiB+kvGiB+overheadGiB;
+ const ramAvailableGiB=Math.max(0,system.ram-6);
+ let status;
+ if(requestedGiB<=availableGiB)status='gpu';
+ else if(memoryKind==='unified')status='insufficient';
+ else if(requestedGiB<=availableGiB+ramAvailableGiB)status='offload';
+ else status='insufficient';
+ return {status,memoryKind,weightGB,weightsGiB,kvGiB,overheadGiB,requestedGiB,availableGiB,ramAvailableGiB,nativeContextExceeded:context>model.nativeCtx,caution:memoryKind==='multi'?'İki kartın VRAM’i tek havuz değildir; çoklu GPU katman bölme, VRAM dağılımı ve yazılım desteği gerekir.':memoryKind==='unified'?'Birleşik bellek CPU ve GPU tarafından ortak kullanılır; macOS bellek ayırması değişebilir.':status==='offload'?'CPU/RAM offload tahmini; gerçek hız düşük olabilir.':status==='gpu'?'Bellek uygunluğu tahminidir; runtime ve sürücü desteği ayrıca gerekir.':'Bellek yetersiz görünüyor.'};
+}
+// END_CALC
+// BEGIN_GUIDE
+function monthlyOutputMillions(calls,outputTokens,days){
+ const a=Number(calls),b=Number(outputTokens),c=Number(days);
+ if(![a,b,c].every(Number.isFinite))return 0;
+ return Math.max(0,a)*Math.max(0,b)*Math.max(0,c)/1000000;
+}
+function tokenMixEstimate(outputM,pct){
+ const out=Math.max(0,Number(outputM)||0);
+ const p=Math.min(100,Math.max(1,Number(pct)||25));
+ const inputM=out*(100-p)/p;
+ return {outputM:out,inputM,totalM:out+inputM};
+}
+const usagePresets=[
+ {id:'casual',label:'Gündelik sohbet',calls:20,tokens:500,days:30,monthlyM:0.3,outputPct:25},
+ {id:'study',label:'Araştırma / ders',calls:40,tokens:1500,days:30,monthlyM:1.8,outputPct:25},
+ {id:'coding',label:'Kodlama ajanı',calls:150,tokens:1200,days:30,monthlyM:5.4,outputPct:10},
+ {id:'writing',label:'Uzun içerik',calls:60,tokens:2000,days:30,monthlyM:3.6,outputPct:60},
+ {id:'batch',label:'Yoğun otomasyon',calls:1000,tokens:2000,days:30,monthlyM:60,outputPct:50}
+];
+// END_GUIDE
+const palette=['#20869a','#c45e43','#7865b0','#298766','#a54a7c','#907324','#4d83a9','#ba5052','#588139','#8b5a9a','#357b7e','#9b792f','#5d6eaf','#a95b7a','#688344','#387fa8','#8070a6','#8a842b','#b27a4d','#597f81','#326ca1','#a05c38','#7a689e','#267f79','#aa5164','#65842c'];candidates.forEach((p,i)=>p.color=palette[i%palette.length]);
+const $=id=>document.getElementById(id);
+// Reads a numeric input; empty/invalid values fall back to the default and are flagged, out-of-range values are clamped.
+function num(id){const el=$(id);let v=Number(el.value);const min=el.min!==''?Number(el.min):-Infinity,max=el.max!==''?Number(el.max):Infinity;const bad=el.value===''||!Number.isFinite(v)||v<min||v>max;el.setAttribute('aria-invalid',String(bad));el.closest('.field')?.classList.toggle('invalid',bad);if(el.value===''||!Number.isFinite(v))v=(id in defaults)?defaults[id]:Math.max(0,min);return Math.min(max,Math.max(min,v))}let state={mode:'total',categories:{local:true,subscription:true,api:true},selected:new Set(['rx9060','rtx3090','rtx5070ti64','r9700','macstudio36','r9700_64','dual3090','chatgpt-plus','claude-pro','copilot-pro','api-openai-luna','api-openai-terra','api-gemini-flash','api-deepseek-flash-off','api-mistral-small','api-groq-120']),search:'',sort:{key:'total',dir:1}};
+const view={zoom:1,from:0,focus:null};
+const defaults={hardwareBudget:200000,monthlyTokens:10,horizon:24,normalKwh:298.445,monthlyHours:8,billingDays:34,usdTry:49.9338,outputSharePercent:25,cachedInputSharePercent:0,subscriptionTax:0,lowKwh:272,highKwh:26.445,rateLow:2.918965,rateHigh:4.320708,refLevy:9.23,vat:10,usdYearly:0,tlYearly:0,depreciation:25};const initialSelection=[...state.selected];
+const trn=(v,d=2)=>Number(v).toLocaleString('tr-TR',{minimumFractionDigits:d,maximumFractionDigits:d});const money=(v,d=0)=>trn(v,d)+' TL';
+function getSettings(){return {budget:num('hardwareBudget'),billingDays:num('billingDays'),lowKwh:num('lowKwh'),highKwh:num('highKwh'),lowRate:num('rateLow'),highRate:num('rateHigh'),refLevy:num('refLevy'),vat:num('vat'),homeKwh:num('normalKwh'),homeKwhIsBilling:$('homeKwhIsBilling').checked,monthlyTokens:num('monthlyTokens'),monthlyHours:num('monthlyHours'),usdTry:num('usdTry'),foreignTax:num('subscriptionTax'),horizon:num('horizon'),outputSharePercent:num('outputSharePercent'),cachedInputSharePercent:num('cachedInputSharePercent'),includeHome:$('includeHome').checked,usdYearly:num('usdYearly'),tlYearly:num('tlYearly'),depreciation:num('depreciation'),includeResale:$('includeResale').checked}}
+const hasGrowth=s=>Math.abs(s.usdYearly)>1e-9||Math.abs(s.tlYearly)>1e-9;
+function safe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function filterList(){const search=state.search;let visible=visibleCandidates(candidates,state.categories,new Set(candidates.map(p=>p.id)),search,num('hardwareBudget'));$('selectedCount').textContent=visible.filter(p=>state.selected.has(p.id)).length+' / '+visible.length+' seçili';$('lines').innerHTML=visible.map(p=>`<label class="filter-item"><input type="checkbox" data-plan="${p.id}" ${state.selected.has(p.id)?'checked':''} aria-label="${safe(p.name)}"><span><span class="filter-name"><i class="color-dot" style="background:${p.color}"></i>${safe(p.name)}</span><small class="filter-description" style="display:block">${p.type==='local'?`${p.vram?p.vram+' GB '+(p.id==='dual3090'?'toplam VRAM':'VRAM'):'Birleşik bellek'} · ${p.tps} tok/sn${p.estimated?' · senaryo':''}`:p.type==='subscription'?'Kullanım sınırlı':'Girdi, cache ve çıktı token ücreti'}</small></span><span class="filter-price">${p.type==='local'?money(p.price):p.type==='subscription'?(p.currency==='TRY'?money(p.monthly,2)+'/ay':'$'+p.monthly+'/ay'):'API'}</span></label>`).join('')||'<p class="tiny">Bu filtreyle eşleşme yok.</p>';document.querySelectorAll('[data-plan]').forEach(c=>c.addEventListener('change',()=>{if(c.checked)state.selected.add(c.dataset.plan);else state.selected.delete(c.dataset.plan);render()}));document.querySelectorAll('[data-category]').forEach(btn=>btn.classList.toggle('on',state.categories[btn.dataset.category]));}
+function renderHardware(s){const all=[...systems].filter(p=>p.price<=s.budget).sort((a,b)=>a.price-b.price);$('catalogueCount').textContent=all.length+' / '+systems.length+' sistem';$('hardwareCatalogue').innerHTML=all.map(p=>`<article class="hardware-option catalogue-item"><b>${safe(p.name)}</b><span>${money(p.price)}</span><small>${p.ram} GB RAM · ${p.vram?p.vram+' GB '+(p.id==='dual3090'?'toplam VRAM':'VRAM'):'Birleşik bellek'} · ${p.tps} tok/sn${p.estimated?' · tahmini':''}</small><button type="button" class="hardware-model-link" data-hardware-model="${p.id}">Çalışan modeller / quant</button></article>`).join('')||'<p class="tiny">Seçilen bütçenin altında sistem yok.</p>';document.querySelectorAll('[data-hardware-model]').forEach(el=>el.addEventListener('click',()=>{$('modelHardware').value=el.dataset.hardwareModel;$('modelView').value='hardware';renderModelFit();$('modelCompatibility').scrollIntoView({behavior:'smooth',block:'start'});}));}
+function renderCaps(){ $('caps').innerHTML=subscriptions.map(p=>`<div class="caprow"><div><strong><i class="color-dot" style="background:${p.color}"></i>${safe(p.name)}</strong><p>${safe(p.limit)} · <a href="${p.source}" target="_blank" rel="noopener noreferrer">Resmî kaynak</a></p></div><label><span class="sr">${safe(p.name)} aylık tahmini çıktı tokeni (milyon)</span><input type="number" data-cap="${p.id}" value="${p.capM}" min="0.01" max="10000" step="0.5" aria-label="${safe(p.name)} varsayımsal aylık milyon çıktı token kapasitesi"></label></div>`).join('');document.querySelectorAll('[data-cap]').forEach(el=>el.addEventListener('input',()=>{let p=subscriptions.find(x=>x.id===el.dataset.cap);p.capM=Math.max(0.01,Number(el.value)||0.01);render()}))}
+function renderBill(s){const r=reconcileSample(s),h=homeMonthlyKwh(s),house=energyBill(h,s,30);$('sampleUsage').textContent=trn(s.lowKwh+s.highKwh,3);$('billBreakdown').innerHTML=[['Enerji bedeli',money(r.netEnergy,2)],['Tüketim vergisi (KDV öncesi)',money(r.levy,2)],['%'+trn(s.vat,0)+' KDV',money(r.vat,2)],['Hesaplanan toplam',money(r.calculated,2)]].map(([label,price])=>`<div class="bill-item"><small>${label}</small><strong>${price}</strong></div>`).join('');$('billNote').innerHTML=`${s.billingDays} günlük alt kademe: <b>${trn(r.threshold,1)} kWh</b> (8 kWh/gün). 30 günlük ev tüketimi varsayımı: <b>${trn(h,2)} kWh</b>; bunun yaklaşık aylık faturası: <b>${money(house.total,2)}</b>. Toplam, girilen tüketim ve vergi değerlerinden hesaplanır; bildirilen bir fatura tutarına göre ayarlanmaz.`;return {r,house,h}}
+function isExceed(p,s){return s.monthlyTokens>capacityMillions(p,s)+1e-8}
+function renderApiCatalogue(){
+ $('apiCount').textContent=apiModels.length+' model';
+ $('apiCatalogue').innerHTML=apiModels.map(p=>`<tr><td><b>${safe(p.name)}</b></td><td class="numeric">$${p.inputUsd}</td><td class="numeric">$${p.cachedUsd??p.inputUsd}</td><td class="numeric">$${p.outputUsd}</td><td class="tiny">${safe(p.note||'Standart metin')}</td><td><a href="${p.source}" rel="noopener noreferrer" target="_blank">Resmî fiyat</a></td></tr>`).join('');
+}
+function renderSummary(s,info){const selected=visibleCandidates(candidates,state.categories,state.selected,state.search,s.budget);const infeasible=selected.filter(p=>isExceed(p,s));const cheapest=selected.filter(p=>!isExceed(p,s)).sort((a,b)=>cumulativeCost(a,s.horizon,s)-cumulativeCost(b,s.horizon,s))[0];const feasible=selected.filter(p=>!isExceed(p,s)),bestLocal=feasible.filter(p=>p.type==='local').sort((a,b)=>cumulativeCost(a,s.horizon,s)-cumulativeCost(b,s.horizon,s))[0],bestCloud=feasible.filter(p=>p.type!=='local').sort((a,b)=>cumulativeCost(a,s.horizon,s)-cumulativeCost(b,s.horizon,s))[0];const be=bestLocal&&bestCloud?breakEvenMonth(bestLocal,bestCloud,s):NaN;
+ let vals=[['Aylık çıktı',trn(s.monthlyTokens,2)+' M','API için girdi ve cache tokenleri ayrıca sayılır'],['Donanım amortisi',!Number.isNaN(be)?(be===0?'Hemen':Number.isFinite(be)?trn(be,1)+' ay':'120 ay+'):'—',bestLocal&&bestCloud?`${bestLocal.name} → ${bestCloud.name}`:'Uygun donanım ve bulut seçeneği seçin'],['Evin normal faturası',money(info.house.total),'30 günlük modelleme'],['En düşük hesaplanan maliyet',cheapest?money(cumulativeCost(cheapest,s.horizon,s)):'Yok',cheapest?cheapest.name:'Filtre seçimini kontrol edin'],['Hedefe yetmeyen',infeasible.length+' seçenek','Seçili seri içinde; kota veya üretim süresi']];$('summary').innerHTML=vals.map(([label,value,detail])=>`<div class="metric"><span>${safe(label)}</span><strong>${safe(value)}</strong><small>${safe(detail)}</small></div>`).join('')}
+const sortGetters={name:p=>p.name,ram:p=>p.type==='local'?p.ram:-1,vram:p=>p.type==='local'?p.vram:-1,tps:p=>p.type==='local'?p.tps:-1,price:p=>p.type==='local'?p.price:0,monthly:(p,s)=>monthlyCosts(p,s).ai,total:(p,s)=>cumulativeCost(p,s.horizon,s),perM:(p,s)=>isExceed(p,s)?Infinity:perMillionCost(p,s.horizon,s)};
+function tableRows(s){const p=visibleCandidates(candidates,state.categories,state.selected,state.search,s.budget);const get=sortGetters[state.sort.key]||sortGetters.total,dir=state.sort.dir;return [...p].sort((a,b)=>{const va=get(a,s),vb=get(b,s);return (typeof va==='string'?va.localeCompare(vb,'tr'):va-vb)*dir||cumulativeCost(a,s.horizon,s)-cumulativeCost(b,s.horizon,s)})}
+function limitStatus(p,s){const exceed=isExceed(p,s);return p.type==='api'?'API hız/kota limiti ayrı':p.type==='subscription'?(exceed?'Senaryo kotası aşıldı':'Senaryo içinde; garanti değil'):(exceed?'Süre yetmiyor':'Saat hedefi içinde')}
+function renderTable(s){const rows=tableRows(s);$('costTitle').textContent=`${s.horizon}. ay sonunda maliyetler`;document.querySelectorAll('button.sort').forEach(b=>{if(b.dataset.sort===state.sort.key)b.dataset.dir=String(state.sort.dir);else delete b.dataset.dir;b.closest('th').setAttribute('aria-sort',b.dataset.sort===state.sort.key?(state.sort.dir>0?'ascending':'descending'):'none')});$('costBody').innerHTML=rows.map(p=>{const m=monthlyCosts(p,s),exceed=isExceed(p,s),cap=capacityMillions(p,s);const resale=residualValue(p,s.horizon,s);return `<tr><td><i class="color-dot" style="background:${p.color}"></i><b>${safe(p.name)}</b><small>${p.type==='local'?`${p.ram} GB RAM, ${p.vram||'birleşik'} GB VRAM${p.estimated?' · yaklaşık':''} · kapasite ${trn(cap,1)} M/ay${resale?` · ikinci el ≈ ${money(resale)}`:''}`:p.type==='subscription'?`Örnek kota: ${trn(cap,2)} M çıktı/ay`: `Girdi $${p.inputUsd} · önbellek $${p.cachedUsd??p.inputUsd} · çıktı $${p.outputUsd} (1M)`}</small></td><td class="numeric">${p.type==='local'?p.ram+' GB':'—'}</td><td class="numeric">${p.type==='local'?(p.vram?p.vram+(p.id==='dual3090'?' GB toplam':' GB'):'Birleşik'):'—'}</td><td class="numeric">${p.type==='local'?p.tps+(p.estimated?' ≈':''):'—'}</td><td class="numeric">${money(p.type==='local'?p.price:0)}</td><td class="numeric">${money(m.ai,2)}</td><td class="numeric">${money(cumulativeCost(p,s.horizon,s))}</td><td class="numeric">${exceed?'—':money(perMillionCost(p,s.horizon,s),2)}</td><td class="${exceed?'bad-text':'tiny'}">${exceed?'⚠ ':''}${limitStatus(p,s)}</td></tr>`}).join('')||'<tr><td colspan="9">Seçili seri yok.</td></tr>'}
+function exportCsv(){const s=getSettings(),rows=tableRows(s);const n=v=>Number.isFinite(v)?v.toFixed(2).replace('.',','):'';const esc=v=>`"${String(v).replace(/"/g,'""')}"`;const head=['Sistem','Tür','RAM GB','VRAM GB','tok/sn','Başlangıç TL','Aylık AI gideri TL (ilk ay)',`Toplam TL (${s.horizon} ay)`,'TL / 1M çıktı','Durum'];const lines=rows.map(p=>[p.name,p.type==='local'?'Donanım':p.type==='subscription'?'Abonelik':'API',p.type==='local'?p.ram:'',p.type==='local'?p.vram:'',p.type==='local'?p.tps:'',n(p.type==='local'?p.price:0),n(monthlyCosts(p,s).ai),n(cumulativeCost(p,s.horizon,s)),isExceed(p,s)?'':n(perMillionCost(p,s.horizon,s)),limitStatus(p,s)].map(esc).join(';'));const blob=new Blob(['﻿'+[head.map(esc).join(';'),...lines].join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`ai-maliyet-${s.horizon}ay-${trn(s.monthlyTokens,1).replace(',','_')}M.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function renderBreakEven(s){
+ const allowed=systems.filter(p=>p.price<=s.budget).sort((a,b)=>a.price-b.price),sel=$('beHardware'),old=sel.value;
+ sel.innerHTML=allowed.map(p=>`<option value="${p.id}">${safe(p.name)} · ${money(p.price)}</option>`).join('');
+ if(!allowed.length){$('beHeadline').textContent='Bütçe altında donanım yok.';$('beBody').innerHTML='';return}
+ const selectedLocal=visibleCandidates(candidates,state.categories,state.selected,state.search,s.budget).filter(p=>p.type==='local');
+ sel.value=allowed.some(p=>p.id===old)?old:(selectedLocal.find(p=>!isExceed(p,s))||allowed[0]).id;
+ const local=allowed.find(p=>p.id===sel.value),H=s.horizon;
+ $('beHorizonHead').textContent=`${H}. ayda fark`;
+ const others=visibleCandidates(candidates,{...state.categories,local:false},state.selected,state.search,s.budget).map(o=>({o,be:breakEvenMonth(local,o,s),diff:cumulativeCost(o,H,s)-cumulativeCost(local,H,s),bt:breakEvenTokens(local,o,s,H)})).sort((a,b)=>a.be-b.be||b.diff-a.diff);
+ const cap=capacityMillions(local,s),localOver=isExceed(local,s),elec=monthlyCosts(local,s).incrementalElectric;
+ const wins=others.filter(r=>r.be<=H),fastest=others.find(r=>Number.isFinite(r.be));
+ $('beHeadline').innerHTML=!others.length?'Grafik filtrelerinden en az bir abonelik veya API seçin.':`<b>${safe(local.name)}</b> (${money(local.price)}, ek elektrik ≈ ${money(elec,2)}/ay) seçili ${others.length} alternatiften <b>${wins.length}</b> tanesini ${H} ay içinde amorti ediyor.${fastest?` En hızlı: ${safe(fastest.o.name)} — ${fastest.be===0?'hemen':trn(fastest.be,1)+'. ay'}.`:''}${localOver?` <span class="bad-text">⚠ Bu donanım günde ${trn(s.monthlyHours,1)} saatte en fazla ${trn(cap,1)} M çıktı üretebilir; hedef ${trn(s.monthlyTokens,2)} M.</span>`:''}`;
+ $('beBody').innerHTML=others.map(({o,be,diff,bt})=>{const pct=Number.isFinite(be)?Math.min(100,be/120*100):100;const label=be===0?'Hemen':Number.isFinite(be)?`${trn(be,1)}. ay`:'120 ay içinde yok';const note=[];if(isExceed(o,s))note.push('Abonelik bu kullanımı karşılamıyor');if(o.type==='api'&&Number.isFinite(bt)&&bt>cap)note.push('Başabaş kullanımı donanım kapasitesini aşıyor');
+  return `<tr><td><i class="color-dot" style="background:${o.color}"></i><b>${safe(o.name)}</b><small>${o.type==='subscription'?'Abonelik':'API'}</small></td><td class="numeric">${money(monthlyAt(o,1,s),2)}</td><td><div class="be-cell"><span class="${be<=H?'ok-text':Number.isFinite(be)?'warn-text':'tiny'}">${label}</span><div class="be-track${!Number.isFinite(be)?' never':be>H?' late':''}" title="0–120 ay ölçeği"><i style="width:${pct.toFixed(1)}%"></i></div></div></td><td class="numeric ${diff>=0?'ok-text':'bad-text'}">${diff>=0?'Donanım '+money(diff)+' ucuz':'Donanım '+money(-diff)+' pahalı'}</td><td class="numeric">${o.type!=='api'?'—':bt===0?'Her kullanımda':Number.isFinite(bt)?trn(bt,2)+' M/ay üstü':'1000 M/ay+'}</td><td class="tiny">${note.join(' · ')||'—'}</td></tr>`}).join('')||'<tr><td colspan="6" class="tiny">Seçili abonelik veya API yok.</td></tr>';
+}
+function chartValue(p,month,s,mode){if(mode==='monthly')return month===0?(p.type==='local'?p.price:0):monthlyCosts(p,s).monthlyTotal;if(mode==='perM')return month===0?NaN:perMillionCost(p,month,s);return cumulativeCost(p,month,s)}
+function renderMonthlyBars(ps,s){
+ const grow=hasGrowth(s),barValue=p=>grow?averageMonthly(p,s.horizon,s):monthlyCosts(p,s).monthlyTotal;
+ const sorted=[...ps].sort((a,b)=>barValue(a)-barValue(b) || a.name.localeCompare(b.name,'tr'));
+ const max=Math.max(1,...sorted.map(barValue));
+ const logarithmic=$('monthlyScale').value==='log';
+ $('monthlyBars').innerHTML=`<div class="monthly-bar-head"><span>${sorted.length} seçenek · ${grow?s.horizon+' aylık ortalama ':''}aylık gider, artan sırada</span><span>TL / ay</span></div>`+sorted.map(p=>{
+  const v=barValue(p),over=isExceed(p,s);
+  const barPercent=Math.max(0,100*(logarithmic?Math.log1p(v)/Math.log1p(max):v/max));
+  const type=p.type==='local'?`Yerel · ilk alım ${money(p.price)} ayrı`:p.type==='subscription'?'Abonelik · kullanım limiti var':'API · tahmini token faturası';
+  return `<div class="monthly-bar-row" data-id="${safe(p.id)}" data-cost="${v}" title="${safe(p.name)}: ${money(v,2)} / ay${over?' · Hedef karşılanamıyor':''}"><div class="monthly-bar-name"><span class="color-dot" style="background:${p.color}"></span>${safe(p.name)}<small>${type}${over?' · ⚠ Hedefe yetmiyor':''}</small></div><div class="monthly-bar-track"><div class="monthly-bar-fill${over?' over':''}" style="width:${barPercent.toFixed(3)}%;background-color:${p.color}"></div></div><strong class="monthly-bar-price">${money(v,2)}</strong></div>`;
+ }).join('') || '<p class="tiny">Grafiğe dahil bir seçenek yok. Sağdaki filtrelerden seçim yapın.</p>';
+ $('chartZoomTools').hidden=true;
+ $('barScaleTools').hidden=false;
+ $('monthlyScaleNote').textContent=logarithmic?'Logaritmik uzunluk küçük değerleri görünür kılar; gerçek tutarlar sağdadır.':'Doğrusal uzunluk gerçek maliyet oranını gösterir.';
+ $('svgChart').setAttribute('hidden','');
+ $('monthlyBars').hidden=false;
+ $('mainChart').classList.add('bars');$('mainChart').parentElement.classList.add('bars');
+ $('chartLegend').hidden=true;
+ $('zoomReadout').textContent='100%';
+ $('chartNote').textContent=`Aylık ${trn(s.monthlyTokens,2)} milyon çıktı tokeni için artan maliyet sırası. Donanım satın alma bedeli bu görünümde yok; “Birikimli toplam” ve “TL / 1M çıktı” görünümünde hesaba katılır. ${grow?'Kur/TL artışı nedeniyle tutarlar seçilen sürenin aylık ortalamasıdır. ':''}${s.includeHome?'Evin normal elektrik faturası dahil.':'Evin normal elektrik faturası hariç.'}`;
+}
+function renderChart(s){
+ const mode=state.mode,ps=visibleCandidates(candidates,state.categories,state.selected,state.search,s.budget);
+ const bad=ps.filter(p=>isExceed(p,s));
+ $('capacityWarning').innerHTML=bad.length?`<b>${bad.length} seri seçili hedefi karşılamıyor:</b> ${bad.map(p=>safe(p.name)).join(', ')}. Kesikli çizgiler / çizgili çubuklar yalnızca maliyet projeksiyonudur; abonelikler sınırsız değildir.`:'Seçilen hesap hedefi kapasite varsayımları içinde. Aboneliklerde sağlayıcı sınırları değişebilir.';
+ if(mode==='monthly'){view.zoom=1;view.from=0;renderMonthlyBars(ps,s);return}
+ $('chartZoomTools').hidden=false;
+ $('barScaleTools').hidden=true;
+ $('svgChart').removeAttribute('hidden');
+ $('monthlyBars').hidden=true;
+ $('mainChart').classList.remove('bars');$('mainChart').parentElement.classList.remove('bars');
+ $('chartLegend').hidden=false;
+ const mon=Math.min(120,Math.max(1,s.horizon)),z=Math.min(12,Math.max(1,view.zoom));
+ view.zoom=z;const span=mon/z;view.from=Math.min(Math.max(0,view.from),mon-span);
+ const start=view.from,end=start+span, W=1050,H=490,L=92,R=26,T=30,B=58,iw=W-L-R,ih=H-T-B;
+ const x=t=>L+(t-start)/span*iw;
+ // Sample continuous monthly totals so zooming works even when less than one month is visible.
+ const pts=Array.from({length:161},(_,i)=>start+span*i/160);
+ let vals=ps.flatMap(p=>pts.map(t=>chartValue(p,t,s,mode))).filter(Number.isFinite);
+ let minValue=Math.min(0,...vals),maxValue=Math.max(1,...vals),ymin=view.zoom>1&&vals.length?Math.max(0,Math.min(...vals)-(maxValue-Math.min(...vals))*.10):minValue;
+ let ymax=view.zoom>1&&vals.length?maxValue+(maxValue-Math.min(...vals))*.10:Math.max(1,maxValue*1.12);
+ if(ymax-ymin<.1){ymin=Math.max(0,ymin-1);ymax+=1}
+ const y=v=>T+ih-(v-ymin)/(ymax-ymin)*ih;
+ const svg=$('svgChart'),fmt=new Intl.NumberFormat('tr-TR',{maximumFractionDigits:0});
+ let out=`<defs><clipPath id="plotClip"><rect x="${L}" y="${T}" width="${iw}" height="${ih}"/></clipPath></defs>`;
+ for(let i=0;i<=5;i++){const v=ymin+(ymax-ymin)*i/5,yp=y(v);out+=`<path class="gridLine" d="M${L} ${yp}H${W-R}"/><text class="axisText" text-anchor="end" x="${L-9}" y="${yp+4}">${fmt.format(v)}</text>`}
+ for(let i=0;i<=6;i++){const m=start+span*i/6;out+=`<text class="axisText" text-anchor="middle" x="${x(m)}" y="${H-23}">${Number.isInteger(m)?m:fmt.format(m*10)/10}. ay</text>`}
+ out+=`<path class="axisStroke" d="M${L} ${T}V${H-B}H${W-R}" fill="none" stroke-width="1"/><text class="axisText" x="${L}" y="16">${mode==='monthly'?'TL / ay':mode==='perM'?'TL / 1M çıktı':'TL / birikimli toplam'}</text><g clip-path="url(#plotClip)">`;
+ const plotPoints=[];
+ ps.forEach(p=>{const dashed=isExceed(p,s);const data=pts.map(t=>({month:t,v:chartValue(p,t,s,mode)})).filter(pt=>Number.isFinite(pt.v));if(!data.length)return;
+  const path=data.map((pt,i)=>`${i?'L':'M'}${x(pt.month).toFixed(2)},${y(pt.v).toFixed(2)}`).join(' ');
+  const focused=!view.focus||view.focus===p.id;
+  out+=`<path data-series="${safe(p.id)}" d="${path}" fill="none" stroke="${p.color}" stroke-width="${view.focus===p.id?3.8:2.1}" stroke-opacity="${focused?(dashed?'.65':'1'):'.14'}" ${dashed?'stroke-dasharray="8 6"':''}/>`;
+  plotPoints.push({p,dashed});
+ });
+ // Break-even markers: when one series is focused, mark where hardware and cloud cumulative curves cross.
+ if(mode==='total'&&view.focus){const f=ps.find(p=>p.id===view.focus);if(f){ps.forEach(q=>{if(q===f||(q.type==='local')===(f.type==='local'))return;const loc=f.type==='local'?f:q,oth=f.type==='local'?q:f;const t=breakEvenMonth(loc,oth,s,mon);if(!Number.isFinite(t)||t<=0||t<start||t>end)return;const v=cumulativeCost(loc,t,s);out+=`<circle class="be-marker" cx="${x(t).toFixed(1)}" cy="${y(v).toFixed(1)}" r="5" fill="${q.color}"><title>${safe(loc.name)} = ${safe(oth.name)} · ${trn(t,1)}. ay · ${money(v)}</title></circle>`})}}
+ out+=`</g><line id="crosshair" class="crosshair" x1="0" x2="0" y1="${T}" y2="${H-B}" visibility="hidden"/>`;svg.innerHTML=out;svg.dataset.zoomed=String(view.zoom>1);$('zoomReadout').textContent=Math.round(z*100)+'%';
+ const legend=$('chartLegend');
+ legend.innerHTML=`<div class="chart-legend-header"><b>Çizgi adları · ${ps.length} seçenek</b><span class="tiny">Adına tıkla: öne çıkar / tekrar tıkla: tümü</span></div><div class="chart-legend-list">`+ps.map(p=>{
+  const v=chartValue(p,Math.max(0.01,mon),s,mode),focus=view.focus===p.id;
+  return `<button type="button" data-focus="${safe(p.id)}" aria-pressed="${focus}" title="${safe(p.name)} · ${money(v,2)}"><i class="legend-line" style="background:${p.color}"></i><span class="legend-name">${safe(p.name)}</span><span class="legend-value">${money(v)}</span></button>`;
+ }).join('')+'</div>';
+ legend.querySelectorAll('button[data-focus]').forEach(btn=>btn.addEventListener('click',()=>{view.focus=view.focus===btn.dataset.focus?null:btn.dataset.focus;renderChart(getSettings())}));
+ const tip=$('tooltip');
+ const cross=svg.querySelector('#crosshair');
+ const hideTip=()=>{tip.style.display='none';cross.setAttribute('visibility','hidden')};
+ svg.onpointermove=e=>{if(svg.classList.contains('dragging')||!plotPoints.length){hideTip();return}
+  const rect=svg.getBoundingClientRect();const sx=(e.clientX-rect.left)/rect.width*W,sy=(e.clientY-rect.top)/rect.height*H;
+  if(sx<L||sx>W-R||sy<T||sy>H-B){hideTip();return}
+  const month=start+(sx-L)/iw*span;
+  const rows=plotPoints.map(q=>({...q,val:chartValue(q.p,month,s,mode)})).filter(r=>Number.isFinite(r.val)).sort((a,b)=>a.val-b.val);
+  if(!rows.length){hideTip();return}
+  let hit=rows[0];for(const r of rows)if(Math.abs(y(r.val)-sy)<Math.abs(y(hit.val)-sy))hit=r;
+  cross.setAttribute('x1',sx.toFixed(1));cross.setAttribute('x2',sx.toFixed(1));cross.setAttribute('visibility','visible');
+  const maxRows=12,shown=rows.slice(0,maxRows);if(!shown.includes(hit))shown[maxRows-1]=hit;
+  tip.innerHTML=`<div class="tip-head">${trn(month,1)}. ay · ucuzdan pahalıya</div>`+shown.map(r=>`<div class="tip-row${r===hit?' hit':''}"><i class="color-dot" style="background:${r.p.color};margin:0"></i><span>${safe(r.p.name)}${r.dashed?' ⚠':''}</span><b>${money(r.val,mode==='perM'?2:0)}</b></div>`).join('')+(rows.length>maxRows?`<div class="tip-head" style="margin:4px 0 0">+${rows.length-maxRows} seri daha</div>`:'')+(hit.dashed?'<div class="warn-text" style="font-size:11px;margin-top:4px">⚠ Hedef, kota veya üretim süresini aşıyor</div>':'');
+  tip.style.display='block';const px=e.clientX-rect.left,tw=tip.offsetWidth;tip.style.left=(px+16+tw>rect.width?Math.max(0,px-16-tw):px+16)+'px';tip.style.top=Math.max(8,Math.min(rect.height-tip.offsetHeight-8,e.clientY-rect.top-20))+'px';
+ };
+ svg.onpointerleave=hideTip;
+
+ $('chartNote').textContent=`${mon} ay, ayda ${trn(s.monthlyTokens,2)} milyon çıktı tokeni. ${mode==='total'?'Donanımın satın alma bedeli başlangıçta eklenir'+(s.includeResale?`; ikinci el değeri (yıllık %${trn(s.depreciation,0)} kayıp) düşülür.`:'.'):mode==='monthly'?'Başlangıçtaki donanım bedeli tek seferlik gösterilir.':'Başlangıç maliyeti üretilen toplam tokene dağıtılır.'} ${s.includeHome?'Evin normal elektrik faturası dahil.':'Evin normal elektrik faturası hariç.'}`;
+}
+function setZoom(next,anchor=.5){if(state.mode==='monthly')return;const old=view.zoom;const z=Math.min(12,Math.max(1,next));const anchorFraction=Math.max(0,Math.min(1,anchor));const startFraction=view.from/Math.max(1,getSettings().horizon);
+ view.from=Math.max(0,(startFraction+anchorFraction/old-anchorFraction/z)*getSettings().horizon);view.zoom=z;renderChart(getSettings())}
+function resetZoom(){view.zoom=1;view.from=0;renderChart(getSettings())}
+
+function renderModelFit(){
+ const budget=num('hardwareBudget');
+ const allowed=systems.filter(s=>s.price<=budget).sort((a,b)=>a.price-b.price);
+ const hardware=$('modelHardware');const old=hardware.value;
+ hardware.innerHTML=allowed.map(s=>`<option value="${s.id}">${safe(s.name)} · ${money(s.price)}</option>`).join('');
+ if(allowed.some(s=>s.id===old))hardware.value=old;
+ else if(allowed.some(s=>s.id==='rtx3090'))hardware.value='rtx3090';
+ const context=Number($('modelContext').value),quant=$('modelQuant').value;
+ const viewMode=$('modelView').value;
+ $('modelCompareTools').hidden=viewMode!=='compare';
+ const focus=$('modelFocus');if(!focus.options.length)focus.innerHTML=localModels.map(m=>`<option value="${m.id}">${safe(m.name)}</option>`).join('');
+ const quants=quant==='all'?quantTypes:[quant];
+ const baseHardware=allowed.find(s=>s.id===hardware.value);
+ if(!baseHardware){$('modelSummary').textContent='Bütçe altında donanım yok.';$('modelFitBody').innerHTML='';$('modelFitHead').innerHTML='';return;}
+ let cases=[];
+ if(viewMode==='hardware'){
+  $('modelFitHead').innerHTML=`<tr><th>Model</th>${quants.map(q=>`<th>${q}</th>`).join('')}</tr>`;
+  $('modelFitBody').innerHTML=localModels.map(m=>`<tr><td><strong>${safe(m.name)}</strong><small>${safe(m.params)} · GGUF</small></td>${quants.map(q=>fitCell(baseHardware,m,q,context)).join('')}</tr>`).join('');
+  cases=localModels.flatMap(m=>quants.map(q=>modelFit(baseHardware,m,q,context)));
+ }else{
+  const m=localModels.find(m=>m.id===focus.value)||localModels[0];
+  $('modelFitHead').innerHTML=`<tr><th>Donanım</th>${quants.map(q=>`<th>${q}</th>`).join('')}</tr>`;
+  $('modelFitBody').innerHTML=allowed.map(s=>`<tr><td><strong>${safe(s.name)}</strong><small>${s.vram?s.vram+' GB VRAM':s.ram+' GB birleşik'} · ${money(s.price)}</small></td>${quants.map(q=>fitCell(s,m,q,context)).join('')}</tr>`).join('');
+  cases=allowed.flatMap(s=>quants.map(q=>modelFit(s,m,q,context)));
+ }
+ const gpu=cases.filter(x=>x.status==='gpu').length,off=cases.filter(x=>x.status==='offload').length,ins=cases.filter(x=>x.status==='insufficient').length;
+ $('modelSummary').textContent=`${cases.length} eşleşme · GPU/birleşik bellekte: ${gpu} · RAM offload: ${off} · yetersiz: ${ins}. ${Math.round(context/1024)}K bağlam · FP16 KV cache. Bunlar çalışma garantisi ve token/sn ölçümü değildir.`;
+ document.querySelectorAll('[data-model-cell]').forEach(el=>el.addEventListener('click',()=>{
+  document.querySelectorAll('[data-model-cell]').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  const sy=systems.find(s=>s.id===el.dataset.system),m=localModels.find(m=>m.id===el.dataset.model),q=el.dataset.quant;
+  showModelDetails(sy,m,q,context);
+ }));
+}
+function fitLabel(f){return f.status==='gpu'?(f.memoryKind==='unified'?'Birleşik bellekte':f.memoryKind==='multi'?'Çift GPU (koşullu)':'GPU belleğinde'):f.status==='offload'?'RAM offload':'Yetersiz';}
+function fitCell(system,model,quant,context){
+ const f=modelFit(system,model,quant,context);
+ return `<td><button class="fit ${f.status}" data-model-cell="1" data-system="${system.id}" data-model="${model.id}" data-quant="${quant}" title="${safe(model.name)} ${quant} · ${fitLabel(f)}" type="button"><strong>${fitLabel(f)}</strong><small>${f.weightGB.toFixed(2)} GB dosya · ${f.requestedGiB.toFixed(1)} GiB toplam</small></button></td>`;
+}
+function showModelDetails(s,m,q,context){
+ const f=modelFit(s,m,q,context);
+ const command=`llama-cli -hf ${m.source.split('huggingface.co/')[1]}:${q} -c ${context} -ngl ${f.status==='offload'?'20':'99'}`;
+ $('modelDetails').innerHTML=`<strong>${safe(m.name)} / ${q} / ${safe(s.name)}</strong>
+ <p class="model-status">${fitLabel(f)} ${f.nativeContextExceeded?'· Dikkat: modelin standart bağlamı aşıldı':''}</p>
+ <div class="model-stat"><div><small>GGUF dosyası</small><strong>${f.weightGB.toFixed(2)} GB</strong></div><div><small>KV cache (FP16)</small><strong>${f.kvGiB.toFixed(2)} GiB</strong></div><div><small>Çalışma payı</small><strong>${f.overheadGiB.toFixed(1)} GiB</strong></div><div><small>Toplam tahmin</small><strong>${f.requestedGiB.toFixed(2)} GiB</strong></div></div>
+ <p class="model-rationale">Kapasite: ${f.availableGiB} GiB ${f.memoryKind==='unified'?'birleşik':f.memoryKind==='multi'?'iki GPU toplamı':'GPU'}; sistem RAM: ${s.ram} GiB. ${safe(f.caution)} ${f.nativeContextExceeded?'Standart bağlam ötesi yöntem/rope ölçekleme gerekli olabilir.':''}</p>
+ <p><a href="${m.source}" target="_blank" rel="noopener noreferrer">GGUF dosyaları ve quant seçenekleri</a> · <a href="${m.config}" target="_blank" rel="noopener noreferrer">Model yapılandırması</a></p>
+ <p><b>llama.cpp komut şablonu (uygunluk ve backend doğrulaması gerekir)</b></p><p class="model-rationale">${f.status==='offload'?'−ngl 20 yalnızca başlangıç denemesidir; GPU katman sayısını belleğe göre ayarlamanız gerekir.':'Dosya adı/quant takma adı HF deposunda doğrulanmalıdır.'}</p>
+ <pre style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;margin:3px 0 0">${safe(command)}</pre>
+ <button class="smallbtn" type="button" id="copyModelCommand">Komutu kopyala</button>`;
+ $('copyModelCommand').onclick=()=>{if(navigator.clipboard?.writeText)navigator.clipboard.writeText(command);};
+}
+function render(){let s=getSettings();const share=Math.min(100,Math.max(1,s.outputSharePercent||25));$('tokenSplitNote').textContent=`%${trn(share,0)} çıktı: ayda ${trn(s.monthlyTokens,2)}M çıktı + ${trn(apiInputMillions(s.monthlyTokens,share),2)}M girdi (${trn(s.monthlyTokens+apiInputMillions(s.monthlyTokens,share),2)}M toplam). API girdi cache oranı: %${trn(s.cachedInputSharePercent,0)}.`;$('billingDaysLabel').textContent=s.billingDays;let info=renderBill(s);renderHardware(s);renderModelFit();filterList();renderSummary(s,info);renderTable(s);renderChart(s);renderBreakEven(s);saveState()}
+function reset(){for(const [id,v] of Object.entries(defaults))$(id).value=v;$('budgetSlider').value=defaults.hardwareBudget;view.zoom=1;view.from=0;view.focus=null;$('includeHome').checked=false;$('homeKwhIsBilling').checked=true;$('includeResale').checked=false;$('monthlyScale').value='log';state={mode:'total',categories:{local:true,subscription:true,api:true},selected:new Set(initialSelection),search:'',sort:{key:'total',dir:1}};$('beHardware').innerHTML='';subscriptions.forEach(p=>p.capM=p.defaultCapM);$('filterSearch').value='';document.querySelectorAll('[data-mode]').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode==='total'));renderCaps();render()}
+for(const id of Object.keys(defaults))$(id).addEventListener('input',()=>{if(id==='hardwareBudget')$('budgetSlider').value=num('hardwareBudget');render()});$('budgetSlider').addEventListener('input',()=>{$('hardwareBudget').value=$('budgetSlider').value;render()});['includeHome','homeKwhIsBilling','includeResale'].forEach(id=>$(id).addEventListener('change',render));$('filterSearch').addEventListener('input',e=>{state.search=e.target.value.toLocaleLowerCase('tr');render()});document.querySelectorAll('[data-category]').forEach(btn=>btn.addEventListener('click',()=>{state.categories[btn.dataset.category]=!state.categories[btn.dataset.category];render()}));document.querySelectorAll('[data-mode]').forEach(btn=>btn.addEventListener('click',()=>{state.mode=btn.dataset.mode;view.zoom=1;view.from=0;view.focus=null;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b===btn));render()}));$('allToggle').addEventListener('click',()=>{candidates.forEach(p=>state.selected.add(p.id));render()});$('noneToggle').addEventListener('click',()=>{state.selected.clear();render()});$('reset').addEventListener('click',reset);
+$('monthlyScale').addEventListener('change',()=>{renderChart(getSettings());saveState()});
+['modelHardware','modelContext','modelQuant','modelView','modelFocus'].forEach(id=>$(id).addEventListener('change',renderModelFit));
+$('zoomIn').addEventListener('click',()=>setZoom(view.zoom*1.5));
+$('zoomOut').addEventListener('click',()=>setZoom(view.zoom/1.5));
+$('zoomReset').addEventListener('click',resetZoom);
+const svgZoom=$('svgChart');
+// Wheel zoom only with Ctrl/⌘ (or trackpad pinch) so normal scrolling never gets trapped by the chart.
+svgZoom.addEventListener('wheel',e=>{if(!(e.ctrlKey||e.metaKey))return;e.preventDefault();const rect=svgZoom.getBoundingClientRect();const fx=Math.max(0,Math.min(1,((e.clientX-rect.left)/rect.width*1050-92)/(1050-92-26)));setZoom(view.zoom*(e.deltaY<0?1.25:1/1.25),fx)},{passive:false});
+let drag=null;
+svgZoom.addEventListener('pointerdown',e=>{if(e.button!==0||view.zoom===1)return;drag={x:e.clientX,from:view.from};svgZoom.classList.add('dragging');svgZoom.setPointerCapture(e.pointerId)});
+svgZoom.addEventListener('pointermove',e=>{if(!drag)return;const width=svgZoom.getBoundingClientRect().width;const months=getSettings().horizon;view.from=Math.min(Math.max(0,drag.from-(e.clientX-drag.x)/(width*(1050-92-26)/1050)*months/view.zoom),months-months/view.zoom);renderChart(getSettings())});
+function stopDrag(){drag=null;svgZoom.classList.remove('dragging')}
+svgZoom.addEventListener('pointerup',stopDrag);svgZoom.addEventListener('pointercancel',stopDrag);
+svgZoom.addEventListener('dblclick',resetZoom);
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const prefersDark=()=>{try{return matchMedia('(prefers-color-scheme: dark)').matches}catch(e){return false}};
+function effectiveTheme(){return document.documentElement.dataset.theme||(prefersDark()?'dark':'light')}
+function syncThemeButton(){const dark=effectiveTheme()==='dark';$('themeToggle').textContent=dark?'Açık tema':'Koyu tema';$('themeToggle').setAttribute('aria-label',dark?'Açık temaya geç':'Koyu temaya geç')}
+{const t=store.get('ai-maliyet-theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t;syncThemeButton()}
+$('themeToggle').addEventListener('click',()=>{const next=effectiveTheme()==='dark'?'light':'dark';document.documentElement.dataset.theme=next;store.set('ai-maliyet-theme',next);syncThemeButton()});
+// Scenario persistence: non-default values go to the URL hash (shareable) and localStorage (remembered).
+const STATE_KEY='ai-maliyet-state';let restoring=false;
+function serializeState(){const p=new URLSearchParams();for(const [id,v] of Object.entries(defaults)){const cur=$(id).value;if(cur!==''&&Number(cur)!==v)p.set(id,cur)}
+ [['includeHome',false],['homeKwhIsBilling',true],['includeResale',false]].forEach(([id,d])=>{if($(id).checked!==d)p.set(id,$(id).checked?'1':'0')});
+ if(state.mode!=='total')p.set('mode',state.mode);const off=Object.keys(state.categories).filter(k=>!state.categories[k]);if(off.length)p.set('off',off.join(','));
+ const sel=[...state.selected].sort(),init=[...initialSelection].sort();if(sel.join()!==init.join())p.set('sel',sel.join(',')||'-');
+ const caps=subscriptions.filter(x=>x.capM!==x.defaultCapM).map(x=>x.id+':'+x.capM);if(caps.length)p.set('caps',caps.join(','));
+ if($('monthlyScale').value!=='log')p.set('scale',$('monthlyScale').value);if(state.sort.key!=='total'||state.sort.dir!==1)p.set('sort',state.sort.key+':'+state.sort.dir);
+ if(state.beManual&&$('beHardware').value)p.set('be',$('beHardware').value);return p.toString()}
+function restoreState(str){if(!str)return;const p=new URLSearchParams(str);restoring=true;
+ for(const id of Object.keys(defaults))if(p.has(id)&&Number.isFinite(Number(p.get(id))))$(id).value=p.get(id);$('budgetSlider').value=num('hardwareBudget');
+ ['includeHome','homeKwhIsBilling','includeResale'].forEach(id=>{if(p.has(id))$(id).checked=p.get(id)==='1'});
+ if(['total','monthly','perM'].includes(p.get('mode'))){state.mode=p.get('mode');document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===state.mode))}
+ if(p.has('off'))p.get('off').split(',').forEach(k=>{if(k in state.categories)state.categories[k]=false});
+ if(p.has('sel'))state.selected=new Set(p.get('sel').split(',').filter(id=>candidates.some(c=>c.id===id)));
+ if(p.has('caps'))p.get('caps').split(',').forEach(x=>{const [id,v]=x.split(':');const sub=subscriptions.find(q=>q.id===id);if(sub&&Number(v)>0)sub.capM=Number(v)});
+ if(p.get('scale')==='linear')$('monthlyScale').value='linear';
+ if(p.has('sort')){const [k,d]=p.get('sort').split(':');if(k in sortGetters)state.sort={key:k,dir:d==='-1'?-1:1}}
+ if(p.has('be'))state.beManual=true,$('beHardware').innerHTML=`<option value="${safe(p.get('be'))}" selected></option>`;restoring=false}
+function saveState(){if(restoring)return;const str=serializeState();store.set(STATE_KEY,str);try{history.replaceState(null,'',str?'#'+str:location.pathname+location.search)}catch(e){}}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),2200)}
+$('shareLink').addEventListener('click',async()=>{saveState();const url=location.href;try{await navigator.clipboard.writeText(url);toast('Senaryo bağlantısı kopyalandı')}catch(e){window.prompt('Bağlantıyı kopyalayın:',url)}});
+$('printPage').addEventListener('click',()=>window.print());
+$('exportCsv').addEventListener('click',exportCsv);
+document.querySelectorAll('button.sort').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.sort;state.sort=state.sort.key===k?{key:k,dir:-state.sort.dir}:{key:k,dir:k==='name'?1:(k==='ram'||k==='vram'||k==='tps'?-1:1)};render()}));
+$('beHardware').addEventListener('change',()=>{state.beManual=true;renderBreakEven(getSettings());saveState()});
+function updateGuide(){
+ const outputM=monthlyOutputMillions(num('usageDaily'),num('usageOutput'),num('usageDays'));
+ const text=outputM.toLocaleString('tr-TR',{maximumFractionDigits:4});
+ $('usageCalculation').innerHTML=`Ayda <strong>${text} milyon çıktı tokeni</strong><br><span class="tiny">${Math.max(0,num('usageDaily')).toLocaleString('tr-TR')} × ${Math.max(0,num('usageOutput')).toLocaleString('tr-TR')} × ${Math.max(0,num('usageDays')).toLocaleString('tr-TR')} ÷ 1.000.000</span>`;
+ const mix=tokenMixEstimate(num('monthlyTokens'),num('outputSharePercent'));
+ $('guideAnchorNote').textContent=`Şu an: ${trn(mix.outputM,2)}M çıktı + ${trn(mix.inputM,2)}M girdi = ${trn(mix.totalM,2)}M toplam token. (Çıktı payı %${trn(num('outputSharePercent'),0)})`;
+ document.querySelectorAll('[data-output-anchor]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.outputAnchor)===num('outputSharePercent'))));
+}
+function applyUsagePreset(p){
+ $('usageDaily').value=p.calls;
+ $('usageOutput').value=p.tokens;
+ $('usageDays').value=p.days;
+ $('monthlyTokens').value=p.monthlyM;
+ $('outputSharePercent').value=p.outputPct;
+ document.querySelectorAll('[data-usage-preset]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.usagePreset===p.id)));
+ render();updateGuide();
+}
+document.querySelectorAll('[data-usage-preset]').forEach(b=>b.addEventListener('click',()=>applyUsagePreset(usagePresets.find(p=>p.id===b.dataset.usagePreset))));
+document.querySelectorAll('[data-output-anchor]').forEach(b=>b.addEventListener('click',()=>{
+ $('outputSharePercent').value=b.dataset.outputAnchor;render();updateGuide();
+}));
+['usageDaily','usageOutput','usageDays'].forEach(id=>$(id).addEventListener('input',()=>{
+ document.querySelectorAll('[data-usage-preset]').forEach(b=>b.setAttribute('aria-pressed','false'));
+ updateGuide();
+}));
+$('usageApply').addEventListener('click',()=>{
+ const m=monthlyOutputMillions(num('usageDaily'),num('usageOutput'),num('usageDays'));
+ $('monthlyTokens').value=Math.max(0.01,Math.min(1000,m));
+ render();updateGuide();
+});
+$('outputSharePercent').addEventListener('input',updateGuide);
+$('monthlyTokens').addEventListener('input',updateGuide);
+$('reset').addEventListener('click',()=>{
+ $('usageDaily').value=20;$('usageOutput').value=500;$('usageDays').value=30;
+ document.querySelectorAll('[data-usage-preset]').forEach(b=>b.setAttribute('aria-pressed','false'));
+ updateGuide();
+});
+restoreState(location.hash.length>1?location.hash.slice(1):store.get(STATE_KEY));renderCaps();renderApiCatalogue();render();updateGuide();
+</script></body></html>

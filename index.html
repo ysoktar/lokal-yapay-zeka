@@ -179,6 +179,7 @@ details.more{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}d
 .hw-card{display:flex;flex-direction:column;gap:8px;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:14px;min-width:0}
 .hw-card.short{border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
 .hw-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.hw-top b{font-size:13px;line-height:1.3}
+.hw-build{font-size:11px;color:var(--muted);margin-top:-4px}
 .hw-price{font-size:15px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
 .hw-specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin:0}
 .hw-specs div{min-width:0}.hw-specs dt{font-size:10px;color:var(--muted)}.hw-specs dd{margin:0;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
@@ -193,7 +194,7 @@ details.more{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}d
 @media print{.toc,.v-link,.hw-actions{display:none!important}}
 </style></head>
 <body><div class="wrap">
-<header><div class="heading"><div class="logo">Yerel AI / Maliyet karşılaştırması</div><div class="header-actions"><span class="date">Kasım 2026 · çevrimdışı HTML</span><button id="shareLink" class="smallbtn" type="button" title="Mevcut senaryoyu içeren bağlantıyı kopyalar">Bağlantıyı kopyala</button><button id="printPage" class="smallbtn" type="button">Yazdır / PDF</button><button id="themeToggle" class="smallbtn" type="button" aria-label="Koyu temaya geç">Koyu tema</button></div></div><h1>Kendi bilgisayarında mı, abonelikle mi, API ile mi?</h1><p>Yapay zekâ kullanımın için bilgisayar almak mı, abonelik mi, yoksa token başına API ödemek mi daha ucuz? Kullanımını seç; 62 bin TL’lik Mac mini’den 665 bin TL’lik 256 GB Mac Studio’ya kadar 23 yerel sistem, 16 abonelik ve 48 API modeli Türkiye fiyatlarıyla karşılaştırılır.</p></header>
+<header><div class="heading"><div class="logo">Yerel AI / Maliyet karşılaştırması</div><div class="header-actions"><span class="date">Kasım 2026 · çevrimdışı HTML</span><button id="shareLink" class="smallbtn" type="button" title="Mevcut senaryoyu içeren bağlantıyı kopyalar">Bağlantıyı kopyala</button><button id="printPage" class="smallbtn" type="button">Yazdır / PDF</button><button id="themeToggle" class="smallbtn" type="button" aria-label="Koyu temaya geç">Koyu tema</button></div></div><h1>Kendi bilgisayarında mı, abonelikle mi, API ile mi?</h1><p>Yapay zekâ kullanımın için bilgisayar almak mı, abonelik mi, yoksa token başına API ödemek mi daha ucuz? Kullanımını seç; 62 bin TL’lik Mac mini’den 665 bin TL’lik 256 GB Mac Studio’ya kadar 25 yerel sistem, 16 abonelik ve 48 API modeli Türkiye fiyatlarıyla karşılaştırılır.</p></header>
 <nav class="toc" id="toc" aria-label="Sayfa bölümleri"><a href="#step1">1 · Kullanım</a><a href="#verdict">2 · Sonuç</a><a href="#chartSection">Grafik</a><a href="#breakEven">Amorti</a><a href="#hardwareSources">Donanımlar</a><a href="#modelCompatibility">Modeller</a><a href="#costTableSection">Tablo</a><a href="#apiSection">API fiyatları</a><a href="#advanced">Varsayımlar</a></nav>
 <section class="panel step" id="step1" aria-labelledby="settings-title">
 <div class="step-head"><span class="step-no" aria-hidden="true">1</span><div><h2 id="settings-title">Kullanımını seç</h2><p class="section-intro">Sana en yakın profili seç; istersen sayıları kendin değiştir. Aşağıdaki sonuç ve grafikler anında güncellenir.</p></div><button class="smallbtn" id="reset" type="button">Sıfırla</button></div>
@@ -293,18 +294,18 @@ details.more{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}d
 // Hardware prices (1 Nov 2026). Desktop systems = GPU + platform parts; every part keeps its store and link.
 // Main source: Gamegaraj in-stock listings; cross-checked with Vatan, akakçe, letgo and Apple Türkiye.
 const parts={
- cpu7500f:{name:'AMD Ryzen 5 7500F (MPK)',price:8979,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/amd-ryzen-5-7500f-37ghz-50ghz-32mb-am5-65w-mpk/'},
- cpu9700x:{name:'AMD Ryzen 7 9700X (tray)',price:16830,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/amd-ryzen-7-9700x-tray/'},
- moboB650:{name:'MSI PRO B650M-E (mATX)',price:5940,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/msi-pro-b650m-e-am5-ddr5-micro-atx-anakart/'},
- moboX870E:{name:'ASUS TUF X870E-PLUS WIFI (iki PCIe x16 yuvası; x8/x8 doğrulanmadı)',price:24323,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/asus-tuf-gaming-x870e-plus-wifi-amd-am5-ddr5-atx-anakart/'},
- ram32:{name:'32 GB DDR5 6000 (2×16)',price:26611,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/cusu-rd360-rgb-32gb-2x16-6000mhz-cl38-ddr5-masaustu-bilgisayar-ram/'},
- ram64:{name:'64 GB DDR5 5200 (2×32)',price:53222,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/kingston-beast-64gb-2x32gb-5200mhz-cl36-ddr5-masaustu-bilgisayar-ram/'},
- ssd1:{name:'1 TB NVMe SSD',price:8648,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/twinmos-xtreme-1tb-7500-6800mbs-m2-ssd-nv1tbg42280/'},
- ssd2:{name:'2 TB NVMe SSD',price:14199,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/cusu-cv5000-2tb-52004700mbs-m2-ssd/'},
- psu750:{name:'750 W 80+ Bronze PSU',price:4485,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/msi-mag-a750bn-750w-80-bronze-gen5-guc-kaynagi/'},
- psu850:{name:'850 W 80+ Gold PSU',price:7917,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/cooler-master-mwe-v3-850w-80-gold-full-moduler-pciegen50-atx31-guc-kaynagi/'},
- psu1200:{name:'1200 W 80+ Gold PSU',price:14969,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/asus-tuf-gaming-1200g-1200w-80-gold-full-moduler-guc-kaynagi/'},
- psu1300:{name:'1300 W 80+ Platinum PSU',price:20890,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/cooler-master-v-platinum-v2-1300w-80-platinum-gen51-fullmoduler-atx31-guc-kaynagi/'},
+ cpu7500f:{short:'Ryzen 5 7500F',name:'AMD Ryzen 5 7500F (MPK)',price:8979,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/amd-ryzen-5-7500f-37ghz-50ghz-32mb-am5-65w-mpk/'},
+ cpu9700x:{short:'Ryzen 7 9700X',name:'AMD Ryzen 7 9700X (tray)',price:16830,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/amd-ryzen-7-9700x-tray/'},
+ moboB650:{short:'B650M anakart',name:'MSI PRO B650M-E (mATX)',price:5940,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/msi-pro-b650m-e-am5-ddr5-micro-atx-anakart/'},
+ moboX870E:{short:'X870E anakart',name:'ASUS TUF X870E-PLUS WIFI (iki PCIe x16 yuvası; x8/x8 doğrulanmadı)',price:24323,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/asus-tuf-gaming-x870e-plus-wifi-amd-am5-ddr5-atx-anakart/'},
+ ram32:{short:'32 GB DDR5',name:'32 GB DDR5 6000 (2×16)',price:26611,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/cusu-rd360-rgb-32gb-2x16-6000mhz-cl38-ddr5-masaustu-bilgisayar-ram/'},
+ ram64:{short:'64 GB DDR5',name:'64 GB DDR5 5200 (2×32)',price:53222,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/kingston-beast-64gb-2x32gb-5200mhz-cl36-ddr5-masaustu-bilgisayar-ram/'},
+ ssd1:{short:'1 TB SSD',name:'1 TB NVMe SSD',price:8648,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/twinmos-xtreme-1tb-7500-6800mbs-m2-ssd-nv1tbg42280/'},
+ ssd2:{short:'2 TB SSD',name:'2 TB NVMe SSD',price:14199,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/cusu-cv5000-2tb-52004700mbs-m2-ssd/'},
+ psu750:{short:'750 W',name:'750 W 80+ Bronze PSU',price:4485,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/msi-mag-a750bn-750w-80-bronze-gen5-guc-kaynagi/'},
+ psu850:{short:'850 W',name:'850 W 80+ Gold PSU',price:7917,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/cooler-master-mwe-v3-850w-80-gold-full-moduler-pciegen50-atx31-guc-kaynagi/'},
+ psu1200:{short:'1200 W',name:'1200 W 80+ Gold PSU',price:14969,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/asus-tuf-gaming-1200g-1200w-80-gold-full-moduler-guc-kaynagi/'},
+ psu1300:{short:'1300 W',name:'1300 W 80+ Platinum PSU',price:20890,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/cooler-master-v-platinum-v2-1300w-80-platinum-gen51-fullmoduler-atx31-guc-kaynagi/'},
  caseMid:{name:'Mid tower kasa',price:3746,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/fsp-cmt591m-argb-4x120mm-midtower-kasa-kasa/'},
  caseBig:{name:'Geniş mid tower kasa (mesh)',price:4826,store:'Gamegaraj',url:'https://www.gamegaraj.com/bilgisayar-parcalari/cougar-mx430-mesh-rgb-mid-tower-kasa-psu-yok/'},
  cooler:{name:'CPU soğutucu (tahmini)',price:1500,store:'tahmin',url:''},
@@ -327,7 +328,9 @@ const platforms={
 };
 const apple=(name,price,url)=>[{name,price,store:'Apple Türkiye',url}];
 const systems = [
-{id:'macm6',name:'Mac mini M6 · 16 GB birleşik',ram:16,vram:0,tps:14,watts:40,estimated:true,buy:apple('Mac mini M6 16 GB / 256 GB',62499,'https://www.apple.com/tr/shop/buy-mac/mac-mini')},
+{id:'macm6',name:'Mac mini M6 · 16 GB birleşik',ram:16,vram:0,tps:14,watts:40,estimated:true,buy:apple('Mac mini M6 16 GB / 256 GB',62499,'https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-16-gb-bellek-256gb-depolama')},
+{id:'macm6_24',name:'Mac mini M6 · 24 GB birleşik',ram:24,vram:0,tps:14,watts:40,estimated:true,buy:apple('Mac mini M6 24 GB / 256 GB (512 GB: 90.499 TL)',76499,'https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-24-gb-bellek-256gb-depolama')},
+{id:'macm6_32',name:'Mac mini M6 · 32 GB birleşik',ram:32,vram:0,tps:14,watts:40,estimated:true,buy:apple('Mac mini M6 32 GB / 256 GB (512 GB: 104.499 TL)',90499,'https://www.apple.com/tr/shop/buy-mac/mac-mini/m6-%C3%A7ip-12-%C3%A7ekirdekli-cpu-12-%C3%A7ekirdekli-gpu-32-gb-bellek-256gb-depolama')},
 {id:'rx9060',name:'RX 9060 XT 16 GB · 32 GB RAM',ram:32,vram:16,tps:28.5,watts:250,estimated:true,gpu:'gpu9060',platform:'p32'},
 {id:'rtx5060',name:'RTX 5060 Ti 16 GB · 32 GB RAM',ram:32,vram:16,tps:32.9,watts:290,gpu:'gpu5060ti',platform:'p32'},
 {id:'rtx5070',name:'RTX 5070 12 GB · 32 GB RAM',ram:32,vram:12,tps:40.6,watts:350,gpu:'gpu5070',platform:'p32'},
@@ -352,7 +355,8 @@ const systems = [
 {id:'rtx5090',name:'RTX 5090 32 GB · 64 GB RAM · 2 TB',ram:64,vram:32,tps:110,watts:700,estimated:true,gpu:'gpu5090',platform:'p64x'}
 ].map(sys=>{
  const list=sys.buy||[...Array(sys.gpus||1)].map(()=>parts[sys.gpu]).concat(platforms[sys.platform].map(k=>parts[k]));
- return {...sys,type:'local',gpus:sys.gpus||1,partsList:list,price:Math.round(list.reduce((a,x)=>a+x.price,0)),priceEstimate:list.some(x=>x.estimate)};
+ const build=sys.platform?platforms[sys.platform].map(k=>parts[k].short).filter(Boolean).join(' · '):'';
+ return {...sys,type:'local',gpus:sys.gpus||1,partsList:list,build,price:Math.round(list.reduce((a,x)=>a+x.price,0)),priceEstimate:list.some(x=>x.estimate)};
 });
 const subscriptions = [
 {id:"chatgpt-plus",type:"subscription",name:"ChatGPT Plus",monthly:20,currency:"USD",capM:2,defaultCapM:2,limit:"Model ve 5 saatlik kullanım pencereleri; araçlarda ayrı limitler",source:"https://help.openai.com/en/articles/6950777-what-is-chatgpt-plus"},
@@ -565,7 +569,7 @@ function filterList(){const search=state.search;let visible=visibleCandidates(ca
 function renderHardware(s){const all=[...systems].filter(p=>p.price<=s.budget).sort((a,b)=>a.price-b.price);$('catalogueCount').textContent=all.length+' / '+systems.length+' sistem bütçe içinde';
  $('hardwareCatalogue').innerHTML=all.map(p=>{const elec=monthlyCosts(p,s).incrementalElectric,cap=capacityMillions(p,s),mem=p.vram?`${p.vram} GB ${p.gpus>1?'toplam VRAM':'VRAM'}`:`${p.ram} GB birleşik`;
   return `<article class="hw-card${isExceed(p,s)?' short':''}"><div class="hw-top"><b>${safe(p.name)}</b><span class="hw-price">${money(p.price)}${p.priceEstimate?' ≈':''}</span></div>
-  <dl class="hw-specs"><div><dt>Model belleği</dt><dd>${mem}</dd></div><div><dt>Sistem RAM</dt><dd>${p.vram?p.ram+' GB':'ortak'}</dd></div><div><dt>Hız (14B)</dt><dd>${p.tps} tok/sn${p.estimated?' ≈':''}</dd></div><div><dt>Ek elektrik</dt><dd>${money(elec)}/ay</dd></div></dl>
+  ${p.build?`<span class="hw-build">${safe(p.build)}</span>`:`<span class="hw-build">Hazır sistem · Apple Türkiye fiyatı</span>`}<dl class="hw-specs"><div><dt>Model belleği</dt><dd>${mem}</dd></div><div><dt>Sistem RAM</dt><dd>${p.vram?p.ram+' GB':'ortak'}</dd></div><div><dt>Hız (14B)</dt><dd>${p.tps} tok/sn${p.estimated?' ≈':''}</dd></div><div><dt>Ek elektrik</dt><dd>${money(elec)}/ay</dd></div></dl>
   <small class="${isExceed(p,s)?'bad-text':'tiny'}">${isExceed(p,s)?`⚠ Günde ${trn(s.monthlyHours,1)} saatte en fazla ${trn(cap,1)} M/ay üretir; hedef ${trn(s.monthlyTokens,1)} M`:`Kapasite ≈ ${trn(cap,1)} M çıktı/ay (günde ${trn(s.monthlyHours,1)} saat)`}</small>
   ${p.staleNote?`<small class="warn-text">${safe(p.staleNote)}</small>`:''}
   <details class="hw-parts"><summary>Parçalar ve fiyat kaynakları (${p.partsList.length})</summary><ul>${p.partsList.map(x=>`<li><span>${safe(x.name)}</span><span class="part-price">${money(x.price)}${x.estimate?' ≈':''}</span><span class="part-store">${x.url?`<a href="${x.url}" target="_blank" rel="noopener noreferrer">${safe(x.store)}</a>`:safe(x.store)}</span></li>`).join('')}</ul></details>

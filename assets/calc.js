@@ -51,7 +51,7 @@ const Calc = (() => {
       id, name, kind: 'pc', price, items, gpus: gpuCount, vram, ram, ramType,
       gpuVram: gpuItem.part.vram,
       watts: gpuItem.part.watts * gpuCount + (cpuItem ? cpuItem.part.watts : 65) + 60,
-      tps14: gpuItem.part.tps14, used: !!gpuItem.part.used,
+      tps14: gpuItem.part.tps14, used: !!gpuItem.part.used, pp: gpuItem.part.pp, vendor: gpuItem.part.vendor,
       estimatedPrice: items.some(i => i.offer.stock === 'bilinmiyor' && /2\. el|tahmin/.test(i.offer.name + i.offer.store)),
       ssd: (items.find(i => i.part.cat === 'ssd') || { part: { size: 1000 } }).part.size,
       ...extra
@@ -109,6 +109,25 @@ const Calc = (() => {
     if (model === 'deepseek' && CAT.deepseekMeasured[c.id]) { const [t, n] = CAT.deepseekMeasured[c.id]; return { tps: t, status: t >= 15 ? 'ok' : 'slow', note: n, measured: !c.id.startsWith('r9700') }; }
     const e = estimate(model, { ...hw, vram: c.gpuVram ? Math.max(c.gpuVram, c.vram) : c.vram });
     return { ...e, measured: false };
+  }
+
+  /* ---------- reading (prefill) speed and task time ----------
+     Agents start with ~30K tokens of tool definitions and files; the wait before the first word is context / prefill speed.
+     Strata/community measurements: RTX 5070 ≈2,090 tok/s (32K), RTX 5090 ≈5,000, RX 9070 XT ≈1,110, M5 Max 128 GB ≈1,300,
+     32 GB Mac streaming ≈94; DeepSeek 763B on 12 GB + 64 GB ≈120–230. Values without a measurement are estimates. */
+  function prefill(c, model) {
+    const uni = c.ramType === 'unified', d4 = c.ramType === 'DDR4' ? 0.85 : 1, base = c.pp || (c.vram >= 24 ? 2000 : c.vram >= 16 ? 900 : c.vram >= 12 ? 900 : 300);
+    if (model === 'deepseek') { if (uni) return c.ram >= 128 ? 450 : 100; return Math.round((c.vram >= 24 ? 300 : c.vram >= 16 ? 220 : 180) * (c.ram >= 128 ? 1.5 : 1) * d4); }
+    if (model === 'dense14') return uni ? (c.ram >= 64 ? 900 : 400) : Math.round(base * 1.5);
+    if (uni) return c.ram >= 96 ? 1800 : c.ram >= 64 ? 900 : c.ram >= 46 ? 500 : 94;
+    const fits = c.ram >= 46 || (c.vram >= 24 && c.ram >= 32);
+    return Math.round((fits ? base : 150) * d4);
+  }
+  function taskTime(c, model, S) {
+    const t = (CAT.taskTypes || {})[S.taskType || 'short'] || { out: 1000, ctx: 2000 }, sp = speed(c, model).tps;
+    if (!sp) return { total: Infinity, read: Infinity, write: Infinity };
+    const read = t.ctx / prefill(c, model), write = t.out / sp;
+    return { total: read + write, read, write };
   }
 
   /* ---------- money ---------- */
@@ -174,5 +193,5 @@ const Calc = (() => {
     return 'no';
   }
 
-  return { init, cat, live, offers, chosenOffer, cheapestOffer, computers, pcFromKeys, MODELS, estimate, speed, electricity, capacity, cloudMonthly, cloudOptions, inClass, localCum, cloudCum, breakEven, ggufFit, inputM, bill };
+  return { init, prefill, taskTime, cat, live, offers, chosenOffer, cheapestOffer, computers, pcFromKeys, MODELS, estimate, speed, electricity, capacity, cloudMonthly, cloudOptions, inClass, localCum, cloudCum, breakEven, ggufFit, inputM, bill };
 })();

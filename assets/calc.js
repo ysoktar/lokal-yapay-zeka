@@ -145,9 +145,9 @@ const Calc = (() => {
   // The part that does not fit on the card is read from system RAM (DDR5 ≈70, DDR4 ≈34 GB/s); no expert caching assumed.
   function genEstimate(id, hw) {
     const m = MODELS[id], v = +hw.vram || 0, r = +hw.ram || 0, uni = hw.ramType === 'unified', ssd = +hw.ssd || 0, q = m.mx ? 'MXFP4' : 'Q4';
-    const res = (tps, status, note) => ({ tps: Math.round(tps * 10) / 10, status, note, q });
+    const res = (tps, status, note) => ({ tps: Math.round(tps * 10) / 10, status, note: tps > 0 && status === 'no' ? `Pratikte kullanılamayacak kadar yavaş (5 tok/sn altı). ${note}` : note, q });
     if (ssd && ssd < m.disk) return res(0, 'no', `En az ${m.disk} GB boş disk gerekir`);
-    const gbTok = m.file * m.active / m.total, k = (fits) => m.moe && fits ? 0.35 : 0.75, st = t => t >= 15 ? 'ok' : t >= 3 ? 'slow' : 'no';
+    const gbTok = m.file * m.active / m.total, k = (fits) => m.moe && fits ? 0.35 : 0.75, st = t => t >= 15 ? 'ok' : t >= 5 ? 'slow' : 'no';
     if (uni) {
       const bw = +hw.bw || (r >= 192 ? 1200 : r >= 96 ? 614 : r >= 48 ? 307 : 170);
       if (m.file > r * 0.75) return res(0, 'no', `Belleğe sığmaz (Q4 ≈${Math.round(m.file)} GB, ekran kartına ≈${Math.round(r * 0.75)} GB ayrılır)`);

@@ -42,7 +42,7 @@ const DEFAULT_STATE = () => {
   return { monthlyTokens: d.monthlyTokens, outputSharePercent: d.outputSharePercent, cachedInputSharePercent: d.cachedInputSharePercent,
     preset: null, taskType: 'short', model: 'q27', privacy: false, budget: d.budget, horizon: d.horizon, hoursPerDay: d.hoursPerDay,
     usdTry: (Calc.live().usdTry && Calc.live().usdTry.value) || d.usdTry, usdYearly: 0, tlYearly: 0, foreignTax: 0, resale: false, depreciation: 25,
-    offerSel: {}, caps: {}, cloudClass: 'all', cmpClass: 'equiv', cmpLocal: 'custom', cmpCloud: '', buyFilter: 'all', sysView: 'table', tariff: {}, tokScale: 'log', metDev: 6, metModel: 0, sorts: {}, cloudSort: 'monthly',
+    offerSel: {}, caps: {}, cloudClass: 'all', cmpClass: 'equiv', cmpLocal: 'custom', cmpCloud: '', buyFilter: 'all', sysView: 'table', tariff: {}, tokScale: 'log', metDev: 6, metModel: 0, cache: { dev: 2, turns: 40, start: 33000, add: 1200, out: 800 }, sorts: {}, cloudSort: 'monthly',
     build: { gpu: 'gpu5070', gpuCount: 1, cpu: 'cpu7500f', mobo: 'moboB650', ram: 'ram64', ssd: 'ssd2', psu: 'psu850', case: 'caseMid', cooler: 'cooler' },
     mine: { gpu: 'rtx3060', vram: 12, watts: 170, ram: 32, ramType: 'DDR5', ssd: 500 } };
 };
@@ -170,6 +170,7 @@ function engineTips(c) {
   else if ((c.vendor || '').startsWith('AMD-RDNA3')) t.push('<b>AMD RX 7000:</b> Strata’nın yanında llama.cpp tabanlı Avalon gibi motorları dene; aynı kartta %30–50 fark görülebiliyor.');
   else if ((c.vendor || '').startsWith('AMD')) t.push('<b>AMD:</b> Strata’nın HIP motoru RX 9060/9070 ve R9700’ü destekliyor.');
   else t.push('<b>NVIDIA:</b> Qwen 125B ve DeepSeek için Strata; yoğun modeller için llama.cpp. llama.cpp’nin yeni “uzman önbelleği” 24–32 GB kartlarda MoE modelleri %50’ye kadar hızlandırıyor (8 GB kartta yavaşlatabilir).');
+  t.push('<b>Önbelleği kur:</b> sohbetin daha önce okunmuş kısmı tekrar okunmaz; llama.cpp, Ollama ve LM Studio ayarları ve süre farkı <a href="#metrikler">Metrikler → Önbellek</a> bölümünde.');
   t.push('<b>Motor donanım kadar önemli:</b> aynı makinede motor değişince okuma hızı 10 kata kadar değişebiliyor.');
   return t;
 }
@@ -224,8 +225,9 @@ function xyChart(box, o) {
     const mx = Math.max(1, ...vals) * 1.04, st = niceStep(mx / 4), top = Math.ceil(mx / st) * st;
     ys = v => T + ih - v / top * ih; yt = Array.from({ length: Math.round(top / st) + 1 }, (_, i) => i * st);
   }
-  let g = `<text x="${L - 10}" y="${T - 12}" class="ax unit" text-anchor="end">TL</text>`;
-  for (const v of yt) g += `<line x1="${L}" x2="${W - R}" y1="${ys(v)}" y2="${ys(v)}" class="grid"/><text x="${L - 10}" y="${ys(v) + 4}" class="ax" text-anchor="end">${axTL(v)}</text>`;
+  const yf = o.yfmt || axTL, vf = o.vfmt || tl;
+  let g = `<text x="${L - 10}" y="${T - 12}" class="ax unit" text-anchor="end">${o.unit || 'TL'}</text>`;
+  for (const v of yt) g += `<line x1="${L}" x2="${W - R}" y1="${ys(v)}" y2="${ys(v)}" class="grid"/><text x="${L - 10}" y="${ys(v) + 4}" class="ax" text-anchor="end">${yf(v)}</text>`;
   for (const v of X.ticks) g += (X.log ? `<line x1="${xs(v)}" x2="${xs(v)}" y1="${T}" y2="${T + ih}" class="grid"/>` : '') + `<text x="${xs(v)}" y="${H - 10}" class="ax" text-anchor="middle">${X.fmt(v)}</text>`;
   const path = arr => arr.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('');
   let lines = '';
@@ -248,7 +250,7 @@ function xyChart(box, o) {
     if (sx < L || sx > W - R) { tip.hidden = true; xh.setAttribute('visibility', 'hidden'); return; }
     const t = xinv(sx); xh.setAttribute('x1', sx); xh.setAttribute('x2', sx); xh.setAttribute('visibility', 'visible');
     tip.hidden = false;
-    tip.innerHTML = `<b>${X.tip(t)}</b>` + o.series.map(s => `<div><i style="background:${s.color}"></i>${esc(s.name)}: <b>${tl(s.f(t))}</b>${(s.note ? s.note(t) : Number.isFinite(s.limit) && t > s.limit ? 'sınır aşıldı' : '') ? `<small class="bad">${esc(s.note ? s.note(t) : 'sınır aşıldı')}</small>` : ''}</div>`).join('');
+    tip.innerHTML = `<b>${X.tip(t)}</b>` + o.series.map(s => `<div><i style="background:${s.color}"></i>${esc(s.name)}: <b>${vf(s.f(t))}</b>${(s.note ? s.note(t) : Number.isFinite(s.limit) && t > s.limit ? 'sınır aşıldı' : '') ? `<small class="bad">${esc(s.note ? s.note(t) : 'sınır aşıldı')}</small>` : ''}</div>`).join('');
     const bx = box.getBoundingClientRect();
     tip.style.left = Math.max(0, Math.min(bx.width - tip.offsetWidth - 4, e.clientX - bx.left + 14)) + 'px'; tip.style.top = (e.clientY - bx.top + 14) + 'px';
   };
@@ -688,8 +690,34 @@ function metCalc(d, m) {
   return { fits, f, hit, ceil, real: ceil * k, k, moe, slow, usable };
 }
 const MET_SECTIONS = [
-  ['hesap', 'Yazma hızı hesaplayıcı'], ['token', 'Girdi ve çıktı tokenleri'], ['okuma', 'Okuma ve yazma hızı'], ['gpu', 'GPU verimi'], ['zincir', 'Darboğaz zinciri'],
+  ['hesap', 'Yazma hızı hesaplayıcı'], ['token', 'Girdi ve çıktı tokenleri'], ['okuma', 'Okuma ve yazma hızı'], ['onbellek', 'Önbellek: lokalde de var'], ['gpu', 'GPU verimi'], ['zincir', 'Darboğaz zinciri'],
   ['moe', 'MoE ve Strata: neden RAM?'], ['kv', 'Bağlam (KV cache) belleği'], ['dusunme', 'Düşünme tokenleri'], ['quant', 'Quant ve kalite'], ['tokenizer', 'Tokenizer ve dil'], ['motor', 'Motorlar'], ['api', 'Neden API ucuz?']];
+// prefill / decode speeds for the cache calculator (measured where noted)
+const CACHE_DEVS = [['RTX 5090 · Qwen 125B (ölçüm)', 5000, 130], ['RTX 5070 12 GB + 64 GB · Qwen 125B (ölçüm)', 2090, 87], ['Mac M5 Pro · Qwen 27B', 325, 15], ['RTX 5060 Ti 16 GB · Qwen 27B (96K’da ölçüm)', 618, 45], ['32 GB Mac · Qwen 125B, uzmanlar SSD’den', 94, 13]];
+function cacheSession() {
+  const C = { dev: 2, turns: 40, start: 33000, add: 1200, out: 800, ...(S.cache || {}) }, [, pp, dec] = CACHE_DEVS[C.dev] || CACHE_DEVS[2], n = Math.max(2, Math.min(300, Math.round(C.turns)));
+  const brk = Math.max(2, Math.round(n * 0.6)), cum = { on: [0], off: [0], br: [0] };
+  let ctx = C.start, firstOn = 0, firstOff = 0;
+  for (let i = 1; i <= n; i++) {
+    if (i > 1) ctx += C.add + C.out;                  // previous answer and the new message join the context
+    const fresh = i === 1 ? C.start : C.add, write = C.out / dec;
+    cum.on.push(cum.on[i - 1] + fresh / pp + write); cum.off.push(cum.off[i - 1] + ctx / pp + write); cum.br.push(cum.br[i - 1] + (i === brk ? ctx : fresh) / pp + write);
+    if (i === n) { firstOn = fresh / pp; firstOff = ctx / pp; }
+  }
+  return { C, pp, dec, n, brk, cum, ctx, firstOn, firstOff };
+}
+function resultsCache() {
+  const R = cacheSession();
+  return `<div class="vstats m-stats"><div class="okc"><span>Önbellekli · ${R.n} tur</span><b>${dur(R.cum.on[R.n])}</b><small>son turda ilk kelime ≈${dur(R.firstOn)}</small></div><div class="warnc"><span>Önbelleksiz · ${R.n} tur</span><b>${dur(R.cum.off[R.n])}</b><small>son turda ilk kelime ≈${dur(R.firstOff)} (${nf(R.ctx)} token baştan)</small></div><div><span>Önbellek ${R.brk}. turda bir kez bozulursa</span><b>${dur(R.cum.br[R.n])}</b><small>o tur +${dur((R.cum.br[R.brk] - R.cum.br[R.brk - 1]) - (R.cum.on[R.brk] - R.cum.on[R.brk - 1]))} bekleme</small></div></div>
+  <div id="cachechart" class="chart-wrap"></div>`;
+}
+function drawCacheChart() {
+  const box = $('#cachechart'); if (!box) return;
+  const R = cacheSession(), at = (arr, t) => arr[Math.max(0, Math.min(R.n, Math.round(t)))], stp = niceStep(R.n / 5);
+  xyChart(box, { label: 'Oturum boyunca toplam süre', unit: 'süre', yfmt: v => v ? dur(v) : '0', vfmt: dur,
+    series: [{ name: 'Önbelleksiz (her turda tüm bağlam)', color: 'var(--c2)', f: t => at(R.cum.off, t) }, { name: `Önbellek ${R.brk}. turda bir kez bozulursa`, color: 'var(--c3)', dash: true, f: t => at(R.cum.br, t) }, { name: 'Önbellekli (yalnız yeni tokenler)', color: 'var(--c1)', f: t => at(R.cum.on, t) }],
+    x: { lo: 0, hi: R.n, ticks: Array.from({ length: Math.floor(R.n / stp) + 1 }, (_, i) => i * stp), fmt: v => v ? nf(v) + '. tur' : '0', tip: t => `${nf(Math.round(t))}. tur sonunda` } });
+}
 function tokenBillViz() {
   const P = [0.1, 1, 5], K = ['Önbellekten girdi', 'Yeni girdi', 'Çıktı'], C = ['seg-c', 'seg-i', 'seg-o'];
   const sc = [['Sohbet', [0, 75, 25]], ['Kodlama ajanı', [96.6, 3.1, 0.3]]];
@@ -725,36 +753,57 @@ VIEWS.metrikler = () => `${pageHead('gauge', 'Metrikler', 'Hızı ve maliyeti be
    <div class="viz"><div class="viz-h">Bağlamı okuma ve cevabı yazma süresi <span class="muted">(Qwen 125B · PC: okuma 2.090, yazma 87 tok/sn · Mac: okuma 94, yazma 13 tok/sn)</span></div>${taskBars([{ label: '12 GB kart + 64 GB RAM', sub: '32K okur · 1K yazar', read: 32000 / 2090, write: 1000 / 87 }, { label: '32 GB Mac, uzmanlar SSD’den', sub: '32K okur · 1K yazar', read: 32000 / 94, write: 1000 / 13 }, { label: 'Aynı PC, kısa soru', sub: '2K okur · 1K yazar', read: 2000 / 2090, write: 1000 / 87 }])}</div>
    <ul><li>12 GB kart + 64 GB RAM, DeepSeek 763B: okuma ≈110 tok/sn, yazma 4–6 tok/sn.</li><li>RTX 5060 Ti’de Qwen 27B: 96 bin tokenlik metni ≈618 tok/sn okuyor; aynı bant genişliğine sahip PS5 yalnızca 35–50 tok/sn okuyor (matris donanımı yok).</li>
    <li><b>İlk kelimeye kadar bekleme = bağlam ÷ okuma hızı.</b> Ajanların ilk isteği ≈30–33 bin token: 600 tok/sn’de ≈55 sn, 2.000 tok/sn’de ≈16 sn. Bir Mac’te sayaç 57 tok/sn gösterirken 8,5K bağlamla gerçek hız 3 tok/sn ölçüldü; beklemenin %94’ü okumaydı.</li></ul></section>
-  <section class="card prose" id="m-gpu"><h2><span class="secn">3</span>GPU verimi: bant genişliği ve hesap gücü</h2>
+  <section class="card prose" id="m-onbellek"><h2><span class="secn">3</span>Önbellek (prompt / KV cache): lokalde de var</h2>
+   <p>Bir sohbette ya da ajan oturumunda model her turda <b>bütün konuşmayı</b> girdi olarak alır. Ama konuşmanın başı bir önceki turla aynıysa, o kısmın hesaplanmış hali (KV cache) saklanır ve yalnızca <b>yeni eklenen tokenler</b> okunur. API’de bu “önbellekten girdi” olarak ucuza faturalanır; lokalde bedavadır ve kazancı <b>zamandır</b>: ilk kelimeye kadar bekleme dakikalardan saniyelere iner.</p>
+   <ul><li><b>Ne kadar tekrar var?</b> Bir ajan oturumunun 40. turunda 800 tokenlik cevap için ≈80.000 token girdi gidebiliyor; bunun ilk ≈79.000 tokeni bir önceki turla birebir aynı. Kodlama oturumlarında tokenlerin ≈%96,6’sı önbellekten okunuyor.</li>
+   <li><b>Önbellek tutunca:</b> M5 Pro 64 GB + Qwen 27B ile 158.000 tokenlik bir bağlamın 157.600’ü önbellekteydi, yalnızca 400 token yeniydi; cevap neredeyse beklemeden başladı.</li>
+   <li><b>Önbellek bozulunca:</b> birkaç tur sonra bağlam 188.000 tokene çıktı ama önbellek yalnızca 147.000’ini eşledi; ≈41.000 token baştan okundu ve ilk kelime <b>268 saniye</b> sürdü. Önbelleği bozmak bu makinede ≈44 kat yavaşlatıyor; M5 Pro’dan M5 Max’e geçmek ise bant genişliğini ancak ≈2 kat artırıyor.</li>
+   <li><b>Sayaç yanıltır:</b> bir Mac’te ekranda 57 tok/sn yazarken 8.500 tokenlik bağlamla gerçek hız 3 tok/sn ölçüldü; beklemenin %94’ü okumaydı.</li>
+   <li><b>Pencere küçükse önbellek tutmaz:</b> bazı araçlar 24–48 GB Mac’te bağlam penceresini varsayılan 32K yapıyor; bir kodlama ajanının ilk isteği tek başına ≈33K token. Pencere dolunca baştan kesilir ve önbellek her turda boşa gider. Kurulum kılavuzları bunu yerelin “olması gerekenden çok yavaş” hissettirmesinin bir numaralı sebebi olarak gösteriyor; ajanlar için 64K öneriliyor.</li>
+   <li><b>Veri merkezinde aynı fikir:</b> bir sağlayıcıda girdi tokenlerinin önbellek isabeti %56,3’ten %96’ya çıktı: 100 girdi tokeninden 44 yerine 4’ü hesaplanıyor, yani girdi başına 11 kat az iş. Pik dışı fiyatlarla 1M token önbellek isabeti 0,3 sent, ıska 15 sent.</li></ul>
+   <div class="viz"><div class="viz-h">Çok turlu oturum hesaplayıcı <span class="muted">(okuma ve yazma süresi, önbellekli ve önbelleksiz)</span></div>
+    <div class="fields cache-f"><label class="f"><span>Donanım ve model</span><select data-cache="dev">${CACHE_DEVS.map((d, i) => `<option value="${i}"${i === (S.cache || {}).dev ? ' selected' : ''}>${d[0]} · okuma ${nf(d[1])}, yazma ${d[2]} tok/sn</option>`).join('')}</select></label>
+     <label class="f"><span>Tur sayısı</span><input type="number" min="2" max="300" data-cache="turns" value="${S.cache.turns}"></label>
+     <label class="f"><span>İlk bağlam (token)</span><input type="number" min="0" step="1000" data-cache="start" value="${S.cache.start}"></label>
+     <label class="f"><span>Tur başına yeni girdi</span><input type="number" min="0" step="100" data-cache="add" value="${S.cache.add}"></label>
+     <label class="f"><span>Tur başına cevap</span><input type="number" min="1" step="100" data-cache="out" value="${S.cache.out}"></label></div>
+    <div id="cacheres"></div></div>
+   <h3>Lokalde önbelleği kurmak</h3>
+   <ul><li><b>llama.cpp (llama-server):</b> önbellek varsayılan olarak açık. <code>-c 65536</code> ile yeterli pencere, <code>-np 1</code> ile tek slot (birden fazla slot pencereyi böler), <code>--cache-reuse 256</code> ile kısmen eşleşen önbelleği yeniden kullanma, <code>-fa on -ctk q8_0 -ctv q8_0</code> ile önbellek belleğini yarıya indirme, <code>--slot-save-path</code> ile önbelleği diske kaydedip ertesi gün geri yükleme.</li>
+   <li><b>Ollama:</b> model bellekten çıkınca önbellek de gider; <code>OLLAMA_KEEP_ALIVE=-1</code> (varsayılan 5 dakika), <code>OLLAMA_CONTEXT_LENGTH=65536</code>, <code>OLLAMA_KV_CACHE_TYPE=q8_0</code> + <code>OLLAMA_FLASH_ATTENTION=1</code>, <code>OLLAMA_NUM_PARALLEL=1</code>.</li>
+   <li><b>LM Studio:</b> bağlam uzunluğunu 32–64K yap, Flash Attention ve K/V önbellek quantization’ı (Q8) aç, “modeli bellekte tut”u işaretle. <b>vLLM / SGLang:</b> prefix caching (vLLM’de yeni sürümlerde varsayılan).</li>
+   <li><b>Önbelleği bozma:</b> sistem mesajının başına saat/tarih koyma, araç listesinin sırasını değiştirme; değişen içerik sona gelsin. Model değiştirmek veya yeniden yüklemek önbelleği sıfırlar.</li>
+   <li><b>Bedeli bellek:</b> önbellek VRAM/RAM’de durur (bkz. bağlam belleği bölümü): DeepSeek V4.1’de token başına ≈890 bayt (1 milyon token &lt;1 GB), bazı modellerde 256K bağlam 8 bitte ≈3,8 GB; eski tip modellerde aynı bağlam onlarca GB. Kart tam doluysa önbelleğe yer kalmaz.</li></ul></section>
+  <section class="card prose" id="m-gpu"><h2><span class="secn">4</span>GPU verimi: bant genişliği ve hesap gücü</h2>
    <ul><li><b>Yazma tavanı</b> = bant genişliği ÷ token başına okunan GB. Yoğun 27B 4 bit ≈16,5 GB okur: RTX 3090 (936 GB/sn) için tavan ≈57 tok/sn; Mac M5 Max (614) ≈37; M6 (170) ≈10. Hesaplayıcının altındaki grafik bunu tüm cihazlar için gösterir.</li>
    <li><b>MoE modeller</b> her tokende ağırlıkların küçük bir kısmını okur (Qwen 35B-A3B ≈2 GB, Qwen 125B IQ2_XS ≈1,8 GB, gpt-oss 120B ≈3 GB). Bu yüzden kısmen sistem RAM’indeyken bile hızlı çalışabilirler.</li>
    <li><b>Çoklu token tahmini (MTP) / spekülatif çözme:</b> küçük bir taslak model birkaç tokeni tahmin eder, büyük model tek okumada doğrular. Gerçekte 1,5–3 kat hızlanma; “200 tok/sn” gibi başlıklar çoğu zaman en iyi senaryodur (bir testte tahminlerin ≈1/3’ü tuttu: 30 → 80 tok/sn).</li>
    <li><b>GeForce sınırı:</b> GeForce kartlar 16 bit hesabı 32 bit toplamayla yarım hızda yapar. llama.cpp’nin yazma hızını etkilemez; uzun bağlam okumayı (100K’da ≈%17), vLLM ve görüntü üretimini yavaşlatır.</li></ul></section>
-  <section class="card prose" id="m-zincir"><h2><span class="secn">4</span>Darboğaz zinciri</h2>
+  <section class="card prose" id="m-zincir"><h2><span class="secn">5</span>Darboğaz zinciri</h2>
    <p>Modelin bir kısmı RAM’deyse her token en yavaş katmanı bekler. Ekran kartı belleği ile sistem RAM’i arasında 10–25 kat fark var.</p>
    ${chainViz()}
    <p class="small muted">Örnek: token başına 1 GB uzman verisi DDR4’ten (34 GB/sn) okunursa tavan ≈34 tok/sn; PCIe 3 üzerinden taşınırsa ≈14 tok/sn. Bu yüzden ekran kartında tutulan “uzman önbelleği” ve motor ayarları kritik.</p></section>
-  <section class="card prose" id="m-moe"><h2><span class="secn">5</span>MoE ve Strata: neden RAM?</h2>
+  <section class="card prose" id="m-moe"><h2><span class="secn">6</span>MoE ve Strata: neden RAM?</h2>
    <p>Mixture-of-Experts modellerde her kelime için uzmanların küçük bir kısmı kullanılır. Strata sık kullanılan kısmı ekran kartına, sonrakini RAM’e, nadir olanı SSD’ye koyar. Bu yüzden VRAM değil <b>RAM kapasitesi</b> belirleyici olur.</p>
    <ul><li><b>Qwen3.8-Flash-Next 125B:</b> RAM ≥ uzmanlar + ≈10 GB (IQ2_XS ≈46 GB). 12 GB kart + 64 GB RAM ile 79–94 tok/sn ölçüldü.</li>
    <li><b>DeepSeek V4.1 Flash 763B:</b> en az 12 GB kart, 46 GB RAM (64 GB rahat) ve ≈265 GB disk. 64 GB’ta 4–10, 128 GB’ta ≈29 tok/sn.</li>
    <li>RAM yetmezse uzmanlar SSD’den okunur: çalışır ama çok yavaşlar (32 GB Mac’te Qwen 125B ≈13 tok/sn).</li></ul></section>
-  <section class="card prose" id="m-kv"><h2><span class="secn">6</span>Bağlam (KV cache) belleği</h2>
+  <section class="card prose" id="m-kv"><h2><span class="secn">7</span>Bağlam (KV cache) belleği</h2>
    <ul><li>Bağlam, model ağırlıklarının üstüne bellek ister. Token başına: DeepSeek V4.1 ≈890 bayt (1 milyon token &lt;1 GB), bazı büyük modeller 64–88 KB (1 milyon token 69–94 GB). Aynı bağlam için 100 kat fark.</li>
    <li>16 GB kartta 3,5 bit 27B ile ≈110K token bağlam (8 bit önbellek) kalır; liderlik tablosu skorları 250–500K bağlamla ölçülür.</li>
    <li>Yalnızca indirme boyutuna bakma: “512 GB gerekir” denen model, büyük tablosu SSD’de durunca ≈300 GB ile çalışabiliyor.</li></ul></section>
-  <section class="card prose" id="m-dusunme"><h2><span class="secn">7</span>Düşünme tokenleri ve görev başına token</h2>
+  <section class="card prose" id="m-dusunme"><h2><span class="secn">8</span>Düşünme tokenleri ve görev başına token</h2>
    <ul><li>Düşünme ayarı “çok yüksek” iken bir model, zor bir soruda ≈15 bin düşünme tokeni harcıyor; 45 tok/sn’de ≈5,5 dakika. “Orta” ayar birkaç bin token.</li>
    <li>Bir ajan görevinde ortalama ≈52 bin token yazılabiliyor. Bir testte bir model görev başına 45 bin, diğeri 2,7 bin token harcadı: tok/sn’si %11 yüksek olan, 8 kat geç bitirdi.</li>
    <li>Sağlayıcıların varsayılan düşünme ayarı genelde “orta”; tanıtım skorları en yüksek ayarla ölçülür (bir örnekte 57,8’e karşı 52,5).</li></ul></section>
-  <section class="card prose" id="m-quant"><h2><span class="secn">8</span>Quant (sıkıştırma) ve kalite</h2>
+  <section class="card prose" id="m-quant"><h2><span class="secn">9</span>Quant (sıkıştırma) ve kalite</h2>
    <p>Bit sayısı düştükçe model asıl modelden sapar. Aynı bit sayısında farklı yapımcıların dosyaları belirgin fark gösterebiliyor (bir testte 20 hatanın 16’sına karşı 7’si düzeltildi).</p>
    ${quantViz()}</section>
-  <section class="card prose" id="m-tokenizer"><h2><span class="secn">9</span>Tokenizer ve dil</h2>
+  <section class="card prose" id="m-tokenizer"><h2><span class="secn">10</span>Tokenizer ve dil</h2>
    <ul><li>Aynı metin yeni bir model sürümünde 1–1,35 kat daha fazla token tutabilir; model aynıyken fatura ≈%20 artabilir.</li><li>Aynı metin bazı dillerde İngilizceye göre 15 kata kadar fazla token tutar; Türkçe metinler İngilizceden genelde daha fazla token harcar.</li></ul></section>
-  <section class="card prose" id="m-motor"><h2><span class="secn">10</span>Motorlar</h2>
+  <section class="card prose" id="m-motor"><h2><span class="secn">11</span>Motorlar</h2>
    <p>Strata (Qwen 125B ve DeepSeek için), llama.cpp ve türevleri (Avalon, uzman önbelleği), vLLM ve Mac motorları aynı donanımda çok farklı sonuç verir. Bir motorun bir sürümden diğerine 3 kat hızlandığı görüldü; aynı makinede motor değişince okuma hızı 10 kata kadar değişebiliyor. Bu yüzden hızlar zamanla değişir.</p></section>
-  <section class="card prose" id="m-api"><h2><span class="secn">11</span>Neden API ucuz? Veri merkezi verimi</h2>
+  <section class="card prose" id="m-api"><h2><span class="secn">12</span>Neden API ucuz? Veri merkezi verimi</h2>
    <ul><li>Evdeki bilgisayar bellekten her okumada tek bir kişiye token üretir. Veri merkezi aynı okumayla yüzlerce kullanıcıya üretir: bir GPU 256 eş zamanlı konuşmayla ≈26.300 tok/sn; bir H100 toplamda ≈2.800 tok/sn, kullanıcı başına ≈112 tok/sn.</li>
    <li>Üstüne önbellek: bir sağlayıcıda girdi tokenlerinin ≈%96’sı diskteki önbellekten geliyor. Aynı yılda donanım pahalanırken token fiyatları düştü.</li></ul></section>
   </div></div>`;
@@ -783,6 +832,7 @@ function updateResults() {
   if (box && RESULTS[v]) box.innerHTML = RESULTS[v]();
   if (v === 'karsilastir') drawCompareCharts();
   if (v === 'al') drawBuyCharts();
+  if (v === 'metrikler') { const cb = $('#cacheres'); if (cb) { cb.innerHTML = resultsCache(); drawCacheChart(); } }
 }
 function rerenderControls() { const y = scrollY; render(); scrollTo(0, y); }
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
@@ -790,6 +840,7 @@ function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.ad
 document.addEventListener('input', e => {
   const t = e.target, k = t.dataset.k, v = Number(t.value), ok = t.value !== '' && Number.isFinite(v);
   if (k && t.type !== 'checkbox' && ok) { set(k, v); if (k === 'usdTry') set('usdTryManual', true); if (k === 'monthlyTokens' || k === 'outputSharePercent') { set('preset', null); $$('.preset.on').forEach(b => b.classList.remove('on')); } updateResults(); }
+  else if (t.dataset.cache && t.tagName === 'INPUT' && ok) { set('cache', { ...S.cache, [t.dataset.cache]: v }); const cb = $('#cacheres'); if (cb) { cb.innerHTML = resultsCache(); drawCacheChart(); } }
   else if (t.dataset.tariff && ok) { set('tariff', { ...S.tariff, [t.dataset.tariff]: v }); }
 });
 document.addEventListener('change', e => {
@@ -801,6 +852,7 @@ document.addEventListener('change', e => {
   else if (d.offer) { S.offerSel[d.offer] = t.value; save(); updateResults(); }
   else if (d.pickoffer) { S.offerSel[d.pickoffer] = t.value; save(); const det = t.closest('details'); det.outerHTML = opartHtml(d.pickoffer, true); }
   else if ('modelsel' in d) { set('model', t.value); set('cmpCloud', ''); rerenderControls(); }
+  else if (d.cache && t.tagName === 'SELECT') { set('cache', { ...S.cache, dev: Number(t.value) }); updateResults(); }
   else if (d.met) { set(d.met === 'dev' ? 'metDev' : 'metModel', Number(t.value)); updateResults(); }
   else if ('cmplocal' in d) { set('cmpLocal', t.value); updateResults(); }
   else if ('cmpcloudsel' in d) { set('cmpCloud', t.value); updateResults(); }
@@ -828,7 +880,7 @@ document.addEventListener('click', e => {
   else if (b.id === 'theme') { const dark = document.documentElement.dataset.theme !== 'dark' && !(document.documentElement.dataset.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches); document.documentElement.dataset.theme = dark ? 'dark' : 'light'; try { localStorage.setItem('yerel-ai-theme', dark ? 'dark' : 'light'); } catch (e) {} }
 });
 window.addEventListener('hashchange', () => { render(); scrollTo(0, 0); });
-let resizeT; window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (route() === 'karsilastir') drawCompareCharts(); if (route() === 'al') drawBuyCharts(); }, 200); });
+let resizeT; window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (route() === 'karsilastir') drawCompareCharts(); if (route() === 'al') drawBuyCharts(); if (route() === 'metrikler') drawCacheChart(); }, 200); });
 
 /* ---------- boot ---------- */
 (async function boot() {

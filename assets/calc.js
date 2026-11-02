@@ -1,6 +1,6 @@
 'use strict';
 /* Pure calculations and data merging. No DOM access here.
-   Prices: catalog seed offers + data/prices.json (automatic, daily) + data/manual-offers.json (manual). */
+   Prices: catalog seed offers + data/prices.json (automatic, weekly) + data/manual-offers.json (manual). */
 const Calc = (() => {
   let CAT = null, LIVE = { stores: {}, apple: {}, openrouter: {} }, MANUAL = { offers: {} };
 
@@ -97,7 +97,7 @@ const Calc = (() => {
   };
   function estimate(id, hw) {
     const v = +hw.vram || 0, r = +hw.ram || 0, uni = hw.ramType === 'unified', d4 = hw.ramType === 'DDR4' ? 0.8 : 1, ssd = +hw.ssd || 0;
-    const res = (tps, status, note) => ({ tps: Math.round(tps * 10) / 10, status, note });
+    const res = (tps, status, note, q) => ({ tps: Math.round(tps * 10) / 10, status, note, q });
     const disk = MODELS[id].disk;
     if (ssd && ssd < disk) return res(0, 'no', `En az ${disk} GB boş disk gerekir`);
     if (id === 'qwen') {
@@ -117,11 +117,11 @@ const Calc = (() => {
     }
     if (id === 'q27') {
       const bw = +hw.bw || (uni ? (r >= 192 ? 1200 : r >= 96 ? 614 : r >= 48 ? 307 : 170) : v >= 24 ? 900 : v >= 16 ? 450 : v >= 12 ? 360 : 300);
-      if (uni) return r * 0.75 >= 19 ? res(bw / 17 * 0.8, bw / 17 * 0.8 >= 15 ? 'ok' : 'slow', `4 bit (≈17 GB); hız bant genişliğine bağlı (≈${bw} GB/sn)`) : res(0, 'no', 'Bellek yetmez (4 bit ≈17 GB)');
-      if (v >= 20) return res(bw / 16.5 * 0.8, 'ok', '4 bit (≈16,5 GB) tamamı kartta; çoklu token tahmini (MTP) açıkken ≈1,5–2 kat hızlı');
-      if (v >= 16) return res(bw / 11.8 * 0.75, 'ok', '3,5 bit (≈11,8 GB); Q4 dosyası 16 GB karta sığmaz. MTP açıkken ≈1,5–2 kat hızlı');
-      if (v >= 12) return res(bw / 8.4 * 0.7, 'ok', '2–3 bit (≈8–10 GB); kalite quant yapımcısına göre değişir');
-      return v >= 6 ? res(4, 'slow', 'Kart küçük; model RAM’e taşar (8 GB kartta ölçüm ≈4 tok/sn). Qwen3.6-35B-A3B daha uygun') : res(0, 'no', 'Ekran kartı gerekir');
+      if (uni) return r * 0.75 >= 19 ? res(bw / 17 * 0.8, bw / 17 * 0.8 >= 15 ? 'ok' : 'slow', `4 bit (≈17 GB); hız bant genişliğine bağlı (≈${bw} GB/sn)`, '4 bit') : res(0, 'no', 'Bellek yetmez (4 bit ≈17 GB)', '—');
+      if (v >= 20) return res(bw / 16.5 * 0.8, 'ok', '4 bit (≈16,5 GB) tamamı kartta; çoklu token tahmini (MTP) açıkken ≈1,5–2 kat hızlı', '4 bit');
+      if (v >= 16) return res(bw / 11.8 * 0.75, 'ok', '3,5 bit (≈11,8 GB); Q4 dosyası 16 GB karta sığmaz. MTP açıkken ≈1,5–2 kat hızlı', '3,5 bit');
+      if (v >= 12) return res(bw / 8.4 * 0.7, 'ok', '2–3 bit (≈8–10 GB); kalite quant yapımcısına göre değişir', '2–3 bit');
+      return v >= 6 ? res(4, 'slow', 'Kart küçük; model RAM’e taşar (8 GB kartta ölçüm ≈4 tok/sn). Qwen3.6-35B-A3B daha uygun', 'RAM’e taşar') : res(0, 'no', 'Ekran kartı gerekir');
     }
     if (id === 'dense14') { const need = 11; if (uni) return r - 5 >= need ? res(r >= 36 ? 40 : 25, 'ok', 'Birleşik bellekte') : res(0, 'no', 'Bellek yetmez'); return v >= need ? res(40, 'ok', 'Tamamı ekran kartında') : v >= 8 ? res(12, 'slow', 'RAM’e taşar, yavaş') : res(0, 'no', 'Ekran kartı belleği yetmez'); }
   }
@@ -144,6 +144,7 @@ const Calc = (() => {
     const uni = c.ramType === 'unified', d4 = c.ramType === 'DDR4' ? 0.85 : 1, base = c.pp || (c.vram >= 24 ? 2000 : c.vram >= 16 ? 900 : c.vram >= 12 ? 900 : 300);
     if (model === 'deepseek') { if (uni) return c.ram >= 128 ? 450 : 100; return Math.round((c.vram >= 24 ? 300 : c.vram >= 16 ? 220 : 180) * (c.ram >= 128 ? 1.5 : 1) * d4); }
     if (model === 'dense14' || model === 'q27') return uni ? Math.round((c.bw || 300) * 1.3) : Math.round(base * 1.2);
+    if (model === 'q36' || model === 'coder') return uni ? (c.ram >= 48 ? 900 : 94) : Math.round((c.ram >= 32 ? base : 150) * d4);
     if (uni) return c.ram >= 96 ? 1800 : c.ram >= 64 ? 900 : c.ram >= 46 ? 500 : 94;
     const fits = c.ram >= 46 || (c.vram >= 24 && c.ram >= 32);
     return Math.round((fits ? base : 150) * d4);

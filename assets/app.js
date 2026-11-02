@@ -7,7 +7,8 @@ const tl = (v, d = 0) => nf(v, d) + ' TL';
 const tps = v => v >= 1 ? nf(v, v < 10 ? 1 : 0) + ' tok/sn' : '—';
 const dur = s => !Number.isFinite(s) ? '—' : s < 60 ? nf(s) + ' sn' : s < 3600 ? nf(s / 60, s < 600 ? 1 : 0) + ' dk' : nf(s / 3600, 1) + ' sa';
 const ansTime = t => { if (!t) return '—'; const s = 1000 / t; return s < 60 ? nf(s) + ' sn' : nf(s / 60, 1) + ' dk'; };
-
+const mTok = v => (v < 1 ? nf(v, 2) : v < 10 ? nf(v, 1) : nf(v)) + ' M';
+const gb = v => v >= 1000 ? nf(v / 1000) + ' TB' : nf(v) + ' GB';
 
 /* ---------- icons: simple line icons drawn for this site (24×24, stroke = currentColor) ---------- */
 const ICONS = {
@@ -19,9 +20,18 @@ const ICONS = {
   alert: '<path d="M12 3.5L2.5 20h19z"/><path d="M12 10v4.5M12 17.2v.3"/>',
   x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
-  contrast: '<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" stroke="none"/>',
-  link: '<path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/>',
-  chip: '<rect x="6.5" y="6.5" width="11" height="11" rx="2"/><path d="M9.5 3v3.5M14.5 3v3.5M9.5 17.5V21M14.5 17.5V21M3 9.5h3.5M3 14.5h3.5M17.5 9.5H21M17.5 14.5H21"/>'
+  chev: '<path d="M9 6l6 6-6 6"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  chip: '<rect x="6.5" y="6.5" width="11" height="11" rx="2"/><path d="M9.5 3v3.5M14.5 3v3.5M9.5 17.5V21M14.5 17.5V21M3 9.5h3.5M3 14.5h3.5M17.5 9.5H21M17.5 14.5H21"/>',
+  gauge: '<path d="M3.5 16a8.5 8.5 0 1 1 17 0"/><path d="M12 16l4.5-5.5"/><circle cx="12" cy="16" r="1.2"/>',
+  tag: '<path d="M3 12.2V4h8.2l9.3 9.3-8.2 8.2z"/><circle cx="7.6" cy="8.6" r="1.4"/>',
+  sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  shield: '<path d="M12 3l7.5 2.8V12c0 4.3-3.2 7.7-7.5 9-4.3-1.3-7.5-4.7-7.5-9V5.8z"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.7 2.6 14.3 0 17M12 3.5c-2.6 2.7-2.6 14.3 0 17"/>',
+  refresh: '<path d="M19.5 11A7.5 7.5 0 0 0 5.6 7.5M4.5 13a7.5 7.5 0 0 0 13.9 3.5"/><path d="M5 3.5v4.2h4.2M19 20.5v-4.2h-4.2"/>',
+  edit: '<path d="M4 20h4.2L19.5 8.7a2.1 2.1 0 0 0-3-3L5.2 17z"/>',
+  lock: '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>'
 };
 const icon = (n, cls = 'ic') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
 
@@ -31,7 +41,7 @@ const DEFAULT_STATE = () => {
   return { monthlyTokens: d.monthlyTokens, outputSharePercent: d.outputSharePercent, cachedInputSharePercent: d.cachedInputSharePercent,
     preset: null, taskType: 'short', model: 'q27', privacy: false, budget: d.budget, horizon: d.horizon, hoursPerDay: d.hoursPerDay,
     usdTry: (Calc.live().usdTry && Calc.live().usdTry.value) || d.usdTry, usdYearly: 0, tlYearly: 0, foreignTax: 0, resale: false, depreciation: 25,
-    offerSel: {}, caps: {}, cloudClass: 'all', cmpLocal: 'custom', cmpCloud: '', buyFilter: 'all', tariff: {},
+    offerSel: {}, caps: {}, cloudClass: 'all', cmpClass: 'equiv', cmpLocal: 'custom', cmpCloud: '', buyFilter: 'all', tariff: {}, tokScale: 'log', metDev: 6, metModel: 0,
     build: { gpu: 'gpu5070', gpuCount: 1, cpu: 'cpu7500f', mobo: 'moboB650', ram: 'ram64', ssd: 'ssd2', psu: 'psu850', case: 'caseMid', cooler: 'cooler' },
     mine: { gpu: 'rtx3060', vram: 12, watts: 170, ram: 32, ramType: 'DDR5', ssd: 500 } };
 };
@@ -57,26 +67,38 @@ const MINE_GPUS = [ // id, label, VRAM GB, watts, prefill tok/s (Qwen 125B, esti
   ['mac', 'Mac (Apple Silicon)', 0, 0, 0, 'Apple', 0]];
 const STATUS = { ok: ['ok', 'Rahat çalışır', 'check'], slow: ['slow', 'Yavaş', 'alert'], no: ['no', 'Çalışmaz', 'x'] };
 const badge = st => `<span class="badge ${STATUS[st][0]}">${icon(STATUS[st][2], 'bi')}${STATUS[st][1]}</span>`;
+// Cloud models of roughly the same class as each local model (for a fair buy-vs-rent comparison)
+const EQUIV = {
+  q27: ['api-open-qwen3-32b', 'api-open-gemma-3-27b-it', 'api-open-mistral-small-3.2-24b-instruct', 'api-open-qwen3-30b-a3b-instruct-2507'],
+  qwen: ['api-open-qwen3-235b-a22b-2507', 'api-open-gpt-oss-120b', 'api-open-glm-4.5-air', 'api-groq-120'],
+  deepseek: ['api-deepseek-flash-off', 'api-deepseek-flash-peak', 'api-open-deepseek-v3.2']
+};
+
+function pageHead(ic, eyebrow, title, lead) {
+  return `<header class="page-head"><span class="ph-ic">${icon(ic)}</span><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1>${lead ? `<p class="lead">${lead}</p>` : ''}</div></header>`;
+}
+const step = (n, title, sub = '', right = '') => `<div class="step"><span class="sn">${n}</span><div class="st"><h2>${title}</h2>${sub ? `<p>${sub}</p>` : ''}</div>${right}</div>`;
+const segButtons = (attr, items, cur) => `<div class="seg small" role="group">${items.map(([k, l]) => `<button type="button" data-${attr}="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div>`;
+
 function presetButtons() {
-  return `<div class="presets">${Calc.cat().usagePresets.map(p => `<button type="button" class="preset${S.preset === p.id ? ' on' : ''}" data-preset="${p.id}"><b>${esc(p.label)}</b><small>${nf(p.calls)} çağrı × ${nf(p.tokens)} token · ${p.days} gün → ${nf(p.calls * p.tokens * p.days / 1e6, 1)} M/ay</small></button>`).join('')}</div>`;
+  return `<div class="presets">${Calc.cat().usagePresets.map(p => `<button type="button" class="preset${S.preset === p.id ? ' on' : ''}" data-preset="${p.id}"><b>${esc(p.label)}</b><small>${nf(p.calls)} çağrı × ${nf(p.tokens)} token · ${p.days} gün</small><em>${nf(p.calls * p.tokens * p.days / 1e6, 1)} M/ay</em></button>`).join('')}</div>`;
 }
 function modelToggle() {
   const M = [['q27', 'Qwen3.8 27B', 'yoğun model · 16–24 GB kartta tamamı kartta'], ['qwen', 'Qwen3.8-Flash-Next 125B', 'MoE · 12 GB kart + 64 GB RAM (Strata)'], ['deepseek', 'DeepSeek V4.1 Flash 763B', 'çok büyük MoE · 64–128 GB RAM, yavaş']];
   return `<div class="seg" role="group" aria-label="Bilgisayarda çalışacak model">${M.map(([k, l, s]) => `<button type="button" data-model="${k}" aria-pressed="${S.model === k}"><b>${l}</b><small>${s}</small></button>`).join('')}</div>`;
 }
-function taskToggle() { const T = Calc.cat().taskTypes; return `<div class="seg small" role="group" aria-label="Görev tipi">${Object.entries(T).map(([k, t]) => `<button type="button" data-task="${k}" aria-pressed="${S.taskType === k}"><b>${t.label}</b><small>${nf(t.out / 1000)}K yazar · ${nf(t.ctx / 1000)}K okur · ${t.desc}</small></button>`).join('')}</div>`; }
+function taskToggle() { const T = Calc.cat().taskTypes; return `<div class="seg" role="group" aria-label="Görev tipi">${Object.entries(T).map(([k, t]) => `<button type="button" data-task="${k}" aria-pressed="${S.taskType === k}"><b>${t.label}</b><small>${nf(t.out / 1000)}K yazar · ${nf(t.ctx / 1000)}K okur · ${t.desc}</small></button>`).join('')}</div>`; }
 function usagePanel(opts = {}) {
   return `<section class="card usage">
-  <div class="usage-head"><h2>${opts.title || 'Kullanımın'}</h2><span class="muted">${opts.sub || 'Sana en yakın profili seç; sonuçlar anında değişir.'}</span></div>
-  ${presetButtons()}
+  <div class="row-label first">Kullanım profili</div>${presetButtons()}
   <div class="fields">
    <label class="f"><span>Aylık çıktı tokeni (milyon)</span><input type="number" min="0.01" max="1000" step="0.5" data-k="monthlyTokens" value="${S.monthlyTokens}"></label>
-   <label class="f"><span>Çıktı payı (%) <i class="hint" title="Modelin yazdığı / (okuduğu + yazdığı). Kod ajanları büyük bağlam gönderdiği için %3–10, sohbet %20–30.">?</i></span><input type="number" min="1" max="100" data-k="outputSharePercent" value="${S.outputSharePercent}"></label>
+   <label class="f"><span>Çıktı payı (%) <i class="hint" title="Modelin yazdığı / (okuduğu + yazdığı). Kod ajanları büyük bağlam gönderdiği için %1–10, sohbet %20–30.">?</i></span><input type="number" min="1" max="100" data-k="outputSharePercent" value="${S.outputSharePercent}"></label>
    ${opts.budget ? `<label class="f"><span>Bilgisayar bütçesi (TL)</span><input type="number" min="0" max="700000" step="5000" data-k="budget" value="${S.budget}"></label>` : ''}
    ${opts.horizon !== false ? `<label class="f"><span>Karşılaştırma süresi (ay)</span><input type="number" min="1" max="120" data-k="horizon" value="${S.horizon}"></label>` : ''}
   </div>
-  <div class="row-label">Tipik bir görev ne kadar? <i class="hint" title="Düşünen modeller ve kodlama ajanları bir görevde 15–50 bin token harcayabilir; ajanlar işe ~30 bin tokenlik bağlamla başlar. Görev süresi = bağlamı okuma + cevabı yazma.">?</i></div>${taskToggle()}
-  ${opts.model !== false ? `<div class="row-label">Bilgisayarda hangi model çalışacak?</div>${modelToggle()}` : ''}
+  <div class="row-label">Tipik bir görev <i class="hint" title="Düşünen modeller ve kodlama ajanları bir görevde 15–50 bin token harcayabilir; ajanlar işe ~30 bin tokenlik bağlamla başlar. Görev süresi = bağlamı okuma + cevabı yazma.">?</i></div>${taskToggle()}
+  ${opts.model !== false ? `<div class="row-label">Bilgisayarda çalışacak model</div>${modelToggle()}` : ''}
   ${opts.privacy !== false ? `<label class="check"><input type="checkbox" data-k="privacy" ${S.privacy ? 'checked' : ''}> <span><b>Gizlilik şart</b> · kodum/verim bilgisayardan çıkamaz (bulut seçenekleri elenir)</span></label>` : ''}
   <details class="more"><summary>Önbellek ve günlük çalışma saati</summary><div class="fields">
    <label class="f"><span>API önbellekten okunan girdi (%)</span><input type="number" min="0" max="100" step="5" data-k="cachedInputSharePercent" value="${S.cachedInputSharePercent}"></label>
@@ -93,6 +115,7 @@ function specLine(c) {
   const g = c.items.find(i => i.part.cat === 'gpu'), cpu = c.items.find(i => i.part.cat === 'cpu'), ram = c.items.find(i => i.part.cat === 'ram');
   return `${c.gpus > 1 ? c.gpus + '× ' : ''}${esc(g.part.label)} · ${esc(cpu.part.label)} · ${esc(ram.part.label)}`;
 }
+const speedSub = sp => `${sp.measured ? 'ölçüm' : 'tahmin'}${sp.q && sp.q !== '—' ? ' · ' + sp.q : ''}`;
 function computerCard(c, opts = {}) {
   const sp = Calc.speed(c, S.model), cap = Calc.capacity(c, S.model, S), el = Calc.electricity(c, S.model, S).tl, tt = Calc.taskTime(c, S.model, S);
   const short = cap < S.monthlyTokens;
@@ -100,12 +123,12 @@ function computerCard(c, opts = {}) {
    ${opts.tag ? `<span class="tag">${opts.tag}</span>` : ''}
    <div class="pc-top"><h3>${esc(c.name)}</h3><strong>${tl(c.price)}${c.estimatedPrice ? ' ≈' : ''}</strong></div>
    <p class="muted small">${specLine(c)}</p>
-   <div class="pc-stats"><div><span>${Calc.MODELS[S.model].short}</span><b>${tps(sp.tps)}</b><small>${sp.measured ? 'ölçüm' : 'tahmin'}</small></div><div><span>Görev süresi</span><b>${dur(tt.total)}</b><small>okuma ${dur(tt.read)} + yazma ${dur(tt.write)}</small></div><div><span>Ek elektrik</span><b>${tl(el)}/ay</b></div></div>
-   ${badge(sp.status)}${short ? ` <span class="badge no">Kullanımına yetmez: en fazla ${nf(cap, 1)} M/ay</span>` : ''}
+   <div class="pc-stats"><div><span>${Calc.MODELS[S.model].short}</span><b>${tps(sp.tps)}</b><small>${speedSub(sp)}</small></div><div><span>Görev süresi</span><b>${dur(tt.total)}</b><small>okuma ${dur(tt.read)} + yazma ${dur(tt.write)}</small></div><div><span>Ek elektrik</span><b>${tl(el)}/ay</b><small>${nf(S.monthlyTokens, 1)} M çıktı</small></div></div>
+   <div class="badges">${badge(sp.status)}${short ? ` <span class="badge no">Yetmez: en fazla ${nf(cap, 1)} M/ay</span>` : ''}</div>
    <p class="small muted">${esc(sp.note)}</p>
    ${opts.reason ? `<p class="small reason">${opts.reason}</p>` : ''}
    <details class="more"><summary>Parçalar ve mağazalar</summary>${partsList(c)}</details>
-   <div class="actions"><button type="button" class="btn ghost" data-compare="${c.id}">Bulutla karşılaştır →</button></div>
+   <div class="actions"><button type="button" class="btn ghost small" data-compare="${c.id}">Bulutla karşılaştır ${icon('arrow', 'bi')}</button></div>
   </article>`;
 }
 function mineComputer() {
@@ -113,7 +136,7 @@ function mineComputer() {
   const hw = { vram: uni ? 0 : m.vram, ram: m.ram, ramType: uni ? 'unified' : m.ramType, ssd: m.ssd };
   const d14 = Calc.estimate('dense14', hw);
   const g = MINE_GPUS.find(x => x[0] === m.gpu) || [];
-  return { id: 'mine', pp: g[4], vendor: g[5], bw: g[6] || undefined, name: 'Elindeki bilgisayar', kind: uni ? 'mac' : 'pc', price: 0, vram: hw.vram, gpuVram: hw.vram, ram: m.ram, ramType: hw.ramType, ssd: m.ssd, watts: uni ? 60 : (m.watts || 0) + 120, tps14: d14.tps, gpus: 1, items: [], appleName: 'Kendi Mac’in', url: '#' };
+  return { id: 'mine', pp: g[4], vendor: g[5], bw: g[6] || undefined, gpuLabel: g[1], name: 'Elindeki bilgisayar', kind: uni ? 'mac' : 'pc', price: 0, vram: hw.vram, gpuVram: hw.vram, ram: m.ram, ramType: hw.ramType, ssd: m.ssd, watts: uni ? 60 : (m.watts || 0) + 120, tps14: d14.tps, gpus: 1, items: [], appleName: 'Kendi Mac’in', url: '#' };
 }
 function recModels(c) {
   const v = c.vram, r = c.ram, uni = c.ramType === 'unified', out = [];
@@ -127,7 +150,7 @@ function recModels(c) {
   if (v >= 20) out.push(['Qwen3.8 27B · 4 bit (≈16,5 GB)', v >= 24 ? 'Tamamı kartta; 24 GB kartta çoklu token tahminiyle ≈66 tok/sn.' : 'Tamamı kartta sığar; bağlam için birkaç GB kalır.']);
   else if (v >= 16) out.push(['Qwen3.8 27B · 3,5 bit (≈11,8 GB)', 'Varsayılan Q4 dosyası (16,5 GB) 16 GB karta sığmaz; masaüstü zaten 1–2 GB kullanır. 3,5 bit ile ≈45 tok/sn ve ≈110K bağlam.']);
   else if (v >= 12) out.push(['Qwen3.8 27B · 2–3 bit (≈8–10 GB)', 'Sohbet için iyi; dosyayı kimin hazırladığı çok fark eder (aynı boyutta 16/20’ye karşı 7/20 hata düzeltme).'], ['LFM 2.5 24B', 'Çok hızlı (RTX 3060’ta ≈87 tok/sn), hafif işler için.']);
-  if (v >= 6 && v < 16 && r >= 32) out.push(['Qwen3.6-35B-A3B (uzmanlar RAM’de)', 'Her kelimede ~3B parametre okur; 6–8 GB kart + 32 GB RAM ile ≈23 tok/sn. 8 GB kartta 27B dense modelden çok daha hızlı.']);
+  if (v >= 6 && v < 16 && r >= 32) out.push(['Qwen3.6-35B-A3B (uzmanlar RAM’de)', 'Her kelimede ~3B parametre okur; 6–8 GB kart + 32 GB RAM ile ≈23 tok/sn. 8 GB kartta 27B yoğun modelden çok daha hızlı.']);
   if (v >= 6 && v <= 8) out.push(['Gemma 4 12B · 3 bit (≈5,7 GB)', 'Tamamı kartta; sohbet ve kısa işler için.']);
   if (r < 32 && v < 12) out.push(['RAM’i 32 GB’a çıkar', '8 GB kartta asıl sınır RAM: 35B MoE modeli için 32 GB taban.']);
   return out.length ? out : [['Küçük modeller (4–9B)', 'Ekran kartı belleği sınırlı; bulut seçeneklerine de bak.']];
@@ -137,7 +160,7 @@ function engineTips(c) {
   if (c.ramType === 'unified') t.push('<b>Mac:</b> macOS ekran kartına belleğin yaklaşık 3/4’ünü verir (128 GB’ta ≈96 GB); bir terminal ayarıyla artırılabilir.', '<b>Bağlamı büyüt:</b> bazı araçlar 24–48 GB Mac’te varsayılan bağlamı 32K tutar; ajanın ilk isteği tek başına ≈33K. Ajanlar için en az 64K ayarla.', '<b>Önbelleği bozma:</b> sohbetin başı değişirse model tüm bağlamı baştan okur; bu bir Mac’te dakikalar sürebilir.');
   else if ((c.vendor || '').startsWith('AMD-RDNA3')) t.push('<b>AMD RX 7000:</b> Strata’nın yanında llama.cpp tabanlı Avalon gibi motorları dene; aynı kartta %30–50 fark görülebiliyor.');
   else if ((c.vendor || '').startsWith('AMD')) t.push('<b>AMD:</b> Strata’nın HIP motoru RX 9060/9070 ve R9700’ü destekliyor.');
-  else t.push('<b>NVIDIA:</b> Qwen 125B ve DeepSeek için Strata; dense modeller için llama.cpp. llama.cpp’nin yeni “uzman önbelleği” 24–32 GB kartlarda MoE modelleri %50’ye kadar hızlandırıyor (8 GB kartta yavaşlatabilir).');
+  else t.push('<b>NVIDIA:</b> Qwen 125B ve DeepSeek için Strata; yoğun modeller için llama.cpp. llama.cpp’nin yeni “uzman önbelleği” 24–32 GB kartlarda MoE modelleri %50’ye kadar hızlandırıyor (8 GB kartta yavaşlatabilir).');
   t.push('<b>Motor donanım kadar önemli:</b> aynı makinede motor değişince okuma hızı 10 kata kadar değişebiliyor.');
   return t;
 }
@@ -146,13 +169,80 @@ function customComputer() {
   return Calc.pcFromKeys('custom', 'Kendi topladığın sistem', keys, b.gpuCount || 1, S.offerSel);
 }
 function allLocal() { return [customComputer(), ...Calc.computers(S.offerSel)]; }
-function findLocal(id) { return id === 'mine' ? mineComputer() : allLocal().find(c => c.id === id) || customComputer(); }
+
+/* ---------- small visual helpers ---------- */
+// 100% stacked bar per row: where does the time of a task go (reading the context vs writing the answer)?
+function taskBars(rows) {
+  return `<div class="tbars">${rows.map(r => { const tot = r.read + r.write, rp = Number.isFinite(tot) && tot > 0 ? r.read / tot * 100 : 0; return `<div class="tb-row"><span class="tb-l">${r.label}<small>${r.sub || ''}</small></span><span class="tb-bar"><i class="rd" style="width:${rp}%">${rp > 18 ? dur(r.read) : ''}</i><i class="wr" style="width:${100 - rp}%">${100 - rp > 18 ? dur(r.write) : ''}</i></span><b>${dur(tot)}</b></div>`; }).join('')}</div>
+  <div class="legend"><span><i class="k-rd"></i>Okuma (bağlam, prefill)</span><span><i class="k-wr"></i>Yazma (cevap, decode)</span></div>`;
+}
+const meter = (v, max, cls) => `<span class="meter ${cls || ''}"><i style="width:${Math.max(2, Math.min(100, v / max * 100))}%"></i></span>`;
+
+/* ---------- line chart (SVG): linear or logarithmic axes, limits drawn dashed, vertical markers ---------- */
+function niceStep(raw) { const e = Math.pow(10, Math.floor(Math.log10(raw))); for (const m of [1, 2, 2.5, 5, 10]) if (m * e >= raw - 1e-9) return m * e; return 10 * e; }
+const axTL = v => v === 0 ? '0' : v >= 1e6 ? nf(v / 1e6, v % 1e6 ? 1 : 0) + ' mn' : v >= 1e3 ? nf(v / 1e3, v % 1e3 && v < 1e4 ? 1 : 0) + ' bin' : nf(v, v < 10 && v % 1 ? 1 : 0);
+function xyChart(box, o) {
+  if (!box) return;
+  // draw at the box's own width so that labels keep their size on phones
+  const W = Math.round(Math.min(900, Math.max(320, box.clientWidth || 900))), narrow = W < 600;
+  const H = narrow ? 270 : 330, L = narrow ? 50 : 64, R = narrow ? 22 : 34, T = 26, B = 34, iw = W - L - R, ih = H - T - B, X = { ...o.x };
+  if (narrow && X.ticks.length > 5) X.ticks = X.ticks.filter((_, i, a) => i % 2 === 0);
+  const l0 = Math.log10(X.lo || 1e-9), l1 = Math.log10(X.hi);
+  const xs = X.log ? v => L + (Math.log10(Math.max(v, X.lo)) - l0) / (l1 - l0) * iw : v => L + (v - X.lo) / (X.hi - X.lo) * iw;
+  const xinv = px => { const r = Math.min(1, Math.max(0, (px - L) / iw)); return X.log ? Math.pow(10, l0 + r * (l1 - l0)) : X.lo + r * (X.hi - X.lo); };
+  const pts = Array.from({ length: 181 }, (_, i) => xinv(L + iw * i / 180));
+  const vals = o.series.flatMap(s => pts.map(s.f)).filter(v => Number.isFinite(v) && (!o.logY || v > 0));
+  let ys, yt;
+  if (o.logY) {
+    const mx = Math.max(1, ...vals), mn = Math.max(Math.min(...vals), mx / 1e6);
+    const a = Math.floor(Math.log10(mn)), b = Math.max(a + 1, Math.ceil(Math.log10(mx)));
+    ys = v => T + ih - (Math.log10(Math.max(v, 10 ** a)) - a) / (b - a) * ih; yt = Array.from({ length: b - a + 1 }, (_, i) => 10 ** (a + i));
+  } else {
+    const mx = Math.max(1, ...vals) * 1.04, st = niceStep(mx / 4), top = Math.ceil(mx / st) * st;
+    ys = v => T + ih - v / top * ih; yt = Array.from({ length: Math.round(top / st) + 1 }, (_, i) => i * st);
+  }
+  let g = `<text x="${L - 10}" y="${T - 12}" class="ax unit" text-anchor="end">TL</text>`;
+  for (const v of yt) g += `<line x1="${L}" x2="${W - R}" y1="${ys(v)}" y2="${ys(v)}" class="grid"/><text x="${L - 10}" y="${ys(v) + 4}" class="ax" text-anchor="end">${axTL(v)}</text>`;
+  for (const v of X.ticks) g += (X.log ? `<line x1="${xs(v)}" x2="${xs(v)}" y1="${T}" y2="${T + ih}" class="grid"/>` : '') + `<text x="${xs(v)}" y="${H - 10}" class="ax" text-anchor="middle">${X.fmt(v)}</text>`;
+  const path = arr => arr.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('');
+  let lines = '';
+  for (const s of o.series) {
+    const lim = Number.isFinite(s.limit) ? s.limit : Infinity, inside = lim > X.lo && lim < X.hi;
+    const P = pts.map(t => [t, s.f(t)]).filter(([, v]) => Number.isFinite(v));
+    const a = P.filter(([t]) => t <= lim).map(([t, v]) => [xs(t), ys(v)]), b = P.filter(([t]) => t > lim).map(([t, v]) => [xs(t), ys(v)]);
+    if (inside) { const pl = [xs(lim), ys(s.f(lim))]; a.push(pl); b.unshift(pl); }
+    if (a.length > 1) lines += `<path d="${path(a)}" stroke="${s.color}" class="ln"${s.dash ? ' stroke-dasharray="8 6"' : ''}/>`;
+    if (b.length > 1) lines += `<path d="${path(b)}" stroke="${s.color}" class="ln over" stroke-dasharray="2 5"/>`;
+    if (inside) lines += `<circle cx="${xs(lim)}" cy="${ys(s.f(lim))}" r="4.5" class="dot" stroke="${s.color}"/>`;
+  }
+  let mk = '';
+  for (const m of o.markers || []) if (m.x > X.lo && m.x < X.hi) { const px = xs(m.x), right = px > W - (narrow ? 150 : 200); mk += `<line x1="${px}" x2="${px}" y1="${T - 4}" y2="${T + ih}" class="mk"/><text x="${right ? px - 6 : px + 6}" y="${T - 10}" class="mkt" text-anchor="${right ? 'end' : 'start'}">${esc(m.label)}</text>`; }
+  box.innerHTML = `<div class="chartbox"><svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="${esc(o.label || 'Grafik')}">${g}${mk}${lines}<line class="xh" x1="0" x2="0" y1="${T}" y2="${T + ih}" visibility="hidden"/></svg><div class="ctip" hidden></div></div>
+   <div class="legend">${o.series.map(s => `<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}${o.series.some(s => Number.isFinite(s.limit)) ? '<span class="muted"><i class="k-dot"></i>noktalı: kapasite / kota aşıldı</span>' : ''}</div>`;
+  const svg = $('svg', box), tip = $('.ctip', box), xh = $('.xh', svg);
+  svg.onpointermove = e => {
+    const r = svg.getBoundingClientRect(), sx = (e.clientX - r.left) / r.width * W;
+    if (sx < L || sx > W - R) { tip.hidden = true; xh.setAttribute('visibility', 'hidden'); return; }
+    const t = xinv(sx); xh.setAttribute('x1', sx); xh.setAttribute('x2', sx); xh.setAttribute('visibility', 'visible');
+    tip.hidden = false;
+    tip.innerHTML = `<b>${X.tip(t)}</b>` + o.series.map(s => `<div><i style="background:${s.color}"></i>${esc(s.name)}: <b>${tl(s.f(t))}</b>${Number.isFinite(s.limit) && t > s.limit ? ' <span class="bad">· sınır aşıldı</span>' : ''}</div>`).join('');
+    const bx = box.getBoundingClientRect();
+    tip.style.left = Math.max(0, Math.min(bx.width - tip.offsetWidth - 4, e.clientX - bx.left + 14)) + 'px'; tip.style.top = (e.clientY - bx.top + 14) + 'px';
+  };
+  svg.onpointerleave = () => { tip.hidden = true; xh.setAttribute('visibility', 'hidden'); };
+}
 
 /* ---------- views ---------- */
 const VIEWS = {};
+const LESSONS = [
+  ['Okuma ≠ yazma', '“12 GB kartta 100+ tok/sn” paylaşımları çoğu zaman okuma hızı. DeepSeek 763B aynı kartta 4–6 tok/sn yazıyor; Qwen 125B ≈94.'],
+  ['Görev süresi, tok/sn’den önemli', 'Düşünen modeller bir görevde 15–50 bin token harcayabilir; ajanlar işe 30 bin tokenlik bağlamla başlar. Hızlı ama çok konuşan model daha geç bitirebilir.'],
+  ['Darboğaz kapasite', 'Model ekran kartına sığmayınca RAM ve SSD belirleyici olur. 16 GB kartta Q4 değil 3,5 bit; 8 GB kartta 32 GB RAM asıl şart.'],
+  ['Motor donanım kadar önemli', 'Aynı makinede motor değişince hız 1,5–10 kat değişebiliyor. Hızlar zamanla değişir.'],
+  ['RAM pahalandı, token ucuzladı', '64 GB DDR5 bir yılda ≈6 kat; aynı dönemde API fiyatları düştü. Gizlilik şart değilse kiralamak çoğu kişiye ucuz.'],
+  ['Yerel her zaman gizli değil', 'Sunucuyu dışarı açma, motorları güncel tut, modeli tanınmış yapımcıdan indir.']];
 VIEWS[''] = () => {
-  const L = Calc.live();
-  const g = k => Calc.cheapestOffer(k);
+  const L = Calc.live(), g = k => Calc.cheapestOffer(k);
   const rows = [['64 GB DDR5 RAM', g('ram64')], ['RTX 5060 Ti 16 GB', g('gpu5060ti')], ['RTX 5070 12 GB', g('gpu5070')], ['RTX 3090 24 GB (2. el)', g('gpu3090used')], ['Radeon AI PRO R9700 32 GB', g('gpuR9700')]];
   return `<section class="hero"><div class="hero-text">
    <p class="eyebrow">Türkiye fiyatlarıyla</p>
@@ -160,73 +250,89 @@ VIEWS[''] = () => {
    <p class="lead">Elindeki bilgisayarın hangi modeli ne hızda çalıştırdığını, yeni bir bilgisayar için ne alman gerektiğini ve bunun abonelik ya da API ile karşılaştırmasını gösterir.</p>
    <div class="hero-cta"><a class="btn" href="#elimde">Bilgisayarımı kontrol et</a><a class="btn ghost" href="#al">Bilgisayar önerisi al</a></div>
    <ul class="hero-points"><li>${icon('check', 'bi')}Mağaza fiyatları her hafta, API fiyatları ve kur her ziyarette güncel</li><li>${icon('check', 'bi')}Okuma ve yazma hızı ayrı, görev süresi gerçekçi</li><li>${icon('check', 'bi')}Hesap yöntemi ve tüm varsayımlar açık</li></ul></div>
-   <aside class="price-panel"><div class="pp-head"><b>Güncel parça fiyatları</b><a href="#fiyatlar">Tümü</a></div>
+   <aside class="price-panel"><div class="pp-head"><b>Güncel parça fiyatları</b><a href="#fiyatlar">Tümü ${icon('arrow', 'bi')}</a></div>
    <table><tbody>${rows.map(([l, o]) => `<tr><td>${l}<small>${esc(o.store)}</small></td><td class="num">${tl(o.price)}</td></tr>`).join('')}</tbody></table>
-   <p class="pp-foot" id="liveStatus">${liveStatusText()}</p></aside>
+   <p class="pp-foot"><span class="live-dot"></span><span id="liveStatus">${liveStatusText()}</span></p></aside>
   </section>
-  <h2 class="q">Ne yapmak istiyorsun?</h2>
+  <div class="sec-head"><h2>Ne yapmak istiyorsun?</h2></div>
   <div class="personas">
    <a class="persona" href="#elimde"><span class="pi">${icon('monitor')}</span><b>Bilgisayarım var</b><span>Elimdeki bilgisayar hangi modeli, ne hızda çalıştırır? Ne eklersem yeter?</span><em>Kontrol et ${icon('arrow', 'bi')}</em></a>
-   <a class="persona" href="#al"><span class="pi">${icon('bag')}</span><b>Yapay zekâ için bilgisayar alacağım</b><span>Kullanımıma ve bütçeme göre hangi bilgisayar? Hazır sistemler ve kendin topla.</span><em>Öneri al ${icon('arrow', 'bi')}</em></a>
+   <a class="persona" href="#al"><span class="pi">${icon('bag')}</span><b>Bilgisayar alacağım</b><span>Kullanımıma ve bütçeme göre hangi bilgisayar? Hazır sistemler ve kendin topla.</span><em>Öneri al ${icon('arrow', 'bi')}</em></a>
    <a class="persona" href="#bulut"><span class="pi">${icon('cloud')}</span><b>Bilgisayar almadan kullanacağım</b><span>Abonelik mi, API mi? Kullanımıma en ucuz hangisi?</span><em>Karşılaştır ${icon('arrow', 'bi')}</em></a>
-   <a class="persona" href="#karsilastir"><span class="pi">${icon('scale')}</span><b>Almak mı, kiralamak mı?</b><span>Bir bilgisayar kaç ayda kendini öder? Gizlilik şartsa ne olur?</span><em>Hesapla ${icon('arrow', 'bi')}</em></a>
+   <a class="persona" href="#karsilastir"><span class="pi">${icon('scale')}</span><b>Almak mı, kiralamak mı?</b><span>Bir bilgisayar kaç ayda kendini öder? Hangi kullanımda yerel ucuzlar?</span><em>Hesapla ${icon('arrow', 'bi')}</em></a>
   </div>
-  <section class="card lessons"><h2>Almadan önce bilmen gereken altı şey</h2><ol>
-   <li><b>Okuma ≠ yazma.</b> “12 GB kartta 100+ tok/sn” paylaşımları çoğu zaman okuma hızı. DeepSeek 763B aynı kartta 4–6 tok/sn yazıyor; Qwen 125B ≈94.</li>
-   <li><b>Görev süresi, tok/sn’den önemli.</b> Düşünen modeller bir görevde 15–50 bin token harcayabilir; ajanlar işe 30 bin tokenlik bağlamla başlar. Hızlı ama çok konuşan model daha geç bitirebilir.</li>
-   <li><b>Darboğaz kapasite.</b> Model ekran kartına sığmayınca CPU, RAM ve SSD belirleyici olur. 16 GB kartta Q4 değil 3,5 bit; 8 GB kartta 32 GB RAM asıl şart.</li>
-   <li><b>Motor donanım kadar önemli.</b> Aynı makinede motor değişince hız 1,5–10 kat değişebiliyor.</li>
-   <li><b>RAM pahalandı, token ucuzladı.</b> 64 GB DDR5 bir yılda ≈6 kat; aynı dönemde API fiyatları düştü. Gizlilik şart değilse kiralamak çoğu kişiye ucuz.</li>
-   <li><b>Yerel her zaman gizli değil.</b> Sunucuyu dışarı açma, modeli güvendiğin yerden indir.</li></ol>
-   <p class="small muted"><a href="#nasil">Yöntem ve ayrıntılar</a></p></section>
-  <p class="small muted center">${L.meta ? `Mağaza fiyatları (haftalık): ${new Date(L.meta.updated).toLocaleString('tr-TR')}` : 'Fiyatlar: gömülü veri (otomatik güncelleme okunamadı)'} · <a href="#fiyatlar">Tüm mağaza fiyatları</a></p>`;
+  <div class="sec-head"><h2>Almadan önce bilmen gereken altı şey</h2><a href="#metrikler">Metrikler ve ayrıntılar ${icon('arrow', 'bi')}</a></div>
+  <div class="lgrid">${LESSONS.map(([h, p], i) => `<article class="lesson"><span class="ln">${String(i + 1).padStart(2, '0')}</span><h3>${h}</h3><p>${p}</p></article>`).join('')}</div>
+  <p class="small muted center data-note">${L.meta ? `Mağaza fiyatları (haftalık): ${new Date(L.meta.updated).toLocaleString('tr-TR')}` : 'Fiyatlar: gömülü veri (otomatik güncelleme okunamadı)'} · <a href="#fiyatlar">Tüm mağaza fiyatları</a> · <a href="#nasil">Yöntem</a></p>`;
 };
 
-VIEWS.elimde = () => `<header class="page-head"><p class="eyebrow">Bilgisayarım var</p><h1>Elindeki bilgisayar neyi çalıştırır?</h1><p class="lead">Bir şey almadan önce bak: darboğaz RAM’ken daha hızlı kart, model zaten sığıyorken daha fazla RAM almanın faydası yok.</p></header>
+/* --- I have a computer --- */
+VIEWS.elimde = () => `${pageHead('monitor', 'Bilgisayarım var', 'Elindeki bilgisayar neyi çalıştırır?', 'Donanımını seç; hangi modelin ne hızda çalıştığını, bir görevin ne kadar sürdüğünü ve neyi yükseltmenin işe yarayacağını görelim.')}
+  ${step(1, 'Donanımın', 'Bilmiyorsan Windows’ta Görev Yöneticisi → Performans sekmesine bak.')}
   <section class="card"><div class="fields four">
    <label class="f"><span>Ekran kartı</span><select data-mine="gpu">${MINE_GPUS.map(g => `<option value="${g[0]}"${S.mine.gpu === g[0] ? ' selected' : ''}>${g[1]}</option>`).join('')}</select></label>
    <label class="f"><span>${S.mine.gpu === 'mac' ? 'Birleşik bellek' : 'Sistem RAM’i'}</span><select data-mine="ram">${[8, 16, 24, 32, 36, 48, 64, 96, 128, 192, 256].map(v => `<option${S.mine.ram === v ? ' selected' : ''} value="${v}">${v} GB</option>`).join('')}</select></label>
    <label class="f"><span>RAM türü</span><select data-mine="ramType" ${S.mine.gpu === 'mac' ? 'disabled' : ''}><option${S.mine.ramType === 'DDR5' ? ' selected' : ''}>DDR5</option><option${S.mine.ramType === 'DDR4' ? ' selected' : ''}>DDR4</option></select></label>
-   <label class="f"><span>Boş SSD alanı</span><select data-mine="ssd">${[100, 250, 500, 1000, 2000].map(v => `<option value="${v}"${S.mine.ssd === v ? ' selected' : ''}>${v < 1000 ? v + ' GB' : v / 1000 + ' TB'}</option>`).join('')}</select></label>
-  </div></section>
+   <label class="f"><span>Boş SSD alanı</span><select data-mine="ssd">${[100, 250, 500, 1000, 2000].map(v => `<option value="${v}"${S.mine.ssd === v ? ' selected' : ''}>${gb(v)}</option>`).join('')}</select></label>
+  </div><div id="hwsum"></div></section>
   <div id="results"></div>`;
 function resultsElimde() {
-  const c = mineComputer(), hw = { vram: c.vram, ram: c.ram, ramType: c.ramType, ssd: c.ssd };
-  const ids = ['q27', 'q36', 'qwen', 'coder', 'deepseek'];
-  const cards = ids.map(id => { const e = Calc.estimate(id, { ...hw, bw: c.bw }); return `<article class="mcard ${e.status}">${badge(e.status)}<h3>${Calc.MODELS[id].label}</h3><b class="big">${tps(e.tps)}</b><span class="small">1.000 tokenlik cevap: ${ansTime(e.tps)}</span><p class="small muted">${esc(e.note)}</p></article>`; }).join('');
-  const q = Calc.estimate('qwen', hw), r64 = Calc.cheapestOffer('ram64'), r4 = Calc.cheapestOffer('ram64ddr4'), r128 = Calc.cheapestOffer('ram128'), g = Calc.cheapestOffer('gpu3060used');
+  const c = mineComputer(), hw = { vram: c.vram, ram: c.ram, ramType: c.ramType, ssd: c.ssd }, uni = c.ramType === 'unified';
+  const ids = ['q27', 'q36', 'qwen', 'coder', 'deepseek'], est = Object.fromEntries(ids.map(id => [id, Calc.estimate(id, { ...hw, bw: c.bw })]));
+  const hs = $('#hwsum'); if (hs) hs.innerHTML = `<div class="chips">${uni ? `<span>${icon('chip', 'bi')}<b>Apple Silicon</b> birleşik bellek</span>` : `<span>${icon('chip', 'bi')}<b>${c.vram || 0} GB</b> ekran kartı belleği</span><span><b>${c.bw ? nf(c.bw) + ' GB/sn' : '—'}</b> bellek bant genişliği</span>`}<span><b>${c.ram} GB</b> ${uni ? 'bellek' : c.ramType + ' RAM'}</span><span><b>${gb(c.ssd)}</b> boş disk</span></div>`;
+  const cards = ids.map(id => { const e = est[id]; return `<article class="mcard ${e.status}">${badge(e.status)}<h3>${Calc.MODELS[id].label}</h3><b class="big">${tps(e.tps)}</b>${meter(e.tps, 100, e.status)}<span class="small">1.000 tokenlik cevap: <b>${ansTime(e.tps)}</b></span><p class="small muted">${esc(e.note)}</p></article>`; }).join('');
+  const q = est.qwen, r64 = Calc.cheapestOffer('ram64'), r4 = Calc.cheapestOffer('ram64ddr4'), r128 = Calc.cheapestOffer('ram128'), g3 = Calc.cheapestOffer('gpu3060used');
   let tip;
-  if (c.ramType === 'unified') tip = q.status === 'ok' ? 'Mac’in Qwen 125B’yi bellekte tutabiliyor. Strata’nın Mac uygulamasıyla hemen deneyebilirsin.' : 'Mac’lerde bellek sonradan artırılamıyor; 64 GB altı Mac’te büyük modeller SSD’den okunur ve yavaşlar. Bulut seçeneklerine de bak.';
-  else if (c.vram < 8) tip = `Strata için en az 8 GB (tercihen 12 GB) ekran kartı gerekir. En ucuz yol: 2. el RTX 3060 12 GB (≈${tl(g.price)}) + 64 GB RAM.`;
+  if (uni) tip = q.status === 'ok' ? 'Mac’in Qwen 125B’yi bellekte tutabiliyor. Strata’nın Mac uygulamasıyla hemen deneyebilirsin.' : '<b>Mac’lerde bellek sonradan artırılamıyor.</b> 64 GB altı Mac’te büyük modeller SSD’den okunur ve yavaşlar; 27B gibi orta boy modeller ve bulut seçenekleri daha uygun.';
+  else if (c.vram < 8) tip = `<b>Önce ekran kartı.</b> Strata için en az 8 GB (tercihen 12 GB) ekran kartı gerekir. En ucuz yol: 2. el RTX 3060 12 GB (≈${tl(g3.price)}) + 64 GB RAM.`;
   else if (q.status === 'ok') tip = `<b>Hiçbir şey almana gerek yok.</b> Qwen3.8-Flash-Next 125B bu bilgisayarda ≈${tps(q.tps)} çalışır. ${c.ram < 128 ? `DeepSeek 763B’yi gerçekten kullanmak istersen 128 GB RAM gerekir (128 GB DDR5 ≈ ${tl(r128.price)}, ${esc(r128.store)}).` : ''}`;
-  else tip = `<b>En etkili yükseltme RAM.</b> ${c.ramType === 'DDR4' ? `64 GB DDR4 ≈ ${tl(r4.price)} (${esc(r4.store)})` : `64 GB DDR5 ≈ ${tl(r64.price)} (${esc(r64.store)})`}. Ekran kartını değiştirmek bu modelde pek hızlandırmaz.`;
+  else tip = `<b>En etkili yükseltme RAM.</b> ${c.ramType === 'DDR4' ? `64 GB DDR4 ≈ ${tl(r4.price)} (${esc(r4.store)})` : `64 GB DDR5 ≈ ${tl(r64.price)} (${esc(r64.store)})`} ile Qwen 125B rahat çalışır. Ekran kartını değiştirmek bu modelde pek hızlandırmaz.`;
+  // the fastest model that runs comfortably decides the task-time example
+  const okIds = ids.filter(id => est[id].status === 'ok'), pool = okIds.length ? okIds : ids.filter(id => est[id].tps > 0);
+  const best = pool.sort((a, b) => est[b].tps - est[a].tps)[0];
+  let task = '<p class="muted">Bu donanımda rahat çalışan bir model yok; önce yükseltme önerisine bak.</p>';
+  if (best) {
+    const pp = Calc.prefill(c, best), sp = est[best].tps, T = Calc.cat().taskTypes;
+    task = `<p>Örnek model: <b>${Calc.MODELS[best].label}</b> · okuma ≈<b>${nf(pp)} tok/sn</b>, yazma ≈<b>${tps(sp)}</b>. Ekranda görünen hız yalnızca yazma hızıdır; uzun bağlamda asıl bekleme okumadadır.</p>
+    ${taskBars([...Object.values(T).map(t => ({ label: t.label, sub: `${nf(t.ctx / 1000)}K okur · ${nf(t.out / 1000)}K yazar`, read: t.ctx / pp, write: t.out / sp })), { label: 'Ajanın ilk cevabı', sub: '32K okur · 1K yazar', read: 32000 / pp, write: 1000 / sp }])}
+    <ul class="checks">${engineTips(c).map(t => `<li>${t}</li>`).join('')}</ul>`;
+  }
   const fits = Calc.cat().ggufModels.map(m => [m, Calc.ggufFit(m, 'Q4_K_M', hw)]).filter(([, f]) => f);
   const gpuFit = fits.filter(([, f]) => f === 'gpu').map(([m]) => m.name), off = fits.filter(([, f]) => f === 'offload').map(([m]) => m.name);
   const el = Calc.electricity(c, S.model, S).tl;
-  const ppQ = Calc.prefill(c, 'qwen'), firstWord = 32000 / ppQ;
-  return `<div class="mgrid">${cards}</div><div class="tip">${tip}</div>
+  return `${step(2, 'Hangi model ne hızda?', 'Yazma hızı; çubuk 100 tok/sn’ye göre. Ölçümü olanlar notta belirtilir.')}
+  <div class="mgrid">${cards}</div>
+  ${step(3, 'Ne çalıştırmalı, ne yükseltmeli?')}
+  <div class="tip">${tip}</div>
   <section class="card"><h2>Bu bilgisayar için önerilen modeller</h2><ul class="recs">${recModels(c).map(r => `<li><b>${r[0]}</b><span>${r[1]}</span></li>`).join('')}</ul>
    <p class="small muted">Aynı bit sayısında bile quant’ı kimin hazırladığı kaliteyi değiştirir; tanınmış yapımcıların dosyalarını seç. Düşünme ayarını “orta” tutmak çoğu işte kaliteyi az, süreyi çok etkiler.</p></section>
-  <section class="card"><h2>Kodlama ajanı kullanacaksan</h2><p>Ajanlar (Claude Code, Codex, OpenCode…) işe yaklaşık <b>30 bin tokenlik</b> araç tanımı ve proje bağlamıyla başlar. Bu bilgisayarda Qwen 125B bu bağlamı ≈<b>${nf(ppQ)} tok/sn</b> okur: ilk kelimeye kadar ≈<b>${dur(firstWord)}</b>. Ekranda görünen yazma hızı bu beklemeyi göstermez.</p>
-   <ul class="checks">${engineTips(c).map(t => `<li>${t}</li>`).join('')}</ul></section>
-  <section class="card"><h2>Yerel çalıştırmak her zaman gizli demek değil</h2><ul class="checks">
-   <li><b>Sunucuyu yalnızca kendi bilgisayarına aç.</b> Ollama / llama.cpp sunucusu 127.0.0.1’i dinlemeli. İnternette tüm ağa açık on binlerce yerel AI sunucusu bulundu; çoğunda araç çağırma açık.</li>
-   <li><b>Motorları güncel tut.</b> Model dosyasındaki sohbet şablonu üzerinden bilgisayarda komut çalıştırmaya izin veren açıklar yaşandı.</li>
-   <li><b>Modeli tanınmış yapımcıdan indir.</b> Bir modele gizli “arka kapı” eklemek ucuz: eğitim verisinin %1’i ve birkaç saatlik kiralık GPU yetebiliyor. Bilinmeyen ince ayarlı veya “sansürsüz” sürümlere dikkat.</li>
-   <li><b>Ajanlara verdiğin izinleri sınırla.</b> Dosya ve komut izni olan bir ajan, zararlı bir bağlantıyı veya komutu yerel modelle de çalıştırabilir.</li></ul></section>
-  <section class="card"><h2>Klasik modeller (llama.cpp, Q4, 8K bağlam)</h2><p><b>Ekran kartına sığan (${gpuFit.length}):</b> ${gpuFit.join(', ') || '—'}</p><p><b>RAM’e taşarak, yavaş (${off.length}):</b> ${off.join(', ') || '—'}</p><p class="small muted">Bellek uygunluğu tahminidir (GGUF dosya boyutu + KV cache).</p></section>
-  <section class="card"><h2>Bu bilgisayarla bulut karşılaştırması</h2><p>Bilgisayar zaten elinde olduğu için yerelde yalnızca elektrik ödersin: ayda ${nf(S.monthlyTokens, 1)} M çıktı için ≈ <b>${tl(el)}/ay</b> (${Calc.MODELS[S.model].short}).</p><a class="btn" href="#karsilastir" data-cmp-local="mine">Bulutla karşılaştır →</a></section>`;
+  ${step(4, 'Bir görev ne kadar sürer?', 'Görev süresi = bağlamı okuma + cevabı yazma.')}
+  <section class="card">${task}</section>
+  ${step(5, 'Klasik modeller sığar mı?', 'llama.cpp, Q4, 8K bağlam; GGUF dosya boyutu + bağlam belleği tahmini.')}
+  <section class="card"><div class="fitgroup"><h3>${badge('ok')} Ekran kartına sığan <span class="muted">(${gpuFit.length})</span></h3><div class="pills">${gpuFit.map(n => `<span>${esc(n)}</span>`).join('') || '<span class="muted">—</span>'}</div></div>
+   <div class="fitgroup"><h3>${badge('slow')} RAM’e taşarak, yavaş <span class="muted">(${off.length})</span></h3><div class="pills">${off.map(n => `<span>${esc(n)}</span>`).join('') || '<span class="muted">—</span>'}</div></div></section>
+  <div class="pcgrid two">
+   <section class="card"><h2>${icon('shield', 'ic h-ic')}Yerel her zaman gizli demek değil</h2><ul class="checks">
+    <li><b>Sunucuyu yalnızca kendi bilgisayarına aç.</b> Ollama / llama.cpp sunucusu 127.0.0.1’i dinlemeli. İnternette tüm ağa açık on binlerce yerel AI sunucusu bulundu; çoğunda araç çağırma açık.</li>
+    <li><b>Motorları güncel tut.</b> Model dosyasındaki sohbet şablonu üzerinden bilgisayarda komut çalıştırmaya izin veren açıklar yaşandı.</li>
+    <li><b>Modeli tanınmış yapımcıdan indir.</b> Bir modele gizli “arka kapı” eklemek ucuz: eğitim verisinin %1’i ve birkaç saatlik kiralık GPU yetebiliyor.</li>
+    <li><b>Ajanlara verdiğin izinleri sınırla.</b> Dosya ve komut izni olan bir ajan, zararlı bir komutu yerel modelle de çalıştırabilir.</li></ul></section>
+   <section class="card cta"><h2>${icon('scale', 'ic h-ic')}Bulutla karşılaştır</h2><p>Bilgisayar zaten elinde olduğu için yerelde yalnızca elektrik ödersin: ayda ${nf(S.monthlyTokens, 1)} M çıktı için ≈ <b>${tl(el)}/ay</b> (${Calc.MODELS[S.model].short}).</p><p class="muted small">Karşılaştırma sayfasında aynı sınıftaki bulut modelleriyle aylık ve toplam maliyeti görebilirsin.</p><div class="actions"><a class="btn" href="#karsilastir" data-cmp-local="mine">Karşılaştır ${icon('arrow', 'bi')}</a></div></section>
+  </div>`;
 }
 
-VIEWS.al = () => `<header class="page-head"><p class="eyebrow">Bilgisayar alacağım</p><h1>Kullanımına göre hangi bilgisayar?</h1><p class="lead">Kullanımını, modeli ve bütçeni seç; sana üç öneri çıkaralım. İstersen parça parça kendin topla, her parçada mağaza seç.</p></header>
-  ${usagePanel({ budget: true, title: 'Ne için kullanacaksın?' })}<div id="results"></div>`;
+/* --- I will buy a computer --- */
+VIEWS.al = () => `${pageHead('bag', 'Bilgisayar alacağım', 'Kullanımına göre hangi bilgisayar?', 'Kullanımını ve bütçeni gir; hazır sistemler arasından üç öneri çıkaralım. İstersen parça parça kendin topla, her parçada mağazayı sen seç.')}
+  ${step(1, 'Ne için kullanacaksın?', 'Sana en yakın profili seç; sonuçlar anında değişir.')}
+  ${usagePanel({ budget: true })}<div id="results"></div>`;
 function resultsAl() {
   const all = Calc.computers(S.offerSel), M = S.model;
   const within = all.filter(c => c.price <= S.budget);
-  const ok = within.filter(c => { const sp = Calc.speed(c, M); return sp.status === 'ok' && Calc.capacity(c, M, S) >= S.monthlyTokens; });
+  const good = c => Calc.speed(c, M).status === 'ok' && Calc.capacity(c, M, S) >= S.monthlyTokens;
+  const ok = within.filter(good);
   let rec = '';
   if (!ok.length) {
-    const above = all.filter(c => Calc.speed(c, M).status === 'ok' && Calc.capacity(c, M, S) >= S.monthlyTokens).sort((a, b) => a.price - b.price)[0];
+    const above = all.filter(good).sort((a, b) => a.price - b.price)[0];
     rec = `<div class="tip">Bütçendeki (${tl(S.budget)}) hiçbir bilgisayar bu kullanımı ${Calc.MODELS[M].short} ile rahat karşılamıyor.${above ? ` En ucuz uygun seçenek: <b>${esc(above.name)}</b> — ${tl(above.price)}.` : ''} Günlük çalışma saatini artırabilir, başka bir model seçebilir veya <a href="#bulut">bulut seçeneklerine</a> bakabilirsin.</div>`;
   } else {
     const cheapest = [...ok].sort((a, b) => a.price - b.price)[0];
@@ -235,19 +341,21 @@ function resultsAl() {
     const picks = [[cheapest, 'En ucuz çalışan', 'Kullanımını karşılayan en düşük fiyat.'], [value, 'Fiyat/performans', 'Lira başına en çok token/sn.'], [fastest, 'En hızlı', 'Bütçende en yüksek yazma hızı.']];
     const merged = [];
     for (const [c, t, r] of picks) { const m = merged.find(x => x.c.id === c.id); if (m) { m.t += ' · ' + t; m.r += ' ' + r; } else merged.push({ c, t, r }); }
-    rec = `<h2 class="q">Sana önerilerimiz</h2><div class="pcgrid three">${merged.map(({ c, t, r }) => computerCard(c, { tag: t, reason: r, highlight: true })).join('')}</div>`;
+    rec = `<div class="pcgrid three">${merged.map(({ c, t, r }) => computerCard(c, { tag: t, reason: r, highlight: true })).join('')}</div>`;
   }
   const F = S.buyFilter, list = within.filter(c => F === 'all' || (F === 'pc' ? c.kind === 'pc' : F === 'mac' ? c.kind === 'mac' : c.ram >= 64)).sort((a, b) => a.price - b.price);
-  return `${rec}
-  <section class="block"><div class="block-head"><h2>Bütçendeki tüm hazır sistemler <span class="muted">(${list.length})</span></h2><div class="seg small" role="group">${[['all', 'Tümü'], ['pc', 'PC'], ['mac', 'Mac'], ['ram64', '64 GB+ RAM']].map(([k, l]) => `<button type="button" data-buyfilter="${k}" aria-pressed="${F === k}">${l}</button>`).join('')}</div></div>
-  <div class="tablewrap"><table class="systable"><thead><tr><th>Sistem</th><th class="num">Fiyat</th><th class="num">${Calc.MODELS[M].short}</th><th class="num">Görev süresi</th><th class="num">Elektrik/ay</th><th>Durum</th><th></th></tr></thead><tbody>${list.map(c => { const sp = Calc.speed(c, M), short = Calc.capacity(c, M, S) < S.monthlyTokens; return `<tr><td><b>${esc(c.name)}</b><small>${specLine(c)}</small><details class="more"><summary>Parçalar</summary>${partsList(c)}</details></td><td class="num"><b>${tl(c.price)}</b></td><td class="num">${tps(sp.tps)}<small>${sp.measured ? 'ölçüm' : 'tahmin'}</small></td><td class="num">${dur(Calc.taskTime(c, M, S).total)}</td><td class="num">${tl(Calc.electricity(c, M, S).tl)}</td><td>${badge(sp.status)}${short ? '<small class="bad">kullanımına yetmez</small>' : ''}</td><td><button type="button" class="btn ghost small" data-compare="${c.id}">Karşılaştır</button></td></tr>`; }).join('') || '<tr><td colspan="7" class="muted">Bu filtreyle sistem yok.</td></tr>'}</tbody></table></div></section>
+  return `${step(2, 'Sana önerilerimiz', `Bütçe ${tl(S.budget)} · ${Calc.MODELS[M].label} · ayda ${nf(S.monthlyTokens, 1)} M çıktı`)}
+  ${rec}
+  ${step(3, 'Bütçendeki tüm hazır sistemler', `${list.length} sistem, fiyata göre sıralı. Qwen 27B hızı karta göre farklı bit sayısıyla hesaplanır (sütunda belirtilir).`, segButtons('buyfilter', [['all', 'Tümü'], ['pc', 'PC'], ['mac', 'Mac'], ['ram64', '64 GB+ RAM']], F))}
+  <div class="tablewrap"><table class="systable"><thead><tr><th>Sistem</th><th class="num">Fiyat</th><th class="num">${Calc.MODELS[M].short}</th><th class="num">Görev süresi</th><th class="num">Elektrik/ay</th><th>Durum</th><th></th></tr></thead><tbody>${list.map(c => { const sp = Calc.speed(c, M), short = Calc.capacity(c, M, S) < S.monthlyTokens; return `<tr><td><b>${esc(c.name)}</b><small>${specLine(c)}</small><details class="more"><summary>Parçalar</summary>${partsList(c)}</details></td><td class="num"><b>${tl(c.price)}</b></td><td class="num">${tps(sp.tps)}<small>${sp.tps ? speedSub(sp) : ''}</small></td><td class="num">${dur(Calc.taskTime(c, M, S).total)}</td><td class="num">${sp.tps ? tl(Calc.electricity(c, M, S).tl) : '—'}</td><td>${badge(sp.status)}${short && sp.tps ? '<small class="bad">kullanımına yetmez</small>' : ''}</td><td><button type="button" class="btn ghost small" data-compare="${c.id}">Karşılaştır</button></td></tr>`; }).join('') || '<tr><td colspan="7" class="muted">Bu filtreyle sistem yok.</td></tr>'}</tbody></table></div>
+  ${step(4, 'Kendin topla', 'Parçaları ve mağazaları sen seç. Uyumsuz parçalar elenir; fiyat, hız ve güç kaynağı yeterliliği anında hesaplanır.')}
+  <div id="builderBox">${builderHtml()}</div>
   <details class="card more alt"><summary>Başka yollar: mini PC, ikinci el veri merkezi kartları, Mac</summary><ul class="checks">
    <li><b>128 GB birleşik bellekli mini PC’ler (Ryzen AI Max):</b> Qwen 125B’nin 4 bit sürümünü tek kutuda tutar. Windows ekran kartına en fazla ≈96 GB verir; Linux ve doğru motorla okuma hızı 10 kata kadar artabiliyor.</li>
    <li><b>İkinci el veri merkezi kartları:</b> Eski ama bant genişliği yüksek kartlar (ör. 4× V100) bazı testlerde yeni “AI kutularından” hızlı yazıyor; ama gürültü, güç tüketimi ve kurulum zahmetli, okuma hızları düşük.</li>
    <li><b>Donanım pahalanırken token ucuzladı:</b> Bir masaüstü AI kutusu bir yılda %74 pahalandı, aynı dönemde popüler bir açık modelin API fiyatı ≈%57 düştü. Amorti hesabını mutlaka yap.</li>
    <li><b>Mac:</b> Bellek bant genişliği çipe göre çok değişir (M6 ≈150, M5 Pro ≈300, M5 Max 614 GB/sn). “M5” adı tek başına hız söylemez.</li>
-   <li><b>RAM’de DDR4 seçeneği:</b> GB başına yaklaşık yarı fiyat, yarı hız. Bu işte kapasite genelde hızdan önemli; aynı paraya 32 GB DDR5 yerine 64 GB DDR4 çoğu zaman daha iyi.</li></ul></details>
-  <section class="block" id="builder"><h2>Kendin topla</h2><p class="muted">Parçaları ve mağazaları sen seç. Uyumsuz parçalar elenir; fiyat, hız ve güç kaynağı yeterliliği anında hesaplanır.</p><div id="builderBox">${builderHtml()}</div></section>`;
+   <li><b>RAM’de DDR4 seçeneği:</b> GB başına yaklaşık yarı fiyat, yarı hız. Bu işte kapasite genelde hızdan önemli; aynı paraya 32 GB DDR5 yerine 64 GB DDR4 çoğu zaman daha iyi.</li></ul></details>`;
 }
 const SLOTS = [['gpu', 'Ekran kartı'], ['cpu', 'İşlemci'], ['mobo', 'Anakart'], ['ram', 'RAM'], ['ssd', 'SSD'], ['psu', 'Güç kaynağı'], ['case', 'Kasa'], ['cooler', 'CPU soğutucu']];
 function partsOf(cat) { return Object.entries(Calc.cat().parts).filter(([, p]) => p.cat === cat); }
@@ -268,190 +376,288 @@ function builderHtml() {
     if (slot === 'ram') opts = opts.filter(([, p]) => p.ramType === P[b.mobo].ramType);
     const key = b[slot], offs = Calc.offers(key), ch = Calc.chosenOffer(key, S.offerSel);
     return `<div class="brow"><span class="blabel">${label}</span>
-     <select data-slot="${slot}">${opts.map(([k, p]) => `<option value="${k}"${k === key ? ' selected' : ''}>${esc(p.label)} — ${tl(Calc.cheapestOffer(k).price)}</option>`).join('')}</select>
-     ${slot === 'gpu' && P[b.mobo].multiGpu ? `<select data-gpucount aria-label="Kart sayısı"><option value="1"${b.gpuCount == 1 ? ' selected' : ''}>1 kart</option><option value="2"${b.gpuCount == 2 ? ' selected' : ''}>2 kart</option></select>` : ''}
+     <select data-slot="${slot}" aria-label="${label}">${opts.map(([k, p]) => `<option value="${k}"${k === key ? ' selected' : ''}>${esc(p.label)} — ${tl(Calc.cheapestOffer(k).price)}</option>`).join('')}</select>
+     ${slot === 'gpu' && P[b.mobo].multiGpu ? `<select data-gpucount aria-label="Kart sayısı"><option value="1"${b.gpuCount == 1 ? ' selected' : ''}>1 kart</option><option value="2"${b.gpuCount == 2 ? ' selected' : ''}>2 kart</option></select>` : '<span></span>'}
      <select data-offer="${key}" aria-label="${label} mağazası">${offs.map((o, i) => `<option value="${esc(o.store)}"${o.store === ch.store ? ' selected' : ''}>${esc(o.store)} · ${tl(o.price)}${i === 0 ? ' (en ucuz)' : ''}${o.stock === 'tükendi' ? ' · tükendi' : o.stock === 'bilinmiyor' ? ' · stok?' : ''}</option>`).join('')}</select>
-     <a href="${esc(ch.url)}" target="_blank" rel="noopener" class="small">Ürüne git ↗</a></div>`;
+     <a href="${esc(ch.url)}" target="_blank" rel="noopener" class="small ext" title="Ürün sayfası">${icon('ext', 'bi')}</a></div>`;
   }).join('');
   const psu = P[b.psu].watts, draw = c.watts + 40, warn = draw * 1.3 > psu;
   const sp = ['q27', 'qwen', 'deepseek'].map(m => [m, Calc.speed(c, m)]);
   return `<div class="builder"><div class="brows">${rows}</div>
    <aside class="bsum"><span class="muted small">Toplam</span><b class="big">${tl(c.price)}</b>
-    <ul class="small">${sp.map(([m, s]) => `<li>${Calc.MODELS[m].short}: <b>${tps(s.tps)}</b> ${badge(s.status)}<br><span class="muted">görev: ${dur(Calc.taskTime(c, m, S).total)}</span></li>`).join('')}</ul>
-    <p class="small ${warn ? 'bad' : 'muted'}">${warn ? `${icon('alert', 'bi')} Güç kaynağı yetersiz olabilir: tahmini çekiş ${nf(draw)} W, %30 pay ile ${nf(draw * 1.3)} W gerekir.` : `Güç: tahmini ${nf(draw)} W / ${psu} W PSU`}</p>
     <p class="small muted">${c.ram} GB ${c.ramType} · ${c.vram} GB VRAM${c.gpus > 1 ? ' (iki kart, tek havuz değil)' : ''}</p>
-    <button type="button" class="btn" data-compare="custom">Bulutla karşılaştır →</button>
+    <ul class="bspeeds">${sp.map(([m, s]) => `<li><span>${Calc.MODELS[m].short}</span><b>${tps(s.tps)}</b>${badge(s.status)}<small>görev: ${dur(Calc.taskTime(c, m, S).total)}</small></li>`).join('')}</ul>
+    <p class="small ${warn ? 'bad' : 'muted'}">${warn ? `${icon('alert', 'bi')} Güç kaynağı yetersiz olabilir: tahmini çekiş ${nf(draw)} W, %30 pay ile ${nf(draw * 1.3)} W gerekir.` : `Güç: tahmini ${nf(draw)} W / ${psu} W güç kaynağı`}</p>
+    <button type="button" class="btn" data-compare="custom">Bulutla karşılaştır ${icon('arrow', 'bi')}</button>
     <button type="button" class="btn ghost" data-copybuild>Parça listesini kopyala</button></aside></div>`;
 }
 
-VIEWS.bulut = () => `<header class="page-head"><p class="eyebrow">Satın almadan kullan</p><h1>Abonelik mi, API mi?</h1><p class="lead">Kullanımını seç; bütün abonelik ve API seçeneklerini aylık maliyete göre sıralayalım.</p></header>
-  ${usagePanel({ model: false, privacy: false, horizon: false, title: 'Ne kadar kullanacaksın?' })}
-  <section class="card"><div class="row-label">Hangi modeller?</div><div class="seg small" role="group">${[['all', 'Tümü'], ['open', 'Açık modeller'], ['closed', 'Kapalı modeller'], ['frontier', 'Üst düzey (Claude, GPT, Gemini)']].map(([k, l]) => `<button type="button" data-cloudclass="${k}" aria-pressed="${S.cloudClass === k}">${l}</button>`).join('')}</div></section>
+/* --- cloud --- */
+const CLOUD_GROUPS = [
+  ['open', 'Açık model', 'API', o => o.type !== 'subscription' && !!o.open],
+  ['closed', 'Kapalı model', 'API', o => o.type !== 'subscription' && !o.open && !Calc.inClass(o, 'frontier')],
+  ['frontier', 'Üst düzey model', 'Claude, GPT, Gemini API', o => o.type !== 'subscription' && Calc.inClass(o, 'frontier')],
+  ['sub', 'Abonelik', 'sabit aylık ücret', o => o.type === 'subscription']];
+VIEWS.bulut = () => `${pageHead('cloud', 'Satın almadan kullan', 'Abonelik mi, API mi?', 'Kullanımını gir; tüm abonelik ve API seçeneklerini aylık maliyete göre sıralayalım. Modellerin kalitesi aynı olmadığı için her sınıfın en ucuzunu ayrı gösteriyoruz.')}
+  ${step(1, 'Ne kadar kullanacaksın?', 'API maliyeti çıktı ve girdi tokenlerinden hesaplanır; abonelikte aylık kota varsayımdır.')}
+  ${usagePanel({ model: false, privacy: false, horizon: false })}
   <div id="results"></div>`;
+function cloudSub(o, withType) {
+  if (o.type === 'subscription') return `${withType ? 'Abonelik · ' : ''}${esc(o.limit)}`;
+  return `${withType ? (o.open ? 'API · açık model · ' : 'API · ') : ''}1M token: girdi $${o.inputUsd} · çıktı $${o.outputUsd}${o.live ? ' · canlı fiyat' : ''}`;
+}
 function resultsBulut() {
-  const opts = Calc.cloudOptions(S).filter(o => Calc.inClass(o, S.cloudClass)).sort((a, b) => (b.fits - a.fits) || a.monthly - b.monthly);
+  const all = Calc.cloudOptions(S);
+  const cards = CLOUD_GROUPS.map(([k, l, s, f]) => [l, s, all.filter(o => o.fits && f(o)).sort((a, b) => a.monthly - b.monthly)[0]]).filter(x => x[2]);
+  const opts = all.filter(o => Calc.inClass(o, S.cloudClass));
   const max = Math.max(...opts.filter(o => o.fits).map(o => o.monthly), 1);
-  const top = opts.filter(o => o.fits).slice(0, 3);
-  const notes = `<div class="pcgrid two"><section class="card"><h2>Abonelikte dikkat</h2><ul class="checks">
+  const bar = o => `<div class="bar-row${o.fits ? '' : ' dim'}"><span class="bn">${esc(o.name.replace(/^Açık · /, ''))}${Calc.inClass(o, 'frontier') && o.type !== 'subscription' ? ' <span class="mini">üst düzey</span>' : ''}<small>${o.split ? `bu ay: çıktı ${tl(o.split.out)} · girdi ${tl(o.split.inFresh)} · önbellek ${tl(o.split.inCached)}` : esc(o.limit)}</small></span><span class="bt"><i style="width:${Math.max(1, Math.log1p(o.monthly) / Math.log1p(max) * 100)}%"></i></span><b>${tl(o.monthly)}</b></div>`;
+  const groups = [['API · açık modeller', o => o.type !== 'subscription' && o.open], ['API · kapalı modeller', o => o.type !== 'subscription' && !o.open], ['Abonelikler', o => o.type === 'subscription' && o.fits]]
+    .map(([t, f]) => [t, opts.filter(f).sort((a, b) => a.monthly - b.monthly)]).filter(([, l]) => l.length);
+  const over = opts.filter(o => !o.fits).sort((a, b) => a.monthly - b.monthly);
+  return `${step(2, 'Her sınıfın en ucuzu', `Ayda ${nf(S.monthlyTokens, 1)} M çıktı + ${nf(Calc.inputM(S), 1)} M girdi tokeni için.`)}
+  <div class="pcgrid four">${cards.map(([l, s, o]) => `<article class="pc hl cloudcard"><span class="tag">${l}</span><h3>${esc(o.name.replace(/^Açık · /, ''))}</h3><p class="small muted">${s}</p><b class="big">${tl(o.monthly)}<small>/ay</small></b><p class="small muted">${cloudSub(o)}</p><div class="actions"><a class="btn ghost small" href="${esc(o.source)}" target="_blank" rel="noopener">Resmî fiyat ${icon('ext', 'bi')}</a><button type="button" class="btn ghost small" data-cmpcloud="${o.id}">Bilgisayarla karşılaştır</button></div></article>`).join('')}</div>
+  ${step(3, 'Tüm seçenekler', `${opts.length} seçenek, gruplar içinde ucuzdan pahalıya. Çubuk uzunluğu logaritmik.`, segButtons('cloudclass', [['all', 'Tümü'], ['open', 'Açık'], ['closed', 'Kapalı'], ['frontier', 'Üst düzey']], S.cloudClass))}
+  <section class="card">${groups.map(([t, l]) => `<div class="bar-group"><h3>${t} <span class="muted">(${l.length})</span></h3><div class="bars">${l.map(bar).join('')}</div></div>`).join('')}
+   ${over.length ? `<details class="more"><summary>Kotası bu kullanıma yetmeyen abonelikler (${over.length})</summary><div class="bars">${over.map(bar).join('')}</div></details>` : ''}
+   <p class="small muted note">API girdisi: çıktı payı %${S.outputSharePercent} → ayda ${nf(Calc.inputM(S), 1)} M girdi; önbellekten okunan %${S.cachedInputSharePercent}. Aboneliklerin aylık token kotası sağlayıcı garantisi değil, varsayımdır.</p></section>
+  <div class="pcgrid two"><section class="card"><h2>${icon('alert', 'ic h-ic')}Abonelikte dikkat</h2><ul class="checks">
    <li><b>Kotalar değişiyor.</b> Örneğin bir 200 $’lık planın kodlama kotası bir gecede yarıya indi; geçici “sıfırlamalar” planın parçası değildi.</li>
    <li><b>Varsayılan düşünme ayarı düşük olabilir.</b> Tanıtım tablosundaki skor genelde en yüksek ayarla ölçülür; varsayılan “orta” ayar daha az token harcar ama bazı işlerde birkaç puan düşer.</li>
    <li><b>Yeni sürüm = daha fazla token olabilir.</b> Aynı metin yeni bir tokenizer ile %0–35 daha fazla token tutabiliyor; fatura model değişmeden artabilir.</li>
    <li><b>Kodlama oturumlarında tokenlerin ≈%97’si önbellekten okunur;</b> asıl maliyeti önbellek fiyatı belirler. “Kodlama ajanı” profili bunu hesaba katar.</li></ul></section>
-   <section class="card"><h2>API kullanıyorsan güvenlik</h2><ul class="checks">
+   <section class="card"><h2>${icon('lock', 'ic h-ic')}API kullanıyorsan güvenlik</h2><ul class="checks">
    <li><b>Ön ödemeli kredi kullan, otomatik yüklemeyi kapat.</b> Çalınan bir anahtarın en fazla bakiyen kadar zararı olur; aynı saldırıda biri 16 $, biri 3.000 $ kaybetti.</li>
    <li><b>Aylık harcama limiti koy.</b> Bazı sağlayıcılarda faturalama birkaç dakika geriden gelir, limit biraz aşılabilir.</li>
    <li><b>Üçüncü taraf araçlara yapıştırdığın anahtarları yenile,</b> kullanmadıklarını sil. Bir araç sızıntısında eski anahtarlar saatler içinde boşaltıldı.</li></ul></section></div>`;
-  return `<div class="pcgrid three">${top.map((o, i) => `<article class="pc hl"><span class="tag">${['En ucuz', '2.', '3.'][i]}</span><h3>${esc(o.name)}</h3><p class="small muted">${o.type === 'subscription' ? 'Abonelik · kullanım sınırlı' : o.open ? 'API · açık model' : 'API'}</p><b class="big">${tl(o.monthly)}<small>/ay</small></b><p class="small muted">${o.type === 'subscription' ? esc(o.limit) : `Girdi $${o.inputUsd} · çıktı $${o.outputUsd} / 1M`}</p><div class="actions"><a class="btn ghost" href="${esc(o.source)}" target="_blank" rel="noopener">Resmî fiyat ↗</a><button type="button" class="btn ghost" data-cmpcloud="${o.id}">Bilgisayarla karşılaştır →</button></div></article>`).join('')}</div>
-  <section class="card"><h2>Tüm seçenekler <span class="muted">(${opts.length})</span></h2><div class="bars">${opts.map(o => `<div class="bar-row${o.fits ? '' : ' dim'}"><span class="bn">${esc(o.name)}<small>${o.type === 'subscription' ? 'Abonelik' : o.open ? 'API · açık' : 'API'}${o.split ? ` · çıktı ${tl(o.split.out)} · girdi ${tl(o.split.inFresh)} · önbellek ${tl(o.split.inCached)}` : ''}${o.fits ? '' : ' · kotası bu kullanıma yetmez (varsayım)'}${o.live ? ' · canlı fiyat' : ''}</small></span><span class="bt"><i style="width:${Math.max(1, Math.log1p(o.monthly) / Math.log1p(max) * 100)}%"></i></span><b>${tl(o.monthly)}</b></div>`).join('')}</div>
-  <p class="small muted">Çubuk uzunluğu logaritmik. Aboneliklerin aylık token kotası sağlayıcı garantisi değil, varsayımdır. API girdisi: çıktı payı %${S.outputSharePercent} → ayda ${nf(Calc.inputM(S), 1)} M girdi; önbellek %${S.cachedInputSharePercent}.</p></section>${notes}`;
 }
 
-VIEWS.karsilastir = () => `<header class="page-head"><p class="eyebrow">Almak mı, kiralamak mı?</p><h1>Bir bilgisayar kaç ayda kendini öder?</h1></header>
-  ${usagePanel({ title: 'Kullanımın' })}<div id="results"></div>`;
-function resultsKarsilastir() {
-  const locals = allLocal(), mine = mineComputer();
-  const local = S.cmpLocal === 'mine' ? mine : locals.find(c => c.id === S.cmpLocal) || locals[0];
-  const owned = local.id === 'mine';
-  const clouds = Calc.cloudOptions(S).filter(o => o.fits && (Calc.inClass(o, S.cloudClass) || o.id === S.cmpCloud)).sort((a, b) => a.monthly - b.monthly);
+/* --- buy vs rent --- */
+VIEWS.karsilastir = () => `${pageHead('scale', 'Almak mı, kiralamak mı?', 'Bir bilgisayar kaç ayda kendini öder?', 'Bir bilgisayarı aynı sınıftaki bir bulut seçeneğiyle karşılaştır: toplam maliyet, amorti süresi ve hangi kullanım düzeyinde yerelin ucuzladığı.')}
+  ${step(1, 'Kullanımın')}
+  ${usagePanel({})}<div id="results"></div>`;
+function cmpContext() {
+  const locals = allLocal(), local = S.cmpLocal === 'mine' ? mineComputer() : locals.find(c => c.id === S.cmpLocal) || locals[0], owned = local.id === 'mine';
+  const fitsAll = Calc.cloudOptions(S).filter(o => o.fits).sort((a, b) => a.monthly - b.monthly);
+  const inCls = o => S.cmpClass === 'equiv' ? (EQUIV[S.model] || []).includes(o.id) : Calc.inClass(o, S.cmpClass);
+  let clouds = fitsAll.filter(o => inCls(o) || o.id === S.cmpCloud); if (!clouds.length) clouds = fitsAll;
   const cloud = clouds.find(o => o.id === S.cmpCloud) || clouds[0];
-  const M = S.model, H = S.horizon, sp = Calc.speed(local, M), cap = Calc.capacity(local, M, S);
+  const frontier = fitsAll.find(o => Calc.inClass(o, 'frontier') && o.id !== cloud.id);
+  const M = S.model, H = S.horizon;
+  const hwMonthly = owned ? 0 : Calc.localCum(local, M, { ...S, monthlyTokens: 0 }, H, false) / H;
+  const localM = x => hwMonthly + Calc.electricity(local, M, { ...S, monthlyTokens: x }).tl;
+  const cloudM = o => x => Calc.cloudMonthly(o, { ...S, monthlyTokens: x });
+  return { locals, local, owned, clouds, cloud, frontier, M, H, hwMonthly, localM, cloudM, cap: Calc.capacity(local, M, S), sp: Calc.speed(local, M) };
+}
+function crossover(fa, fb, lo, hi) { for (let i = 0; i <= 400; i++) { const x = lo * Math.pow(hi / lo, i / 400); if (fa(x) <= fb(x)) return x; } return Infinity; }
+function resultsKarsilastir() {
+  const X = cmpContext(), { local, owned, cloud, clouds, M, H, sp, cap } = X;
   const lc = t => Calc.localCum(local, M, S, t, owned), cc = t => Calc.cloudCum(cloud, S, t);
   const be = Calc.breakEven(local, M, cloud, S, owned), diff = cc(H) - lc(H);
   let verdict;
   if (S.privacy) verdict = sp.status === 'no' || cap < S.monthlyTokens ? `<b>Gizlilik şartıyla</b> bu bilgisayar kullanımını karşılamıyor (en fazla ${nf(cap, 1)} M/ay). Daha güçlü bir sistem veya daha hafif bir model seç.` : `<b>Gizlilik şartıyla tek seçenek yerel.</b> ${esc(local.name)} ile ${H} ayda toplam ${tl(lc(H))}.`;
+  else if (!sp.tps) verdict = `<b>${esc(local.name)}</b> ${Calc.MODELS[M].short} modelini çalıştıramıyor. Başka bir model veya bilgisayar seç; ${esc(cloud.name)} ayda ${tl(cloud.monthly)}.`;
   else if (cap < S.monthlyTokens) verdict = `<b>${esc(local.name)}</b> bu kullanıma yetmiyor: günde ${S.hoursPerDay} saatte en fazla ${nf(cap, 1)} M/ay üretir. ${esc(cloud.name)} ayda ${tl(cloud.monthly)}.`;
   else if (diff >= 0) verdict = `Bu kullanımda <b>${owned ? 'elindeki bilgisayarı kullanmak' : 'bilgisayar almak'} daha ucuz.</b> ${H} ayda ${tl(diff)} tasarruf; ${be === 0 ? 'hemen' : nf(be, 1) + '. ayda'} kendini ${owned ? 'öder' : 'amorti eder'}.`;
   else verdict = `Bu kullanımda <b>${esc(cloud.name)} daha ucuz.</b> ${H} ayda ${tl(-diff)} daha az. ${Number.isFinite(be) ? `Bilgisayar ancak ${nf(be, 1)}. ayda amorti olur.` : 'Bilgisayar 10 yıl içinde amorti olmuyor.'}`;
-  const localOpts = [['mine', 'Elindeki bilgisayar (fiyat 0 TL, sadece elektrik)'], ['custom', `Kendi topladığın · ${tl(locals[0].price)}`], ...locals.slice(1).sort((a, b) => a.price - b.price).map(c => [c.id, `${c.name} · ${tl(c.price)}`])];
-  const rent = M === 'deepseek' ? (() => { const api = Calc.cat().apiModels.find(a => a.id === 'api-deepseek-flash-off'); const usd = api.outputUsd * S.usdTry; const ram = Calc.cheapestOffer('ram64').price; const mTok = ram / usd; const yrs = sp.tps ? mTok * 1e6 / (sp.tps * 3600 * 24 * 365) : Infinity; return `<div class="tip"><b>Kiralama hesabı:</b> 64 GB RAM’in parasına (${tl(ram)}) DeepSeek API’den (pik dışı $${api.outputUsd}/1M) ≈${nf(mTok / 1000, 1)} milyar çıktı tokeni alınır. ${esc(local.name)} bunu ${tps(sp.tps)} ile ${Number.isFinite(yrs) ? nf(yrs, 1) + ' yılda' : 'hiç'} yazar. API ayrıca tam modeldir; yerelde 2 bit çalışır.</div>`; })() : '';
-  return `<section class="card"><div class="row-label">Hangi bulut modelleriyle kıyaslansın?</div><div class="seg small" role="group">${[['all', 'En ucuz (açık modeller dahil)'], ['closed', 'Kapalı modeller'], ['frontier', 'Üst düzey (Claude, GPT, Gemini)']].map(([k, l]) => `<button type="button" data-cloudclass="${k}" aria-pressed="${S.cloudClass === k}">${l}</button>`).join('')}</div><p class="small muted">Yereldeki ${Calc.MODELS[M].short} ile bulut modellerinin kalitesi aynı değil; kendi ihtiyacına uygun sınıfı seç.</p></section>
-  <section class="card cmp-pick"><label class="f"><span>Bilgisayar</span><select data-cmplocal>${localOpts.map(([k, l]) => `<option value="${k}"${k === local.id ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></label>
-   <label class="f"><span>Bulut seçeneği</span><select data-cmpcloudsel>${clouds.map(o => `<option value="${o.id}"${o.id === cloud.id ? ' selected' : ''}>${esc(o.name)} · ${tl(o.monthly)}/ay</option>`).join('')}</select></label></section>
-  <section class="verdict"><p>${verdict}</p><div class="vstats"><div><span>${esc(local.name)}</span><b>${tl(lc(H))}</b><small>${owned ? 'sadece elektrik' : tl(local.price) + ' + elektrik'} · ${tps(sp.tps)} · görev ${dur(Calc.taskTime(local, M, S).total)}</small></div><div><span>${esc(cloud.name)}</span><b>${tl(cc(H))}</b><small>${tl(cloud.monthly)}/ay</small></div><div><span>Amorti</span><b>${be === 0 ? 'Hemen' : Number.isFinite(be) ? nf(be, 1) + ' ay' : '10 yıl+'}</b><small>${H}. ayda fark: ${tl(Math.abs(diff))}</small></div></div></section>
+  // at which monthly usage does the computer become cheaper?
+  let usageLine = '';
+  if (sp.tps && !S.privacy) {
+    if (cloud.type === 'subscription') usageLine = `${esc(cloud.name)} sabit ${tl(cloud.monthly)}/ay (varsayılan kota ≈${nf(S.caps[cloud.id] || cloud.defaultCapM)} M/ay). Bilgisayarın aylık maliyeti ${owned ? 'yalnızca elektrik' : `donanım payı ${tl(X.hwMonthly)} + elektrik`}.`;
+    else {
+      const x0 = crossover(X.localM, X.cloudM(cloud), 0.01, 1e5);
+      usageLine = x0 <= 0.0101 ? `Her kullanım düzeyinde bilgisayar daha ucuz (yalnızca elektrik ödüyorsun).`
+        : x0 > cap ? `Bu bilgisayarın kapasitesi (≈${mTok(cap)}/ay) içinde ${esc(cloud.name)} her zaman daha ucuz${Number.isFinite(x0) ? `; başa baş ancak ayda ≈${mTok(x0)} çıktıda olurdu` : ''}.`
+        : `Ayda <b>≈${mTok(x0)} çıktı tokeninin üstünde</b> bilgisayar daha ucuz (donanım bedeli ${H} aya bölünmüş). Senin kullanımın ${mTok(S.monthlyTokens)}, kapasite ≈${mTok(cap)}/ay.`;
+    }
+  }
+  const localOpts = [['mine', 'Elindeki bilgisayar (fiyat 0 TL, sadece elektrik)'], ['custom', `Kendi topladığın · ${tl(X.locals[0].price)}`], ...X.locals.slice(1).sort((a, b) => a.price - b.price).map(c => [c.id, `${c.name} · ${tl(c.price)}`])];
+  const rent = M === 'deepseek' ? (() => { const api = Calc.cat().apiModels.find(a => a.id === 'api-deepseek-flash-off'); const usd = api.outputUsd * S.usdTry; const ram = Calc.cheapestOffer('ram64').price; const mt = ram / usd; const yrs = sp.tps ? mt * 1e6 / (sp.tps * 3600 * 24 * 365) : Infinity; return `<div class="tip"><b>Kiralama hesabı:</b> 64 GB RAM’in parasına (${tl(ram)}) DeepSeek API’den (pik dışı $${api.outputUsd}/1M) ≈${nf(mt / 1000, 1)} milyar çıktı tokeni alınır. ${esc(local.name)} bunu ${tps(sp.tps)} ile ${Number.isFinite(yrs) ? nf(yrs, 1) + ' yılda' : 'hiç'} yazar. API ayrıca tam modeldir; yerelde 2 bit çalışır.</div>`; })() : '';
+  return `${step(2, 'Neyi neyle karşılaştıralım?', `Yereldeki ${Calc.MODELS[M].label} ile bulut modellerinin kalitesi aynı değil; varsayılan olarak aynı sınıftaki modellerle kıyaslanır.`)}
+  <section class="card"><div class="row-label first">Bulut modeli sınıfı</div>${segButtons('cmpclass', [['equiv', 'Yereldeki modelin dengi'], ['all', 'En ucuz (tümü)'], ['closed', 'Kapalı modeller'], ['frontier', 'Üst düzey (Claude, GPT, Gemini)']], S.cmpClass)}
+   <div class="cmp-pick"><label class="f"><span>Bilgisayar</span><select data-cmplocal>${localOpts.map(([k, l]) => `<option value="${k}"${k === local.id ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></label>
+   <label class="f"><span>Bulut seçeneği</span><select data-cmpcloudsel>${clouds.map(o => `<option value="${o.id}"${o.id === cloud.id ? ' selected' : ''}>${esc(o.name)} · ${tl(o.monthly)}/ay</option>`).join('')}</select></label></div></section>
+  ${step(3, 'Sonuç')}
+  <section class="verdict"><p>${verdict}</p><div class="vstats"><div><span>${esc(local.name)} · ${H} ay</span><b>${tl(lc(H))}</b><small>${owned ? 'sadece elektrik' : tl(local.price) + ' + elektrik'} · ${tps(sp.tps)} · görev ${dur(Calc.taskTime(local, M, S).total)}</small></div><div><span>${esc(cloud.name)} · ${H} ay</span><b>${tl(cc(H))}</b><small>${tl(cloud.monthly)}/ay</small></div><div><span>Amorti</span><b>${be === 0 ? 'Hemen' : Number.isFinite(be) ? nf(be, 1) + ' ay' : '10 yıl+'}</b><small>${H}. ayda fark: ${tl(Math.abs(diff))}</small></div></div>${usageLine ? `<p class="vline">${usageLine}</p>` : ''}</section>
   ${rent}
-  <section class="card"><h2>${H} ay boyunca toplam maliyet</h2><div id="chart"></div></section>`;
+  ${step(4, 'Grafikler')}
+  <section class="card"><div class="card-head"><h2>Zamanla toplam maliyet</h2><span class="muted small">${H} ay · satın alma + elektrik, bulutta aylık ücret</span></div><div id="chart" class="chart-wrap"></div></section>
+  <section class="card"><div class="card-head"><div><h2>Aylık kullanıma göre bir ayın maliyeti</h2><span class="muted small">Kullanım arttıkça API maliyeti doğrusal artar; bilgisayarda yalnızca elektrik artar (donanım bedeli ${owned ? 'yok' : H + ' aya bölünmüş'}).</span></div>${segButtons('tokscale', [['log', 'Logaritmik'], ['lin', 'Doğrusal']], S.tokScale)}</div><div id="tchart" class="chart-wrap"></div>
+   <p class="small muted">${S.tokScale === 'log' ? 'İki eksen de logaritmik: her ızgara çizgisi 10 kat. API’ler paralel çizgilerdir; aralarındaki boşluk fiyat oranıdır.' : 'Doğrusal ölçek; yatay eksen kullanımının 2,5 katına kadar.'}</p></section>`;
 }
-function drawCompareChart() {
-  const box = $('#chart'); if (!box) return;
-  const locals = allLocal(), local = S.cmpLocal === 'mine' ? mineComputer() : locals.find(c => c.id === S.cmpLocal) || locals[0], owned = local.id === 'mine';
-  const clouds = Calc.cloudOptions(S).filter(o => o.fits && (Calc.inClass(o, S.cloudClass) || o.id === S.cmpCloud)).sort((a, b) => a.monthly - b.monthly), cloud = clouds.find(o => o.id === S.cmpCloud) || clouds[0];
-  const frontier = clouds.find(o => Calc.inClass(o, 'frontier') && o.id !== cloud.id);
-  const series = [{ name: local.name, color: 'var(--c1)', f: t => Calc.localCum(local, S.model, S, t, owned) }, { name: cloud.name, color: 'var(--c2)', f: t => Calc.cloudCum(cloud, S, t) }];
-  if (frontier) series.push({ name: frontier.name + ' (üst düzey)', color: 'var(--c3)', dash: true, f: t => Calc.cloudCum(frontier, S, t) });
-  box.innerHTML = lineChart(series, S.horizon);
-  bindChart(box, series, S.horizon);
-}
-function lineChart(series, X) {
-  const W = 900, H = 340, L = 74, R = 16, T = 16, B = 34, iw = W - L - R, ih = H - T - B;
-  const pts = Array.from({ length: 121 }, (_, i) => X * i / 120);
-  const max = Math.max(1, ...series.flatMap(s => pts.map(s.f))) * 1.08;
-  const x = t => L + t / X * iw, y = v => T + ih - v / max * ih;
-  let g = '';
-  for (let i = 0; i <= 4; i++) { const v = max * i / 4; g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${L - 8}" y="${y(v) + 4}" class="ax" text-anchor="end">${nf(v / 1000)} bin</text>`; }
-  for (let i = 0; i <= 6; i++) { const t = X * i / 6; g += `<text x="${x(t)}" y="${H - 10}" class="ax" text-anchor="middle">${nf(t)}. ay</text>`; }
-  const paths = series.map(s => `<path d="${pts.map((t, i) => (i ? 'L' : 'M') + x(t).toFixed(1) + ',' + y(s.f(t)).toFixed(1)).join('')}" stroke="${s.color}" fill="none" stroke-width="2.6"${s.dash ? ' stroke-dasharray="7 5"' : ''}/>`).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Toplam maliyet grafiği">${g}${paths}<line class="xh" x1="0" x2="0" y1="${T}" y2="${T + ih}" visibility="hidden"/></svg><div class="legend">${series.map(s => `<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}</div><div class="ctip" hidden></div>`;
-}
-function bindChart(box, series, X) {
-  const svg = $('svg', box), tip = $('.ctip', box), xh = $('.xh', svg);
-  svg.onpointermove = e => { const r = svg.getBoundingClientRect(), sx = (e.clientX - r.left) / r.width * 900; if (sx < 74 || sx > 884) { tip.hidden = true; xh.setAttribute('visibility', 'hidden'); return; }
-    const t = (sx - 74) / 810 * X; xh.setAttribute('x1', sx); xh.setAttribute('x2', sx); xh.setAttribute('visibility', 'visible');
-    tip.hidden = false; tip.innerHTML = `<b>${nf(t, 1)}. ay</b>` + series.map(s => `<div><i style="background:${s.color}"></i>${esc(s.name)}: <b>${tl(s.f(t))}</b></div>`).join('');
-    tip.style.left = Math.min(r.width - 230, e.clientX - r.left + 12) + 'px'; tip.style.top = (e.clientY - r.top + 12) + 'px'; };
-  svg.onpointerleave = () => { tip.hidden = true; xh.setAttribute('visibility', 'hidden'); };
+function drawCompareCharts() {
+  const X = cmpContext(), { local, owned, cloud, frontier, M, H } = X;
+  const ser = [{ name: local.name, color: 'var(--c1)', f: t => Calc.localCum(local, M, S, t, owned) }, { name: cloud.name, color: 'var(--c2)', f: t => Calc.cloudCum(cloud, S, t) }];
+  if (frontier) ser.push({ name: frontier.name + ' (üst düzey)', color: 'var(--c3)', dash: true, f: t => Calc.cloudCum(frontier, S, t) });
+  const be = Calc.breakEven(local, M, cloud, S, owned), stp = H <= 12 ? 2 : H <= 36 ? 6 : H <= 72 ? 12 : 24;
+  xyChart($('#chart'), { label: 'Zamanla toplam maliyet', series: ser, markers: Number.isFinite(be) && be > 0 && be < H ? [{ x: be, label: `Amorti: ${nf(be, 1)}. ay` }] : [],
+    x: { lo: 0, hi: H, ticks: Array.from({ length: Math.floor(H / stp) + 1 }, (_, i) => i * stp), fmt: v => v ? nf(v) + '. ay' : '0', tip: t => nf(t, 1) + '. ay' } });
+  const log = S.tokScale !== 'log' ? false : true, cap = X.sp.tps ? X.cap : 0;
+  const lo = log ? 0.1 : 0, hi = log ? 1000 : niceStep(Math.max(10, S.monthlyTokens * 2.5) / 5) * 5;
+  const tser = [];
+  if (X.sp.tps) tser.push({ name: local.name, color: 'var(--c1)', f: X.localM, limit: cap });
+  const cs = (o, color, dash) => ({ name: o.name, color, dash, f: X.cloudM(o), limit: o.type === 'subscription' ? (S.caps[o.id] || o.defaultCapM) : undefined });
+  tser.push(cs(cloud, 'var(--c2)'));
+  if (frontier) tser.push(cs(frontier, 'var(--c3)', true));
+  const lt = [0.1, 1, 10, 100, 1000], ls = niceStep(hi / 5);
+  xyChart($('#tchart'), { label: 'Aylık kullanıma göre maliyet', series: tser, logY: log, markers: [{ x: S.monthlyTokens, label: `Senin kullanımın: ${mTok(S.monthlyTokens)}` }],
+    x: { lo, hi, log, ticks: log ? lt : Array.from({ length: Math.round(hi / ls) + 1 }, (_, i) => i * ls), fmt: v => v === 0 ? '0' : mTok(v), tip: t => `Ayda ${mTok(t)} çıktı` } });
 }
 
+/* --- prices --- */
+const PCATS = [['gpu', 'Ekran kartları'], ['cpu', 'İşlemciler'], ['mobo', 'Anakartlar'], ['ram', 'RAM'], ['ssd', 'SSD'], ['psu', 'Güç kaynakları'], ['case', 'Kasalar'], ['cooler', 'Soğutucular']];
+function opartHtml(k, open) {
+  const p = Calc.cat().parts[k], offs = Calc.offers(k), ch = Calc.chosenOffer(k, S.offerSel), mine = !!S.offerSel[k] && S.offerSel[k] === ch.store;
+  return `<details class="opart" data-part="${k}"${open ? ' open' : ''}><summary><span class="op-n">${esc(p.label)}</span><span class="op-s">${esc(ch.store)}${mine ? ' <span class="mini">seçimin</span>' : offs.length > 1 ? ' <span class="mini ok">en ucuz</span>' : ''}</span><b class="num">${tl(ch.price)}</b><span class="op-c">${offs.length} mağaza</span>${icon('chev', 'bi chev')}</summary>
+   <div class="op-body"><table class="offers"><tbody>${offs.map((o, i) => `<tr class="${o.store === ch.store ? 'sel' : ''}"><td><label><input type="radio" name="o-${k}" data-pickoffer="${k}" value="${esc(o.store)}"${o.store === ch.store ? ' checked' : ''}> <b>${esc(o.store)}</b></label>${i === 0 ? ' <span class="badge ok">en ucuz</span>' : ''}</td><td class="num"><b>${tl(o.price)}</b></td><td><span class="badge ${o.stock === 'stokta' ? 'ok' : o.stock === 'tükendi' ? 'no' : 'slow'}">${esc(o.stock)}</span></td><td class="small muted">${esc(o.source)} · ${esc(o.date)}</td><td class="small"><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc((o.name || '').slice(0, 60))} ${icon('ext', 'bi')}</a></td></tr>`).join('')}</tbody></table></div></details>`;
+}
 VIEWS.fiyatlar = () => {
   const L = Calc.live(), P = Calc.cat().parts;
-  const CATS = [['gpu', 'Ekran kartları'], ['cpu', 'İşlemciler'], ['mobo', 'Anakartlar'], ['ram', 'RAM'], ['ssd', 'SSD'], ['psu', 'Güç kaynakları'], ['case', 'Kasalar'], ['cooler', 'Soğutucular']];
-  return `<header class="page-head"><p class="eyebrow">Fiyatlar</p><h1>Her parçanın mağaza fiyatları</h1><p class="lead">Varsayılan olarak stoktaki en ucuz teklif kullanılır. Başka bir mağazayı seçersen hazır sistemlerde ve topladığın bilgisayarda o fiyat kullanılır.</p>
-  <p class="small muted" id="liveStatus">${liveStatusText()}</p>
-  <p class="small muted">Mağaza ve Mac fiyatları (her hafta GitHub Actions): ${Object.keys(L.stores || {}).join(', ') || '—'}${L.meta ? ` · son değişiklik ${new Date(L.meta.updated).toLocaleString('tr-TR')}` : ''} · Elle: akakçe, Vatan, Hepsiburada, n11, Sinerji, İnceHesap… (tarihli) · Dolar kuru: ${nf(S.usdTry, 4)} TL${L.usdTry ? ` (TCMB ${esc(L.usdTry.date)})` : ''}</p>
-  <button type="button" class="btn ghost" data-resetoffers>Mağaza seçimlerini sıfırla</button></header>
-  ${CATS.map(([cat, label]) => `<section class="card"><h2>${label}</h2>${Object.entries(P).filter(([, p]) => p.cat === cat).map(([k, p]) => { const offs = Calc.offers(k), ch = Calc.chosenOffer(k, S.offerSel); return `<div class="offer-part"><h3>${esc(p.label)}</h3><table class="offers"><tbody>${offs.map((o, i) => `<tr class="${o.store === ch.store ? 'sel' : ''}"><td><label><input type="radio" name="o-${k}" data-pickoffer="${k}" value="${esc(o.store)}"${o.store === ch.store ? ' checked' : ''}> <b>${esc(o.store)}</b></label>${i === 0 ? ' <span class="badge ok">en ucuz</span>' : ''}</td><td class="num"><b>${tl(o.price)}</b></td><td><span class="badge ${o.stock === 'stokta' ? 'ok' : o.stock === 'tükendi' ? 'no' : 'slow'}">${esc(o.stock)}</span></td><td class="small muted">${esc(o.source)} · ${esc(o.date)}</td><td class="small"><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc((o.name || '').slice(0, 60))} ↗</a></td></tr>`).join('')}</tbody></table></div>`; }).join('')}</section>`).join('')}
-  <section class="card"><h2>Mac fiyatları (Apple Türkiye)</h2><table class="offers"><tbody>${Calc.computers({}).filter(c => c.kind === 'mac').map(c => `<tr><td>${esc(c.appleName)}</td><td class="num"><b>${tl(c.price)}</b></td><td><a href="${esc(c.url)}" target="_blank" rel="noopener">Apple ↗</a></td></tr>`).join('')}</tbody></table></section>
-  <section class="card"><h2>Fiyatları güncellemek</h2><p>API fiyatları ve dolar kuru her ziyarette senin tarayıcından canlı çekilir. Mağaza (Gamegaraj, Gaming.gen.tr) ve Apple fiyatları her hafta GitHub Actions ile toplanır; tarayıcılar bu sitelerden doğrudan okuyamaz. Otomatik erişimi engelleyen mağazalar için aşağıdaki promptu web araması açık bir yapay zekâya ver; çıkan JSON’u <code>data/manual-offers.json</code> dosyasına ekle.</p><button type="button" class="btn ghost" data-copyprompt>Promptu kopyala</button></section>`;
+  return `${pageHead('tag', 'Fiyatlar', 'Her parçanın mağaza fiyatları', 'Varsayılan olarak stoktaki en ucuz teklif kullanılır. Bir parçayı açıp başka mağaza seçersen, hazır sistemlerde ve topladığın bilgisayarda o fiyat kullanılır.')}
+  <div class="sources">
+   <div class="src">${icon('globe')}<div><b>Canlı · tarayıcın</b><span id="liveStatus">${liveStatusText()}</span></div></div>
+   <div class="src">${icon('refresh')}<div><b>Haftalık · GitHub Actions</b><span>${Object.keys(L.stores || {}).join(', ') || '—'}, Apple Türkiye${L.meta ? ` · ${new Date(L.meta.updated).toLocaleDateString('tr-TR')}` : ''}</span></div></div>
+   <div class="src">${icon('edit')}<div><b>Elle · tarihli</b><span>akakçe, Vatan, Hepsiburada, n11, Sinerji, İnceHesap…</span></div></div></div>
+  <div class="jump"><span class="muted small">Kategoriler:</span>${PCATS.map(([c, l]) => `<button type="button" data-jump="cat-${c}">${l}</button>`).join('')}<button type="button" data-jump="cat-mac">Mac</button><button type="button" class="btn ghost small" data-resetoffers>Mağaza seçimlerini sıfırla</button></div>
+  ${PCATS.map(([cat, label]) => `<section class="card" id="cat-${cat}"><div class="card-head"><h2>${label}</h2><span class="muted small">Seçili mağaza · fiyat</span></div><div class="oparts">${Object.keys(P).filter(k => P[k].cat === cat).map(k => opartHtml(k)).join('')}</div></section>`).join('')}
+  <section class="card" id="cat-mac"><h2>Mac fiyatları (Apple Türkiye)</h2><table class="offers"><tbody>${Calc.computers({}).filter(c => c.kind === 'mac').map(c => `<tr><td>${esc(c.appleName)}</td><td class="num"><b>${tl(c.price)}</b></td><td><a href="${esc(c.url)}" target="_blank" rel="noopener">Apple ${icon('ext', 'bi')}</a></td></tr>`).join('')}</tbody></table></section>
+  <section class="card"><h2>Fiyatları güncellemek</h2><p>API fiyatları ve dolar kuru her ziyarette senin tarayıcından canlı çekilir (dolar kuru: ${nf(S.usdTry, 4)} TL${L.usdTry ? `, yedek TCMB ${esc(L.usdTry.date)}` : ''}). Mağaza (Gamegaraj, Gaming.gen.tr) ve Apple fiyatları her hafta GitHub Actions ile toplanır; tarayıcılar bu sitelerden doğrudan okuyamaz. Otomatik erişimi engelleyen mağazalar için aşağıdaki promptu web araması açık bir yapay zekâya ver; çıkan JSON’u <code>data/manual-offers.json</code> dosyasına ekle.</p><button type="button" class="btn ghost" data-copyprompt>Promptu kopyala</button></section>`;
 };
 
-VIEWS.nasil = () => `<header class="page-head"><p class="eyebrow">Nasıl hesaplıyoruz?</p><h1>Yöntem, varsayımlar ve kaynaklar</h1></header>
-  <section class="card prose"><h2>Strata nasıl çalışıyor?</h2><p>Mixture-of-Experts modellerde her kelime için uzmanların küçük bir kısmı kullanılır. Strata sık kullanılan kısmı ekran kartına, sonrakini RAM’e, nadir olanı SSD’ye koyar. Bu yüzden VRAM değil <b>RAM kapasitesi</b> belirleyici olur: Qwen3.8-Flash-Next 125B için RAM ≥ uzmanlar + ≈10 GB (IQ2_XS ≈46 GB). DeepSeek V4.1 Flash 763B en az 12 GB kart, 46 GB RAM (64 GB rahat) ve ≈265 GB disk ister.</p>
-   <h2>Görev süresi</h2><p>Bir görevin süresi = bağlamı okuma (prefill) + cevabı yazma (decode). Kısa cevap ≈1K yazar, 2K okur; düşünerek cevap ≈15K yazar; kodlama ajanı görevi ≈50K yazar ve 32K bağlamla başlar. Okuma hızları ölçümlerden (ör. RTX 5070 ≈2.090, RTX 5090 ≈5.000, RX 9070 XT ≈1.110, M5 Max 128 GB ≈1.300 tok/sn) ya da tahminden gelir.</p>
-   <h2>Quant ve kalite</h2><p>Bit sayısı düştükçe model asıl modelden sapar: büyük bir modelde 2 bit ≈%91, 3 bit ≈%95, 4 bit ≈%98,5 oranında aynı kelimeyi seçiyor (2 bitte yaklaşık her 11 kelimede bir farklı seçim). Aynı bit sayısında quant’ı kimin hazırladığı da sonucu belirgin biçimde değiştirir.</p>
-   <h2>Motorlar</h2><p>Strata (Qwen 125B ve DeepSeek için), llama.cpp ve türevleri (Avalon, uzman önbelleği), vLLM ve Mac motorları aynı donanımda çok farklı sonuç verir. Bir motorun bir sürümden diğerine 3 kat hızlandığı görüldü; bu yüzden hızlar zamanla değişir.</p>
-   <h2>NVIDIA GeForce notu</h2><p>GeForce kartlar 16 bit hesaplamayı 32 bit toplamayla yarım hızda yapar. Bu, llama.cpp’nin yazma hızını etkilemez (8 bit tamsayı), ama uzun bağlamın okunmasını, vLLM’i ve görüntü üretimini yavaşlatır.</p>
-   <h2>Hızlar</h2><p>Tüm hızlar <b>yazma (decode)</b> hızıdır. Okuma (prefill) 10–20 kat daha hızlıdır; “100+ tok/sn” paylaşımlarının hangisi olduğuna dikkat. Ölçümü olan sistemler “ölçüm”, diğerleri “tahmin” olarak işaretlidir.</p>
-   <h2>Maliyet</h2><p>Bilgisayar: satın alma + ek elektrik (ev faturasına eklenen tüketimin kademeli tarifedeki farkı). Abonelik: aylık ücret (USD’de kur ile). API: çıktı + çıktı payından hesaplanan girdi tokenleri, önbellek oranıyla. Aboneliklerin token kotaları varsayımdır.</p></section>
-  <section class="card"><h2>Gelişmiş varsayımlar</h2><div class="fields four">
+/* --- method --- */
+const FORMULAS = [
+  ['Yazma hızı', 'bant genişliği ÷ token başına okunan GB × verim', 'Ölçümü olan sistemlerde ölçüm kullanılır (“ölçüm” etiketi). Verim: yoğun modelde ≈%70–80, MoE’de daha düşük.'],
+  ['Görev süresi', 'bağlam ÷ okuma hızı + çıktı ÷ yazma hızı', 'Kısa cevap 2K okur / 1K yazar; düşünerek cevap 5K / 15K; kodlama ajanı görevi 32K / 50K.'],
+  ['Aylık kapasite', 'yazma hızı × günlük saat × 30 × 3.600', 'Bilgisayarın ayda üretebileceği çıktı tokeni; kullanımın bunu aşarsa “yetmez” uyarısı çıkar.'],
+  ['Ek elektrik', 'tarife(ev + ek kWh) − tarife(ev)', 'Ek kWh = token ÷ (hız × 3.600) × watt ÷ 1.000. Kademeli tarife: ayda 240 kWh’ye kadar alt kademe, üstü üst kademe; vergi ve KDV dahil.'],
+  ['API maliyeti', 'çıktı × çıktı fiyatı + girdi × [(1 − ö) × girdi fiyatı + ö × önbellek fiyatı]', 'Girdi = çıktı × (100 − çıktı payı) ÷ çıktı payı; ö = önbellekten okunan pay. USD fiyatlar güncel kurla TL’ye çevrilir.'],
+  ['Amorti', 'fiyat − ikinci el değeri + elektrik × ay = bulut × ay', 'Eşitliği sağlayan ay; kur ve TL fiyat artışı varsayımları dahil. Abonelik kotası kullanımına yetmiyorsa o seçenek elenir.']];
+VIEWS.nasil = () => {
+  const T = { ...Calc.cat().tariff, ...(S.tariff || {}) };
+  return `${pageHead('sliders', 'Yöntem', 'Nasıl hesaplıyoruz?', 'Sitedeki her sayının nereden geldiği: formüller, varsayımlar ve veri kaynakları. Varsayımları buradan değiştirebilirsin; tüm sayfalar buna göre hesaplanır.')}
+  <section class="card"><h2>Formüller</h2><div class="formulas">${FORMULAS.map(([n, f, d]) => `<div class="fx"><span class="fx-n">${n}</span><code class="fx-f">${f}</code><p>${d}</p></div>`).join('')}</div>
+   <p class="small muted">Tüm hızlar aksi belirtilmedikçe <b>yazma (decode)</b> hızıdır. Okuma (prefill) çoğu zaman 10–30 kat daha hızlıdır. Kavramların ayrıntısı <a href="#metrikler">Metrikler</a> sayfasında.</p></section>
+  <section class="card"><h2>Varsayımlar</h2><div class="fields four">
    <label class="f"><span>Dolar kuru (USD/TRY)</span><input type="number" step="0.0001" data-k="usdTry" value="${S.usdTry}"></label>
    <label class="f"><span>Yıllık kur artışı (%)</span><input type="number" data-k="usdYearly" value="${S.usdYearly}"></label>
    <label class="f"><span>Yıllık TL fiyat artışı (%)</span><input type="number" data-k="tlYearly" value="${S.tlYearly}"></label>
    <label class="f"><span>USD ek vergi (%)</span><input type="number" data-k="foreignTax" value="${S.foreignTax}"></label>
    <label class="f"><span>Günlük üretim saati</span><input type="number" step="0.5" data-k="hoursPerDay" value="${S.hoursPerDay}"></label>
    <label class="f"><span>Yıllık değer kaybı (%)</span><input type="number" data-k="depreciation" value="${S.depreciation}"></label>
+   <label class="f"><span>Elektrik alt kademe (TL/kWh)</span><input type="number" step="0.01" data-tariff="lowRate" value="${nf(T.lowRate, 2).replace(',', '.')}"></label>
+   <label class="f"><span>Elektrik üst kademe (TL/kWh)</span><input type="number" step="0.01" data-tariff="highRate" value="${nf(T.highRate, 2).replace(',', '.')}"></label>
+   <label class="f"><span>Evin aylık tüketimi (kWh)</span><input type="number" step="10" data-tariff="homeKwh" value="${Math.round(T.homeKwh)}"></label>
   </div><label class="check"><input type="checkbox" data-k="resale" ${S.resale ? 'checked' : ''}> <span>Süre sonunda bilgisayarı ikinci elde satmayı hesaba kat (satışta ilk %15 kayıp)</span></label>
-  <p class="small muted">Elektrik: alt kademe ${Calc.cat().tariff.lowRate} TL/kWh (ayda ${Calc.cat().tariff.lowKwhPerDay * 30} kWh’ye kadar), üst kademe ${Calc.cat().tariff.highRate} TL/kWh, vergi ve %${Calc.cat().tariff.vatPct} KDV; evin tüketimi ${Calc.cat().tariff.homeKwh} kWh/ay.</p>
+  <p class="small muted">Alt kademe ayda ${T.lowKwhPerDay * 30} kWh’ye kadar; vergi ve %${T.vatPct} KDV eklenir. Varsayılan tarife: ${esc(T.source || 'örnek ev faturası')}.</p>
   <button type="button" class="btn ghost" data-resetall>Tüm ayarları sıfırla</button></section>
+  <section class="card"><h2>Veri nereden geliyor?</h2><div class="sources flow">
+   <div class="src">${icon('globe')}<div><b>Tarayıcın, her ziyarette</b><span>OpenRouter API fiyatları ve dolar kuru doğrudan senin tarayıcından çekilir.</span></div></div>
+   <div class="src">${icon('refresh')}<div><b>GitHub Actions, her hafta</b><span>Gamegaraj, Gaming.gen.tr, Apple Türkiye ve TCMB; değişiklik varsa <code>data/prices.json</code> güncellenir.</span></div></div>
+   <div class="src">${icon('edit')}<div><b>Elle, tarihli</b><span>Otomatik erişimi engelleyen mağazalar; <a href="#fiyatlar">Fiyatlar</a> sayfasındaki promptla toplanır.</span></div></div></div></section>
   <section class="card"><h2>Kaynaklar</h2><ul class="links">
    <li><a href="https://github.com/Niko1221/Strata" target="_blank" rel="noopener">Strata (GitHub)</a> · <a href="https://github.com/Niko1221/Strata/blob/main/docs/MODELS.md" target="_blank" rel="noopener">Bellek ve hız tabloları</a> · <a href="https://github.com/Niko1221/Strata/blob/main/docs/DEEPSEEK41.md" target="_blank" rel="noopener">DeepSeek ölçümleri</a> · <a href="https://github.com/Niko1221/Strata/blob/main/docs/COMMUNITY_BENCHMARKS.md" target="_blank" rel="noopener">Topluluk ölçümleri</a></li>
    <li>Yerel AI topluluğu ölçümleri ve teknik incelemeler (Ekim–Kasım 2026)</li>
    <li>Fiyatlar: Gamegaraj, Gaming.gen.tr, Apple Türkiye, OpenRouter, TCMB (otomatik); akakçe, Vatan, Hepsiburada, n11, Sinerji, İnceHesap, sahibinden (elle, tarihli)</li>
    <li>Abonelik ve API fiyatları: sağlayıcıların resmî fiyat sayfaları (<a href="#bulut">Bulut</a> sayfasında her seçenekte bağlantı)</li></ul></section>`;
+};
 
-
-/* ---------- metrics page ---------- */
-const MET_DEVICES = [ // label, memory bandwidth GB/s, memory GB, note
+/* --- metrics --- */
+const MET_DEVICES = [ // label, memory bandwidth GB/s, memory GB
   ['RTX 3060 12 GB', 360, 12], ['RTX 4060 8 GB', 272, 8], ['RTX 5060 Ti 16 GB', 448, 16], ['RTX 5070 12 GB', 672, 12], ['RTX 5070 Ti 16 GB', 896, 16], ['RTX 5080 16 GB', 960, 16],
   ['RTX 3090 24 GB', 936, 24], ['RTX 4090 24 GB', 1008, 24], ['RTX 5090 32 GB', 1792, 32], ['RX 9060 XT 16 GB', 320, 16], ['RX 9070 XT 16 GB', 640, 16], ['RX 7900 XT 20 GB', 800, 20], ['Radeon AI PRO R9700 32 GB', 640, 32],
   ['Mac mini M6', 170, 32], ['Mac M5 Pro', 307, 64], ['Mac M5 Max (40 çekirdek)', 614, 128], ['Mac M5 Ultra', 1200, 256], ['Ryzen AI Max mini PC (128 GB)', 256, 128], ['DGX Spark (128 GB)', 273, 128], ['PlayStation 5 (16 GB)', 448, 16],
   ['Sistem RAM · DDR5 çift kanal (gerçek)', 70, 64], ['Sistem RAM · DDR4 çift kanal (gerçek)', 34, 64]];
 const MET_MODELS = [ // label, GB read per generated token, total file GB
-  ['Qwen3.8 27B · 4 bit (yoğun)', 16.5, 16.5], ['Qwen3.8 27B · 3,5 bit', 11.8, 11.8], ['Qwen3.8 27B · 2 bit', 6.8, 6.8], ['Qwen3.6-35B-A3B · 4 bit (MoE, ~3B etkin)', 2, 22],
-  ['Qwen3.8-Flash-Next 125B · ~3,4 bit (MoE, ~6B etkin)', 1, 65], ['gpt-oss 120B (MoE, ~5B etkin)', 3, 63], ['Llama 3.3 70B · 4 bit (yoğun)', 42.5, 42.5]];
-VIEWS.metrikler = () => `<header class="page-head"><p class="eyebrow">Metrikler</p><h1>Hızı ve maliyeti belirleyen sayılar</h1><p class="lead">Girdi ve çıktı tokenleri, okuma ve yazma hızı, bellek bant genişliği… Bir bilgisayarın ya da bir API’nin sana ne kadara ve ne hızda hizmet edeceğini bu sayılar belirler.</p></header>
-  <section class="card"><h2>Yazma hızı tavanı hesaplayıcı</h2><p class="muted small">Model her yeni token için “etkin” ağırlıklarının tamamını bellekten okur. Bu yüzden yazma hızının üst sınırı ≈ <b>bellek bant genişliği ÷ token başına okunan GB</b>. İyi bir motor bu tavanın %70–80’ine ulaşır.</p>
-   <div class="fields"><label class="f"><span>Donanım</span><select data-met="dev">${MET_DEVICES.map((d, i) => `<option value="${i}"${i === (S.metDev ?? 2) ? ' selected' : ''}>${d[0]} · ${d[1]} GB/sn</option>`).join('')}</select></label>
-   <label class="f"><span>Model</span><select data-met="model">${MET_MODELS.map((m, i) => `<option value="${i}"${i === (S.metModel ?? 0) ? ' selected' : ''}>${m[0]}</option>`).join('')}</select></label></div>
+  ['Qwen3.8 27B · 4 bit (yoğun)', 16.5, 16.5], ['Qwen3.8 27B · 3,5 bit (yoğun)', 11.8, 11.8], ['Qwen3.8 27B · 2 bit (yoğun)', 6.8, 6.8], ['Qwen3.6-35B-A3B · 4 bit (MoE, ~3B etkin)', 2, 22],
+  ['Qwen3.8-Flash-Next 125B · IQ2_XS (MoE, ~6B etkin)', 1.8, 39], ['gpt-oss 120B (MoE, ~5B etkin)', 3, 63], ['Llama 3.3 70B · 4 bit (yoğun)', 42.5, 42.5]];
+// Decode ceiling: every token reads the active weights once. The part that does not fit in fast memory comes from
+// system RAM (PC, ≈70 GB/s) or the SSD (unified memory, ≈5 GB/s). For MoE, frequently used experts stay in fast memory.
+function metCalc(d, m) {
+  const [name, bw, mem] = d, [, gbTok, file] = m, uni = /^(Mac|Ryzen|DGX)/.test(name), sys = /^Sistem RAM/.test(name);
+  const usable = uni ? mem * 0.75 : sys ? mem - 8 : mem - 1.5, moe = gbTok < file * 0.5;
+  const f = Math.min(1, usable / file), fits = f >= 1, slow = uni || sys ? 5 : 70;
+  const hit = moe ? f + (1 - f) * 0.6 : f;
+  const ceil = 1 / (gbTok * hit / bw + gbTok * (1 - hit) / slow), k = moe && fits ? 0.3 : 0.75;
+  return { fits, f, hit, ceil, real: ceil * k, k, moe, slow, usable };
+}
+const MET_SECTIONS = [
+  ['hesap', 'Yazma hızı hesaplayıcı'], ['token', 'Girdi ve çıktı tokenleri'], ['okuma', 'Okuma ve yazma hızı'], ['gpu', 'GPU verimi'], ['zincir', 'Darboğaz zinciri'],
+  ['moe', 'MoE ve Strata: neden RAM?'], ['kv', 'Bağlam (KV cache) belleği'], ['dusunme', 'Düşünme tokenleri'], ['quant', 'Quant ve kalite'], ['tokenizer', 'Tokenizer ve dil'], ['motor', 'Motorlar'], ['api', 'Neden API ucuz?']];
+function tokenBillViz() {
+  const P = [0.1, 1, 5], K = ['Önbellekten girdi', 'Yeni girdi', 'Çıktı'], C = ['seg-c', 'seg-i', 'seg-o'];
+  const sc = [['Sohbet', [0, 75, 25]], ['Kodlama ajanı', [96.6, 3.1, 0.3]]];
+  const row = (l, arr) => { const t = arr.reduce((a, b) => a + b, 0); return `<div class="sb-row"><span>${l}</span><span class="sbar">${arr.map((v, i) => v / t * 100 >= 0.4 ? `<i class="${C[i]}" style="width:${v / t * 100}%" title="${K[i]}: %${nf(v / t * 100, 1)}">${v / t * 100 >= 9 ? '%' + nf(v / t * 100) : ''}</i>` : '').join('')}</span></div>`; };
+  return `<div class="viz"><div class="viz-h">Token payı ve fatura payı <span class="muted">(fiyat oranı: önbellek 0,1 · girdi 1 · çıktı 5)</span></div>${sc.map(([n, a]) => `<div class="sb-group"><b>${n}</b>${row('Tokenler', a)}${row('Fatura', a.map((v, i) => v * P[i]))}</div>`).join('')}
+   <div class="legend">${K.map((k, i) => `<span><i class="${C[i]}"></i>${k}</span>`).join('')}</div></div>`;
+}
+function chainViz() {
+  const R = [['Ekran kartı belleği', 450, 1800], ['Mac birleşik bellek', 170, 1200], ['DDR5 çift kanal (gerçek)', 60, 80], ['PCIe 5 x16', 56, 56], ['DDR4 çift kanal (gerçek)', 33, 35], ['PCIe 4 x16', 28, 28], ['PCIe 3 x16', 14, 14], ['NVMe SSD', 3.5, 7]];
+  const pos = v => Math.log10(v) / Math.log10(3000) * 100;
+  return `<div class="viz"><div class="viz-h">Bellek ve veri yolu hızları <span class="muted">(GB/sn, logaritmik)</span></div><div class="rbars">${R.map(([l, a, b]) => `<div class="rb-row"><span>${l}</span><span class="rb"><i style="left:${pos(a)}%;width:${Math.max(1.2, pos(b) - pos(a))}%"></i></span><b>${a === b ? nf(a) : nf(a, a < 10 ? 1 : 0) + '–' + nf(b)}</b></div>`).join('')}
+   <div class="rb-row axis"><span></span><span class="rb-ax">${[1, 10, 100, 1000].map(v => `<em style="left:${pos(v)}%">${nf(v)}</em>`).join('')}</span><b></b></div></div></div>`;
+}
+function quantViz() {
+  const Q = [['2 bit', 91.2], ['3 bit', 95.1], ['4 bit', 98.5]];
+  return `<div class="viz"><div class="viz-h">Asıl modelden farklı kelime seçme oranı</div><div class="hbars">${Q.map(([l, p]) => `<div class="hb-row"><span>${l}</span><span class="hb"><i style="width:${(100 - p) / 10 * 100}%"></i></span><b>%${nf(100 - p, 1)} <small>≈ her ${nf(100 / (100 - p))} kelimede bir</small></b></div>`).join('')}</div></div>`;
+}
+VIEWS.metrikler = () => `${pageHead('gauge', 'Metrikler', 'Hızı ve maliyeti belirleyen sayılar', 'Girdi ve çıktı tokenleri, okuma ve yazma hızı, bellek bant genişliği… Bir bilgisayarın ya da bir API’nin sana ne kadara ve ne hızda hizmet edeceğini bu sayılar belirler.')}
+  <div class="doc"><nav class="toc" aria-label="Bölümler">${MET_SECTIONS.map(([id, t], i) => `<button type="button" data-jump="m-${id}"><span>${i}</span>${t}</button>`).join('')}</nav><div class="doc-main">
+  <section class="card" id="m-hesap"><h2><span class="secn">0</span>Yazma hızı hesaplayıcı</h2><p class="muted">Model her yeni token için “etkin” ağırlıklarının tamamını bellekten okur. Bu yüzden yazma hızının üst sınırı ≈ <b>bellek bant genişliği ÷ token başına okunan GB</b>. Modelin sığmayan kısmı sistem RAM’inden (≈70 GB/sn) veya SSD’den okunur ve hızı o belirler.</p>
+   <div class="fields two"><label class="f"><span>Donanım</span><select data-met="dev">${MET_DEVICES.map((d, i) => `<option value="${i}"${i === S.metDev ? ' selected' : ''}>${d[0]} · ${d[1]} GB/sn</option>`).join('')}</select></label>
+   <label class="f"><span>Model</span><select data-met="model">${MET_MODELS.map((m, i) => `<option value="${i}"${i === S.metModel ? ' selected' : ''}>${m[0]}</option>`).join('')}</select></label></div>
    <div id="results"></div></section>
-  <section class="card prose"><h2>1. Girdi ve çıktı tokenleri</h2>
+  <section class="card prose" id="m-token"><h2><span class="secn">1</span>Girdi ve çıktı tokenleri</h2>
    <p><b>Girdi (input)</b> modelin okuduğu her şey: sistem talimatı, sohbet geçmişi, dosyalar, araç tanımları. <b>Çıktı (output)</b> modelin yazdığı her şey, düşünme tokenleri dahil.</p>
+   ${tokenBillViz()}
    <ul><li><b>Fiyat farkı:</b> API’lerde çıktı tokeni genelde girdiden 4–8 kat pahalı (ör. 1 $ girdi / 5 $ çıktı). Önbellekten okunan girdi ise normal girdinin yaklaşık 1/10’u.</li>
    <li><b>Örnek:</b> pik dışı saatlerde 1M tokenlik önbellek isabeti ≈0,3 sent, önbellek ıskası ≈15 sent, 1M çıktı ≈60 sent: çıktı, önbellek isabetinden ≈200 kat pahalı.</li>
-   <li><b>Kodlama oturumlarında</b> tokenlerin ≈%96,6’sı önbellekten okunur, yazılan kod tokenlerin yalnızca ≈%0,3’ü. Faturayı çoğu zaman önbellek fiyatı belirler; uzun bir ajan oturumunda 40. turda 80 bin girdi tokenine karşılık 800 çıktı tokeni olabilir.</li>
-   <li><b>Sohbet</b> genelde %20–30 çıktı, <b>yazı üretimi</b> %40–60 çıktıdır. Sitede bu oran “çıktı payı” ayarıyla hesaba katılır.</li></ul>
-   <h2>2. Okuma (prefill) ve yazma (decode) hızı</h2>
+   <li><b>Kodlama oturumlarında</b> tokenlerin ≈%96,6’sı önbellekten okunur, yazılan kod tokenlerin yalnızca ≈%0,3’ü. Faturayı çoğu zaman önbellek belirler; uzun bir ajan oturumunda 40. turda 80 bin girdi tokenine karşılık 800 çıktı tokeni olabilir.</li>
+   <li><b>Sohbet</b> genelde %20–30 çıktı, <b>yazı üretimi</b> %40–60 çıktıdır. Sitede bu oran “çıktı payı” ayarıyla hesaba katılır.</li></ul></section>
+  <section class="card prose" id="m-okuma"><h2><span class="secn">2</span>Okuma (prefill) ve yazma (decode) hızı</h2>
    <p>Okuma binlerce tokeni aynı anda işler; hesap gücüne (tensor çekirdekleri) bağlıdır. Yazma tokenleri tek tek üretir; bellek bant genişliğine bağlıdır. İkisi arasında çoğu zaman 10–30 kat fark vardır.</p>
-   <ul><li>12 GB kart + 64 GB RAM, DeepSeek 763B: okuma ≈110 tok/sn, yazma 4–6 tok/sn.</li><li>Aynı makinede Qwen 125B: okuma ≈2.090 tok/sn (32K), yazma 79–94 tok/sn.</li><li>RTX 5060 Ti’de Qwen 27B: 96 bin tokenlik metni ≈618 tok/sn okuyor; aynı bant genişliğine sahip PS5 yalnızca 35–50 tok/sn okuyor (matris donanımı yok).</li>
-   <li><b>İlk kelimeye kadar bekleme = bağlam ÷ okuma hızı.</b> Ajanların ilk isteği ≈30–33 bin token: 600 tok/sn’de ≈55 sn, 2.000 tok/sn’de ≈16 sn. Bir Mac’te sayaç 57 tok/sn gösterirken 8,5K bağlamla gerçek hız 3 tok/sn ölçüldü; beklemenin %94’ü okumaydı.</li></ul>
-   <h2>3. GPU verimi: bant genişliği ve hesap gücü</h2>
-   <ul><li><b>Yazma tavanı</b> = bant genişliği ÷ token başına okunan GB. Yoğun 27B 4 bit ≈16,5 GB okur: RTX 3090 (936 GB/sn) için tavan ≈57 tok/sn; Mac M5 Max (614) ≈38; M6 (170) ≈10.</li>
-   <li><b>MoE modeller</b> her tokende ağırlıkların küçük bir kısmını okur (Qwen 35B-A3B ≈2 GB, Qwen 125B ≈1 GB, gpt-oss 120B ≈5B parametre). Bu yüzden sistem RAM’inden bile hızlı çalışabilirler.</li>
-   <li><b>Çoklu token tahmini (MTP) / spekülatif çözme:</b> küçük bir taslak model birkaç tokeni tahmin eder, büyük model tek okumada doğrular. Gerçekte 1,5–3 kat hızlanma; “200 tok/sn” gibi başlıklar çoğu zaman en iyi senaryo projeksiyonudur (bir testte tahminlerin ≈1/3’ü tuttu: 30 → 80 tok/sn).</li>
-   <li><b>GeForce sınırı:</b> GeForce kartlar 16 bit hesabı 32 bit toplamayla yarım hızda yapar. llama.cpp’nin yazma hızını etkilemez; uzun bağlam okumayı (100K’da ≈%17), vLLM ve görüntü üretimini yavaşlatır.</li></ul>
-   <h2>4. Darboğaz zinciri</h2>
-   <table class="offers"><tbody><tr><td>Ekran kartı belleği</td><td class="num">450–1.800 GB/sn</td></tr><tr><td>Mac birleşik bellek</td><td class="num">170–1.200 GB/sn</td></tr><tr><td>DDR5 çift kanal (gerçek)</td><td class="num">≈60–80 GB/sn</td></tr><tr><td>DDR4 çift kanal (gerçek)</td><td class="num">≈33–35 GB/sn (kâğıtta 51)</td></tr><tr><td>PCIe 5 / 4 / 3 x16</td><td class="num">≈56 / 28 / 14 GB/sn</td></tr><tr><td>NVMe SSD</td><td class="num">≈3,5–7 GB/sn</td></tr></tbody></table>
-   <p class="small muted">Modelin bir kısmı RAM’deyse her token en yavaş katmanı bekler. Örnek: token başına 1 GB uzman verisi DDR4’ten (34 GB/sn) okunursa tavan ≈34 tok/sn; PCIe 3 üzerinden taşınırsa ≈14 tok/sn. Bu yüzden ekran kartında tutulan “uzman önbelleği” ve motor ayarları kritik.</p>
-   <h2>5. Bağlam (KV cache) belleği</h2>
+   <div class="viz"><div class="viz-h">Bağlamı okuma ve cevabı yazma süresi <span class="muted">(Qwen 125B · PC: okuma 2.090, yazma 87 tok/sn · Mac: okuma 94, yazma 13 tok/sn)</span></div>${taskBars([{ label: '12 GB kart + 64 GB RAM', sub: '32K okur · 1K yazar', read: 32000 / 2090, write: 1000 / 87 }, { label: '32 GB Mac, uzmanlar SSD’den', sub: '32K okur · 1K yazar', read: 32000 / 94, write: 1000 / 13 }, { label: 'Aynı PC, kısa soru', sub: '2K okur · 1K yazar', read: 2000 / 2090, write: 1000 / 87 }])}</div>
+   <ul><li>12 GB kart + 64 GB RAM, DeepSeek 763B: okuma ≈110 tok/sn, yazma 4–6 tok/sn.</li><li>RTX 5060 Ti’de Qwen 27B: 96 bin tokenlik metni ≈618 tok/sn okuyor; aynı bant genişliğine sahip PS5 yalnızca 35–50 tok/sn okuyor (matris donanımı yok).</li>
+   <li><b>İlk kelimeye kadar bekleme = bağlam ÷ okuma hızı.</b> Ajanların ilk isteği ≈30–33 bin token: 600 tok/sn’de ≈55 sn, 2.000 tok/sn’de ≈16 sn. Bir Mac’te sayaç 57 tok/sn gösterirken 8,5K bağlamla gerçek hız 3 tok/sn ölçüldü; beklemenin %94’ü okumaydı.</li></ul></section>
+  <section class="card prose" id="m-gpu"><h2><span class="secn">3</span>GPU verimi: bant genişliği ve hesap gücü</h2>
+   <ul><li><b>Yazma tavanı</b> = bant genişliği ÷ token başına okunan GB. Yoğun 27B 4 bit ≈16,5 GB okur: RTX 3090 (936 GB/sn) için tavan ≈57 tok/sn; Mac M5 Max (614) ≈37; M6 (170) ≈10. Hesaplayıcının altındaki grafik bunu tüm cihazlar için gösterir.</li>
+   <li><b>MoE modeller</b> her tokende ağırlıkların küçük bir kısmını okur (Qwen 35B-A3B ≈2 GB, Qwen 125B IQ2_XS ≈1,8 GB, gpt-oss 120B ≈3 GB). Bu yüzden kısmen sistem RAM’indeyken bile hızlı çalışabilirler.</li>
+   <li><b>Çoklu token tahmini (MTP) / spekülatif çözme:</b> küçük bir taslak model birkaç tokeni tahmin eder, büyük model tek okumada doğrular. Gerçekte 1,5–3 kat hızlanma; “200 tok/sn” gibi başlıklar çoğu zaman en iyi senaryodur (bir testte tahminlerin ≈1/3’ü tuttu: 30 → 80 tok/sn).</li>
+   <li><b>GeForce sınırı:</b> GeForce kartlar 16 bit hesabı 32 bit toplamayla yarım hızda yapar. llama.cpp’nin yazma hızını etkilemez; uzun bağlam okumayı (100K’da ≈%17), vLLM ve görüntü üretimini yavaşlatır.</li></ul></section>
+  <section class="card prose" id="m-zincir"><h2><span class="secn">4</span>Darboğaz zinciri</h2>
+   <p>Modelin bir kısmı RAM’deyse her token en yavaş katmanı bekler. Ekran kartı belleği ile sistem RAM’i arasında 10–25 kat fark var.</p>
+   ${chainViz()}
+   <p class="small muted">Örnek: token başına 1 GB uzman verisi DDR4’ten (34 GB/sn) okunursa tavan ≈34 tok/sn; PCIe 3 üzerinden taşınırsa ≈14 tok/sn. Bu yüzden ekran kartında tutulan “uzman önbelleği” ve motor ayarları kritik.</p></section>
+  <section class="card prose" id="m-moe"><h2><span class="secn">5</span>MoE ve Strata: neden RAM?</h2>
+   <p>Mixture-of-Experts modellerde her kelime için uzmanların küçük bir kısmı kullanılır. Strata sık kullanılan kısmı ekran kartına, sonrakini RAM’e, nadir olanı SSD’ye koyar. Bu yüzden VRAM değil <b>RAM kapasitesi</b> belirleyici olur.</p>
+   <ul><li><b>Qwen3.8-Flash-Next 125B:</b> RAM ≥ uzmanlar + ≈10 GB (IQ2_XS ≈46 GB). 12 GB kart + 64 GB RAM ile 79–94 tok/sn ölçüldü.</li>
+   <li><b>DeepSeek V4.1 Flash 763B:</b> en az 12 GB kart, 46 GB RAM (64 GB rahat) ve ≈265 GB disk. 64 GB’ta 4–10, 128 GB’ta ≈29 tok/sn.</li>
+   <li>RAM yetmezse uzmanlar SSD’den okunur: çalışır ama çok yavaşlar (32 GB Mac’te Qwen 125B ≈13 tok/sn).</li></ul></section>
+  <section class="card prose" id="m-kv"><h2><span class="secn">6</span>Bağlam (KV cache) belleği</h2>
    <ul><li>Bağlam, model ağırlıklarının üstüne bellek ister. Token başına: DeepSeek V4.1 ≈890 bayt (1 milyon token &lt;1 GB), bazı büyük modeller 64–88 KB (1 milyon token 69–94 GB). Aynı bağlam için 100 kat fark.</li>
    <li>16 GB kartta 3,5 bit 27B ile ≈110K token bağlam (8 bit önbellek) kalır; liderlik tablosu skorları 250–500K bağlamla ölçülür.</li>
-   <li>Yalnızca indirme boyutuna bakma: “512 GB gerekir” denen model, büyük tablosu SSD’de durunca ≈300 GB ile çalışabiliyor.</li></ul>
-   <h2>6. Tokenizer ve dil</h2>
-   <ul><li>Aynı metin yeni bir model sürümünde 1–1,35 kat daha fazla token tutabilir; model aynıyken fatura ≈%20 artabilir.</li><li>Aynı metin bazı dillerde İngilizceye göre 15 kata kadar fazla token tutar; Türkçe metinler İngilizceden genelde daha fazla token harcar.</li></ul>
-   <h2>7. Düşünme tokenleri ve görev başına token</h2>
+   <li>Yalnızca indirme boyutuna bakma: “512 GB gerekir” denen model, büyük tablosu SSD’de durunca ≈300 GB ile çalışabiliyor.</li></ul></section>
+  <section class="card prose" id="m-dusunme"><h2><span class="secn">7</span>Düşünme tokenleri ve görev başına token</h2>
    <ul><li>Düşünme ayarı “çok yüksek” iken bir model, zor bir soruda ≈15 bin düşünme tokeni harcıyor; 45 tok/sn’de ≈5,5 dakika. “Orta” ayar birkaç bin token.</li>
    <li>Bir ajan görevinde ortalama ≈52 bin token yazılabiliyor. Bir testte bir model görev başına 45 bin, diğeri 2,7 bin token harcadı: tok/sn’si %11 yüksek olan, 8 kat geç bitirdi.</li>
-   <li>Sağlayıcıların varsayılan düşünme ayarı genelde “orta”; tanıtım skorları en yüksek ayarla ölçülür (bir örnekte 57,8’e karşı 52,5).</li></ul>
-   <h2>8. Quant (sıkıştırma) ve kalite</h2>
-   <ul><li>Büyük bir modelde asıl modelle aynı kelimeyi seçme oranı: 2 bit ≈%91,2, 3 bit ≈%95,1, 4 bit ≈%98,5 (2 bitte yaklaşık her 11 kelimede bir farklı seçim).</li><li>Aynı bit sayısında farklı yapımcıların dosyaları belirgin fark gösterebiliyor (bir testte 20 hatanın 16’sına karşı 7’si düzeltildi).</li></ul>
-   <h2>9. Neden API ucuz? Veri merkezi verimi</h2>
+   <li>Sağlayıcıların varsayılan düşünme ayarı genelde “orta”; tanıtım skorları en yüksek ayarla ölçülür (bir örnekte 57,8’e karşı 52,5).</li></ul></section>
+  <section class="card prose" id="m-quant"><h2><span class="secn">8</span>Quant (sıkıştırma) ve kalite</h2>
+   <p>Bit sayısı düştükçe model asıl modelden sapar. Aynı bit sayısında farklı yapımcıların dosyaları belirgin fark gösterebiliyor (bir testte 20 hatanın 16’sına karşı 7’si düzeltildi).</p>
+   ${quantViz()}</section>
+  <section class="card prose" id="m-tokenizer"><h2><span class="secn">9</span>Tokenizer ve dil</h2>
+   <ul><li>Aynı metin yeni bir model sürümünde 1–1,35 kat daha fazla token tutabilir; model aynıyken fatura ≈%20 artabilir.</li><li>Aynı metin bazı dillerde İngilizceye göre 15 kata kadar fazla token tutar; Türkçe metinler İngilizceden genelde daha fazla token harcar.</li></ul></section>
+  <section class="card prose" id="m-motor"><h2><span class="secn">10</span>Motorlar</h2>
+   <p>Strata (Qwen 125B ve DeepSeek için), llama.cpp ve türevleri (Avalon, uzman önbelleği), vLLM ve Mac motorları aynı donanımda çok farklı sonuç verir. Bir motorun bir sürümden diğerine 3 kat hızlandığı görüldü; aynı makinede motor değişince okuma hızı 10 kata kadar değişebiliyor. Bu yüzden hızlar zamanla değişir.</p></section>
+  <section class="card prose" id="m-api"><h2><span class="secn">11</span>Neden API ucuz? Veri merkezi verimi</h2>
    <ul><li>Evdeki bilgisayar bellekten her okumada tek bir kişiye token üretir. Veri merkezi aynı okumayla yüzlerce kullanıcıya üretir: bir GPU 256 eş zamanlı konuşmayla ≈26.300 tok/sn; bir H100 toplamda ≈2.800 tok/sn, kullanıcı başına ≈112 tok/sn.</li>
-   <li>Üstüne önbellek: bir sağlayıcıda girdi tokenlerinin ≈%96’sı diskteki önbellekten geliyor; yeniden hesaplanan girdi 44’ten 4’e düştü. Aynı yılda donanım pahalanırken token fiyatları düştü.</li></ul></section>`;
+   <li>Üstüne önbellek: bir sağlayıcıda girdi tokenlerinin ≈%96’sı diskteki önbellekten geliyor. Aynı yılda donanım pahalanırken token fiyatları düştü.</li></ul></section>
+  </div></div>`;
 function resultsMetrikler() {
-  const d = MET_DEVICES[S.metDev ?? 2], m = MET_MODELS[S.metModel ?? 0];
-  const fits = m[2] <= d[2] * (/^(Mac|Ryzen|DGX)/.test(d[0]) ? 0.75 : 0.95);
-  // If the model does not fit, the part left in system RAM (≈70 GB/s DDR5) sets the ceiling; an expert cache on the card raises it.
-  const moe = m[1] < m[2], k = moe && fits ? 0.3 : 0.75;
-  const bw = fits ? d[1] : Math.min(d[1], 70), ceil = bw / m[1], real = ceil * k;
-  return `<div class="vstats" style="margin-top:12px"><div><span>Teorik tavan</span><b>${nf(ceil)} tok/sn</b><small>${bw} GB/sn ÷ ${nf(m[1], 1)} GB/token${fits ? '' : ' (sistem RAM’i, DDR5)'}</small></div><div><span>Gerçekçi (≈%${Math.round(k * 100)})</span><b>${nf(real)} tok/sn</b><small>1.000 token ≈ ${dur(1000 / real)}${moe && fits ? ' · MoE’de yönlendirme ve uzman erişimi ek yük getirir (ör. M5 Max 128 GB: tavan 614, ölçüm 87)' : ''}</small></div><div><span>Model belleğe sığıyor mu?</span><b>${fits ? 'Evet' : 'Hayır'}</b><small>dosya ≈${nf(m[2], 1)} GB · bellek ${d[2]} GB${fits ? '' : ' → kalanı RAM’de; MoE modellerde ekran kartındaki uzman önbelleği hızı bunun üstüne çıkarabilir'}</small></div></div>`;
+  const d = MET_DEVICES[S.metDev] || MET_DEVICES[6], m = MET_MODELS[S.metModel] || MET_MODELS[0], r = metCalc(d, m);
+  const rows = MET_DEVICES.map((dv, i) => [i, dv, metCalc(dv, m)]).sort((a, b) => b[2].real - a[2].real), max = rows[0][2].real;
+  const where = r.fits ? `${d[1]} GB/sn ÷ ${nf(m[1], 1)} GB/token` : `%${nf(r.hit * 100)} hızlı bellekten, %${nf((1 - r.hit) * 100)} ${r.slow === 5 ? 'SSD’den' : 'sistem RAM’inden'}`;
+  return `<div class="vstats m-stats"><div><span>Teorik tavan</span><b>${nf(r.ceil)} tok/sn</b><small>${where}</small></div><div><span>Gerçekçi (≈%${Math.round(r.k * 100)})</span><b>${nf(r.real)} tok/sn</b><small>1.000 token ≈ ${dur(1000 / r.real)}${r.moe && r.fits ? ' · MoE’de yönlendirme ek yük getirir (M5 Max 128 GB’ta Qwen 125B ölçümü 87)' : ''}</small></div><div class="${r.fits ? 'okc' : 'warnc'}"><span>Model belleğe sığıyor mu?</span><b>${r.fits ? 'Evet' : 'Hayır'}</b><small>dosya ≈${nf(m[2], 1)} GB · kullanılabilir ≈${nf(r.usable)} GB${r.fits ? '' : r.moe ? ' · sık kullanılan uzmanlar hızlı bellekte tutulur' : ' · her token yavaş katmanı bekler'}</small></div></div>
+  <div class="viz"><div class="viz-h">Bu model tüm cihazlarda <span class="muted">(gerçekçi yazma hızı, tok/sn)</span></div><div class="hbars dev">${rows.map(([i, dv, x]) => `<div class="hb-row${i === S.metDev ? ' sel' : ''}${x.fits ? '' : ' over'}"><span>${esc(dv[0])}</span><span class="hb"><i style="width:${Math.max(0.8, x.real / max * 100)}%"></i></span><b>${nf(x.real)}${x.fits ? '' : ' <small>taşar</small>'}</b></div>`).join('')}</div>
+   <div class="legend"><span><i class="k-ok"></i>Model hızlı belleğe sığıyor</span><span><i class="k-over"></i>Sığmıyor: kalanı RAM’den / SSD’den</span></div></div>`;
 }
 
 const PROMPT = `Türkiye'de bugün satılan bilgisayar parçalarının güncel fiyatlarını web'de araştır. Her ürün için EN AZ 3 farklı mağazaya bak (akakçe, Vatan, İtopya, İnceHesap, Hepsiburada, Trendyol, Amazon TR, Sinerji, n11, Teknosa, MediaMarkt). Fiyatı sayfada gerçekten gördüysen yaz; tahmin etme.
@@ -462,34 +668,36 @@ Parçalar (id: açıklama): gpu9060: RX 9060 XT 16 GB · gpu5060ti: RTX 5060 Ti 
 
 /* ---------- render & events ---------- */
 const RESULTS = { metrikler: resultsMetrikler, elimde: resultsElimde, al: resultsAl, bulut: resultsBulut, karsilastir: resultsKarsilastir };
+const TITLES = { elimde: 'Bilgisayarım var', al: 'Bilgisayar al', bulut: 'Bulut', karsilastir: 'Al mı, kirala mı?', fiyatlar: 'Fiyatlar', metrikler: 'Metrikler', nasil: 'Yöntem' };
 function route() { return (location.hash.replace(/^#\/?/, '').split('?')[0]) || ''; }
 function render() {
   const v = VIEWS[route()] ? route() : '';
   $('#app').innerHTML = VIEWS[v]();
   $$('.nav a').forEach(a => a.setAttribute('aria-current', String(a.getAttribute('href') === '#' + v)));
   updateResults();
-  document.title = (v ? $('.nav a[href="#' + v + '"]')?.textContent + ' · ' : '') + 'Yerel AI maliyet';
+  document.title = (v ? TITLES[v] + ' · ' : '') + 'Yerel AI maliyet';
 }
 function updateResults() {
   const v = route(), box = $('#results');
   if (box && RESULTS[v]) box.innerHTML = RESULTS[v]();
-  if (v === 'karsilastir') drawCompareChart();
+  if (v === 'karsilastir') drawCompareCharts();
 }
 function rerenderControls() { const y = scrollY; render(); scrollTo(0, y); }
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
 
 document.addEventListener('input', e => {
-  const k = e.target.dataset.k;
-  if (k && e.target.type !== 'checkbox') { const v = Number(e.target.value); if (e.target.value !== '' && Number.isFinite(v)) { set(k, v); if (k === 'usdTry') set('usdTryManual', true); if (k === 'monthlyTokens' || k === 'outputSharePercent') set('preset', null); updateResults(); } }
+  const t = e.target, k = t.dataset.k, v = Number(t.value), ok = t.value !== '' && Number.isFinite(v);
+  if (k && t.type !== 'checkbox' && ok) { set(k, v); if (k === 'usdTry') set('usdTryManual', true); if (k === 'monthlyTokens' || k === 'outputSharePercent') { set('preset', null); $$('.preset.on').forEach(b => b.classList.remove('on')); } updateResults(); }
+  else if (t.dataset.tariff && ok) { set('tariff', { ...S.tariff, [t.dataset.tariff]: v }); }
 });
 document.addEventListener('change', e => {
   const t = e.target, d = t.dataset;
   if (d.k && t.type === 'checkbox') { set(d.k, t.checked); updateResults(); }
-  else if (d.mine) { const m = { ...S.mine }; if (d.mine === 'gpu') { const g = MINE_GPUS.find(x => x[0] === t.value); m.gpu = t.value; m.vram = g[2]; m.watts = g[3]; m.pp = g[4]; m.vendor = g[5]; } else m[d.mine] = d.mine === 'ramType' ? t.value : Number(t.value); set('mine', m); rerenderControls(); }
+  else if (d.mine) { const m = { ...S.mine }; if (d.mine === 'gpu') { const g = MINE_GPUS.find(x => x[0] === t.value); m.gpu = t.value; m.vram = g[2]; m.watts = g[3]; } else m[d.mine] = d.mine === 'ramType' ? t.value : Number(t.value); set('mine', m); rerenderControls(); }
   else if (d.slot) { S.build[d.slot] = t.value; save(); $('#builderBox').innerHTML = builderHtml(); }
   else if ('gpucount' in d) { S.build.gpuCount = Number(t.value); save(); $('#builderBox').innerHTML = builderHtml(); }
   else if (d.offer) { S.offerSel[d.offer] = t.value; save(); updateResults(); }
-  else if (d.pickoffer) { S.offerSel[d.pickoffer] = t.value; save(); rerenderControls(); }
+  else if (d.pickoffer) { S.offerSel[d.pickoffer] = t.value; save(); const det = t.closest('details'); det.outerHTML = opartHtml(d.pickoffer, true); }
   else if (d.met) { set(d.met === 'dev' ? 'metDev' : 'metModel', Number(t.value)); updateResults(); }
   else if ('cmplocal' in d) { set('cmpLocal', t.value); updateResults(); }
   else if ('cmpcloudsel' in d) { set('cmpCloud', t.value); updateResults(); }
@@ -497,13 +705,16 @@ document.addEventListener('change', e => {
 document.addEventListener('click', e => {
   const b = e.target.closest('button, a'); if (!b) return; const d = b.dataset;
   if (d.preset) { const p = Calc.cat().usagePresets.find(x => x.id === d.preset); Object.assign(S, { preset: p.id, taskType: p.task || S.taskType, monthlyTokens: Math.round(p.calls * p.tokens * p.days / 1e4) / 100, outputSharePercent: p.outputPct, cachedInputSharePercent: p.cachePct ?? S.cachedInputSharePercent }); save(); rerenderControls(); }
-  else if (d.model) { set('model', d.model); rerenderControls(); }
+  else if (d.model) { set('model', d.model); set('cmpCloud', ''); rerenderControls(); }
   else if (d.task) { set('taskType', d.task); rerenderControls(); }
   else if (d.buyfilter) { set('buyFilter', d.buyfilter); updateResults(); }
-  else if (d.cloudclass) { set('cloudClass', d.cloudclass); set('cmpCloud', ''); rerenderControls(); }
+  else if (d.cloudclass) { set('cloudClass', d.cloudclass); updateResults(); }
+  else if (d.cmpclass) { set('cmpClass', d.cmpclass); set('cmpCloud', ''); updateResults(); }
+  else if (d.tokscale) { set('tokScale', d.tokscale); updateResults(); }
+  else if (d.jump) { const el = document.getElementById(d.jump); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   else if (d.compare) { set('cmpLocal', d.compare); location.hash = '#karsilastir'; }
   else if (d.cmpLocal) { set('cmpLocal', d.cmpLocal); }
-  else if (d.cmpcloud) { set('cmpCloud', d.cmpcloud); location.hash = '#karsilastir'; }
+  else if (d.cmpcloud) { set('cmpCloud', d.cmpcloud); set('cmpClass', 'all'); location.hash = '#karsilastir'; }
   else if ('resetoffers' in d) { set('offerSel', {}); rerenderControls(); toast('Mağaza seçimleri sıfırlandı'); }
   else if ('resetall' in d) { S = DEFAULT_STATE(); save(); rerenderControls(); toast('Ayarlar sıfırlandı'); }
   else if ('copyprompt' in d) { navigator.clipboard?.writeText(PROMPT).then(() => toast('Prompt kopyalandı')); }
@@ -512,6 +723,7 @@ document.addEventListener('click', e => {
   else if (b.id === 'theme') { const dark = document.documentElement.dataset.theme !== 'dark' && !(document.documentElement.dataset.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches); document.documentElement.dataset.theme = dark ? 'dark' : 'light'; try { localStorage.setItem('yerel-ai-theme', dark ? 'dark' : 'light'); } catch (e) {} }
 });
 window.addEventListener('hashchange', () => { render(); scrollTo(0, 0); });
+let resizeT; window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (route() === 'karsilastir') drawCompareCharts(); }, 200); });
 
 /* ---------- boot ---------- */
 (async function boot() {

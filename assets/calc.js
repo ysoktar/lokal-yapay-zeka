@@ -147,7 +147,7 @@ const Calc = (() => {
     const m = MODELS[id], v = +hw.vram || 0, r = +hw.ram || 0, uni = hw.ramType === 'unified', ssd = +hw.ssd || 0, q = m.mx ? 'MXFP4' : 'Q4';
     const res = (tps, status, note) => ({ tps: Math.round(tps * 10) / 10, status, note, q });
     if (ssd && ssd < m.disk) return res(0, 'no', `En az ${m.disk} GB boş disk gerekir`);
-    const gbTok = m.file * m.active / m.total, k = (fits) => m.moe && fits ? 0.35 : 0.75, st = t => t >= 15 ? 'ok' : t >= 5 ? 'slow' : 'no';
+    const gbTok = m.file * m.active / m.total, k = (fits) => m.moe && fits ? 0.35 : 0.75, st = t => t >= 15 ? 'ok' : t >= 3 ? 'slow' : 'no';
     if (uni) {
       const bw = +hw.bw || (r >= 192 ? 1200 : r >= 96 ? 614 : r >= 48 ? 307 : 170);
       if (m.file > r * 0.75) return res(0, 'no', `Belleğe sığmaz (Q4 ≈${Math.round(m.file)} GB, ekran kartına ≈${Math.round(r * 0.75)} GB ayrılır)`);

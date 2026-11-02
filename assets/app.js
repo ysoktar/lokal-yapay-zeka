@@ -104,12 +104,12 @@ function usagePanel(opts = {}) {
    ${opts.budget ? `<label class="f"><span>Bilgisayar bütçesi (TL)</span><input type="number" min="0" max="700000" step="5000" data-k="budget" value="${S.budget}"></label>` : ''}
    ${opts.horizon !== false ? `<label class="f"><span>Karşılaştırma süresi (ay)</span><input type="number" min="1" max="120" data-k="horizon" value="${S.horizon}"></label>` : ''}
   </div>
-  <div class="row-label">Tipik bir görev <i class="hint" title="Düşünen modeller ve kodlama ajanları bir görevde 15–50 bin token harcayabilir; ajanlar işe ~30 bin tokenlik bağlamla başlar. Görev süresi = bağlamı okuma + cevabı yazma.">?</i></div>${taskToggle()}
+  ${opts.task !== false ? `<div class="row-label">Tipik bir görev <i class="hint" title="Düşünen modeller ve kodlama ajanları bir görevde 15–50 bin token harcayabilir; ajanlar işe ~30 bin tokenlik bağlamla başlar. Görev süresi = bağlamı okuma + cevabı yazma.">?</i></div>${taskToggle()}` : ''}
   ${opts.model !== false ? `<div class="row-label">Bilgisayarda çalışacak model</div>${modelPicker()}` : ''}
   ${opts.privacy !== false ? `<label class="check"><input type="checkbox" data-k="privacy" ${S.privacy ? 'checked' : ''}> <span><b>Gizlilik şart</b> · kodum/verim bilgisayardan çıkamaz (bulut seçenekleri elenir)</span></label>` : ''}
-  <details class="more"><summary>Önbellek ve günlük çalışma saati</summary><div class="fields">
+  <details class="more"><summary>${opts.hours !== false ? 'Önbellek ve günlük çalışma saati' : 'API önbelleği'}</summary><div class="fields">
    <label class="f"><span>API önbellekten okunan girdi (%)</span><input type="number" min="0" max="100" step="5" data-k="cachedInputSharePercent" value="${S.cachedInputSharePercent}"></label>
-   <label class="f"><span>Bilgisayar günde kaç saat üretir?</span><input type="number" min="0.5" max="24" step="0.5" data-k="hoursPerDay" value="${S.hoursPerDay}"></label></div></details>
+   ${opts.hours !== false ? `<label class="f"><span>Bilgisayar günde kaç saat üretir?</span><input type="number" min="0.5" max="24" step="0.5" data-k="hoursPerDay" value="${S.hoursPerDay}"></label>` : ''}</div></details>
   </section>`;
 }
 function partsList(c) {
@@ -195,10 +195,17 @@ function sortBy(rows, get, d) {
 }
 const th = (t, k, label, st, cls = '') => `<th class="${cls}" aria-sort="${st.k === k ? (st.d > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" class="th-sort${st.k === k ? ' on' : ''}" data-sort="${t}:${k}">${label}${icon(st.k === k ? (st.d > 0 ? 'up' : 'down') : 'sort', 'bi')}</button></th>`;
 // bars on a common scale (to compare models), split into reading and writing time
+// fixed log scales: bars keep their meaning when the inputs change (task type, model, filter)
+const logPos = (v, lo, hi) => Math.max(0, Math.min(100, (Math.log10(Math.max(v, lo)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) * 100));
+const logAxis = (ticks, lo, hi) => `<span class="rb-ax">${ticks.map(([v, l]) => `<em style="left:${logPos(v, lo, hi)}%">${l}</em>`).join('')}</span>`;
+const TIME_TICKS = [[1, '1 sn'], [10, '10 sn'], [60, '1 dk'], [600, '10 dk'], [3600, '1 sa'], [36000, '10 sa']];
+// task time per model on a fixed log time axis; the colours inside a bar are the reading / writing share
 function absTaskBars(rows) {
-  const max = Math.max(...rows.map(r => r.read + r.write).filter(Number.isFinite), 1e-9);
-  return `<div class="tbars">${rows.map(r => { const a = r.read / max * 100, b = r.write / max * 100; return `<div class="tb-row"><span class="tb-l">${r.label}<small>${r.sub || ''}</small></span><span class="tb-bar abs"><i class="rd" style="width:${a}%">${a > 14 ? dur(r.read) : ''}</i><i class="wr" style="width:${b}%">${b > 14 ? dur(r.write) : ''}</i></span><b>${dur(r.read + r.write)}</b></div>`; }).join('')}</div>
-  <div class="legend"><span><i class="k-rd"></i>Okuma (bağlam, prefill)</span><span><i class="k-wr"></i>Yazma (cevap, decode)</span></div>`;
+  const lo = 1, hi = 86400;
+  return `<div class="tbars logt">${rows.map(r => { const tot = r.read + r.write, w = logPos(tot, lo, hi), rs = tot > 0 ? r.read / tot : 0;
+    return `<div class="tb-row"><span class="tb-l">${r.label}<small>${r.sub || ''}</small></span><span class="tb-bar abs"><i class="rd" style="width:${w * rs}%"></i><i class="wr" style="width:${w * (1 - rs)}%">${w * (1 - rs) > 16 ? dur(r.write) : ''}</i></span><b>${dur(tot)}</b></div>`; }).join('')}
+   <div class="tb-row axis"><span></span>${logAxis(TIME_TICKS, lo, hi)}<b></b></div></div>
+  <div class="legend"><span><i class="k-rd"></i>Okuma (bağlam, prefill)</span><span><i class="k-wr"></i>Yazma (cevap, decode)</span><span class="muted">Süre ekseni logaritmik (1 sn – 24 sa); çubuk içindeki renkler okuma ve yazmanın payı.</span></div>`;
 }
 const meter = (v, max, cls) => `<span class="meter ${cls || ''}"><i style="width:${Math.max(2, Math.min(100, v / max * 100))}%"></i></span>`;
 
@@ -396,7 +403,7 @@ function resultsElimde() {
 /* --- I will buy a computer --- */
 VIEWS.al = () => `${pageHead('bag', 'Bilgisayar alacağım', 'Kullanımına göre hangi bilgisayar?', 'Kullanımını ve bütçeni gir; hazır sistemler arasından üç öneri çıkaralım. İstersen parça parça kendin topla, her parçada mağazayı sen seç.')}
   ${step(1, 'Ne için kullanacaksın?', 'Sana en yakın profili seç; sonuçlar anında değişir.')}
-  ${usagePanel({ budget: true })}<div id="results"></div>`;
+  ${usagePanel({ budget: true, privacy: false })}<div id="results"></div>`;
 // ---- buying decision: several criteria, weighted by what the user cares about ----
 const PRIORITIES = {
   balanced: { label: 'Dengeli', desc: 'Fiyat, hız, bağlam payı ve esneklik birlikte.', w: { price: .25, speed: .18, session: .15, ctx: .12, quality: .1, models: .12, power: .08 } },
@@ -564,7 +571,7 @@ const CLOUD_GROUPS = [
   ['sub', 'Abonelik', 'sabit aylık ücret', o => o.type === 'subscription']];
 VIEWS.bulut = () => `${pageHead('cloud', 'Satın almadan kullan', 'Abonelik mi, API mi?', 'Kullanımını gir; tüm abonelik ve API seçeneklerini aylık maliyete göre sıralayalım. Modellerin kalitesi aynı olmadığı için her sınıfın en ucuzunu ayrı gösteriyoruz.')}
   ${step(1, 'Ne kadar kullanacaksın?', 'API maliyeti çıktı ve girdi tokenlerinden hesaplanır; abonelikte aylık kota varsayımdır.')}
-  ${usagePanel({ model: false, privacy: false, horizon: false })}
+  ${usagePanel({ model: false, privacy: false, horizon: false, task: false, hours: false })}
   <div id="results"></div>`;
 function cloudSub(o, withType) {
   if (o.type === 'subscription') return `${withType ? 'Abonelik · ' : ''}${esc(o.limit)}`;
@@ -575,7 +582,7 @@ function resultsBulut() {
   const all = Calc.cloudOptions(S);
   const cards = CLOUD_GROUPS.map(([k, l, s, f]) => [l, s, all.filter(o => o.fits && f(o)).sort((a, b) => a.monthly - b.monthly)[0]]).filter(x => x[2]);
   const opts = all.filter(o => Calc.inClass(o, S.cloudClass));
-  const max = Math.max(...opts.filter(o => o.fits).map(o => o.monthly), 1);
+  const max = Math.max(...all.filter(o => o.fits).map(o => o.monthly), 1);   // same scale for every filter
   const bar = o => `<div class="bar-row${o.fits ? '' : ' dim'}"><span class="bn">${esc(o.name.replace(/^Açık · /, ''))}${Calc.inClass(o, 'frontier') && o.type !== 'subscription' ? ' <span class="mini">üst düzey</span>' : ''}<small>${o.split ? `bu ay: çıktı ${tl(o.split.out)} · girdi ${tl(o.split.inFresh)} · önbellek ${tl(o.split.inCached)}` : esc(o.limit)}</small></span><span class="bt"><i style="width:${Math.max(1, Math.log1p(o.monthly) / Math.log1p(max) * 100)}%"></i></span><b>${tl(o.monthly)}</b></div>`;
   const groups = [['API · açık modeller', o => o.type !== 'subscription' && o.open], ['API · kapalı modeller', o => o.type !== 'subscription' && !o.open], ['Abonelikler', o => o.type === 'subscription' && o.fits]]
     .map(([t, f]) => [t, sortBy(opts.filter(f), CSORT[S.cloudSort] || CSORT.monthly, 1)]).filter(([, l]) => l.length);
@@ -871,10 +878,11 @@ VIEWS.metrikler = () => `${pageHead('gauge', 'Metrikler', 'Hızı ve maliyeti be
   </div></div>`;
 function resultsMetrikler() {
   const d = MET_DEVICES[S.metDev] || MET_DEVICES[6], ML = MET_MODELS_LIST(), m = ML[S.metModel] || ML[0], r = metCalc(d, m);
-  const rows = MET_DEVICES.map((dv, i) => [i, dv, metCalc(dv, m)]).sort((a, b) => b[2].real - a[2].real), max = rows[0][2].real;
+  const rows = MET_DEVICES.map((dv, i) => [i, dv, metCalc(dv, m)]).sort((a, b) => b[2].real - a[2].real), SL = 0.5, SH = 1000;
   const where = r.fits ? `${d[1]} GB/sn ÷ ${nf(m[1], 1)} GB/token` : `%${nf(r.hit * 100)} hızlı bellekten, %${nf((1 - r.hit) * 100)} ${r.slow === 5 ? 'SSD’den' : 'sistem RAM’inden'}`;
   return `<div class="vstats m-stats"><div><span>Teorik tavan</span><b>${nf(r.ceil)} tok/sn</b><small>${where}</small></div><div><span>Gerçekçi (≈%${Math.round(r.k * 100)})</span><b>${nf(r.real)} tok/sn</b><small>1.000 token ≈ ${dur(1000 / r.real)}${r.moe && r.fits ? ' · MoE’de yönlendirme ek yük getirir (M5 Max 128 GB’ta Qwen 125B ölçümü 87)' : ''}</small></div><div class="${r.fits ? 'okc' : 'warnc'}"><span>Model belleğe sığıyor mu?</span><b>${r.fits ? 'Evet' : 'Hayır'}</b><small>dosya ≈${nf(m[2], 1)} GB · kullanılabilir ≈${nf(r.usable)} GB${r.fits ? '' : r.moe ? ' · sık kullanılan uzmanlar hızlı bellekte tutulur' : ' · her token yavaş katmanı bekler'}</small></div></div>
-  <div class="viz"><div class="viz-h">Bu model tüm cihazlarda <span class="muted">(gerçekçi yazma hızı, tok/sn)</span></div><div class="hbars dev">${rows.map(([i, dv, x]) => `<div class="hb-row${i === S.metDev ? ' sel' : ''}${x.fits ? '' : ' over'}"><span>${esc(dv[0])}</span><span class="hb"><i style="width:${Math.max(0.8, x.real / max * 100)}%"></i></span><b>${nf(x.real)}${x.fits ? '' : ' <small>taşar</small>'}</b></div>`).join('')}</div>
+  <div class="viz"><div class="viz-h">Bu model tüm cihazlarda <span class="muted">(gerçekçi yazma hızı; ölçek sabit ve logaritmik, modeller arasında karşılaştırılabilir)</span></div><div class="hbars dev">${rows.map(([i, dv, x]) => `<div class="hb-row${i === S.metDev ? ' sel' : ''}${x.fits ? '' : ' over'}"><span>${esc(dv[0])}</span><span class="hb"><i style="width:${Math.max(0.8, logPos(x.real, SL, SH))}%"></i></span><b>${nf(x.real, x.real < 10 ? 1 : 0)}${x.fits ? '' : ' <small>taşar</small>'}</b></div>`).join('')}
+   <div class="hb-row axis"><span></span>${logAxis([[1, '1'], [10, '10'], [100, '100'], [1000, '1.000 tok/sn']], SL, SH)}<b></b></div></div>
    <div class="legend"><span><i class="k-ok"></i>Model hızlı belleğe sığıyor</span><span><i class="k-over"></i>Sığmıyor: kalanı RAM’den / SSD’den</span></div></div>`;
 }
 

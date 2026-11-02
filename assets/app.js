@@ -79,6 +79,8 @@ function presetButtons() {
 }
 const FAMILIES = ['Qwen', 'Gemma', 'Llama', 'gpt-oss', 'Mistral', 'DeepSeek', 'Phi', 'GLM'];
 const QUICK = ['q27', 'g:gemma3-27b', 'g:gptoss-20b', 'g:gptoss-120b', 'g:llama33-70b', 'g:mistralsmall32-24b', 'qwen', 'deepseek'];
+// rough capability size: MoE models count as √(total × active) (common rule of thumb)
+const effSize = m => m.moe && m.active ? Math.sqrt(m.total * m.active) : m.total || (m.id === 'coder' ? 30 : 0);
 const sizeLabel = m => m.total ? (m.moe && m.active ? `${nf(m.total)}B / ${nf(m.active, m.active % 1 ? 1 : 0)}B etkin` : `${nf(m.total)}B`) : '';
 // a few models from different families, the selected one first (computer cards, builder)
 const mixModels = () => [...new Set([S.model, 'q27', 'g:gemma3-27b', 'g:gptoss-20b', 'g:gptoss-120b', 'g:llama33-70b', 'g:mistralsmall32-24b', 'qwen', 'deepseek'])].filter(id => Calc.MODELS[id]).slice(0, 8);
@@ -147,22 +149,21 @@ function mineComputer() {
   const g = MINE_GPUS.find(x => x[0] === m.gpu) || [];
   return { id: 'mine', pp: g[4], vendor: g[5], bw: g[6] || undefined, gpuLabel: g[1], name: 'Elindeki bilgisayar', kind: uni ? 'mac' : 'pc', price: 0, vram: hw.vram, gpuVram: hw.vram, ram: m.ram, ramType: hw.ramType, ssd: m.ssd, watts: uni ? 60 : (m.watts || 0) + 120, tps14: d14.tps, gpus: 1, items: [], appleName: 'Kendi Mac’in', url: '#' };
 }
+// recommendations from the same estimates the tables use (no hard-coded speeds)
 function recModels(c) {
-  const v = c.vram, r = c.ram, uni = c.ramType === 'unified', out = [];
-  if (uni) {
-    if (r >= 64) out.push(['Qwen3.8-Flash-Next 125B (Strata)', 'Model bellekte kalır; en güçlü seçenek.']);
-    if (r >= 32) out.push(['Qwen3.8 27B · 4 bit (≈17 GB)', 'Hız bellek bant genişliğine bağlı: M5 Max (614 GB/sn) ≈30 tok/sn, M5 Pro ≈15, M6 (≈150 GB/sn) ≈10.']);
-    if (r < 32) out.push(['Qwen3.6-35B veya 4–9B modeller', 'Büyük modeller SSD’den okunur ve yavaşlar.']);
-    return out;
-  }
-  if (v >= 12 && r >= 46) out.push(['Qwen3.8-Flash-Next 125B (Strata)', `125B MoE; uzmanlar RAM’de. ${v >= 16 ? '≈60–100' : '≈80–95'} tok/sn.`]);
-  if (v >= 20) out.push(['Qwen3.8 27B · 4 bit (≈16,5 GB)', v >= 24 ? 'Tamamı kartta; 24 GB kartta çoklu token tahminiyle ≈66 tok/sn.' : 'Tamamı kartta sığar; bağlam için birkaç GB kalır.']);
-  else if (v >= 16) out.push(['Qwen3.8 27B · 3,5 bit (≈11,8 GB)', 'Varsayılan Q4 dosyası (16,5 GB) 16 GB karta sığmaz; masaüstü zaten 1–2 GB kullanır. 3,5 bit ile ≈45 tok/sn ve ≈110K bağlam.']);
-  else if (v >= 12) out.push(['Qwen3.8 27B · 2–3 bit (≈8–10 GB)', 'Sohbet için iyi; dosyayı kimin hazırladığı çok fark eder (aynı boyutta 16/20’ye karşı 7/20 hata düzeltme).'], ['LFM 2.5 24B', 'Çok hızlı (RTX 3060’ta ≈87 tok/sn), hafif işler için.']);
-  if (v >= 6 && v < 16 && r >= 32) out.push(['Qwen3.6-35B-A3B (uzmanlar RAM’de)', 'Her kelimede ~3B parametre okur; 6–8 GB kart + 32 GB RAM ile ≈23 tok/sn. 8 GB kartta 27B yoğun modelden çok daha hızlı.']);
-  if (v >= 6 && v <= 8) out.push(['Gemma 4 12B · 3 bit (≈5,7 GB)', 'Tamamı kartta; sohbet ve kısa işler için.']);
-  if (r < 32 && v < 12) out.push(['RAM’i 32 GB’a çıkar', '8 GB kartta asıl sınır RAM: 35B MoE modeli için 32 GB taban.']);
-  return out.length ? out : [['Küçük modeller (4–9B)', 'Ekran kartı belleği sınırlı; bulut seçeneklerine de bak.']];
+  const all = Calc.localModels(), sp = Object.fromEntries(all.map(m => [m.id, Calc.speed(c, m.id)]));
+  const ok = all.filter(m => sp[m.id].status === 'ok'), size = effSize;
+  const line = (title, m) => [`${title}: ${esc(m.label)}`, `${tps(sp[m.id].tps)} · ${esc(sp[m.id].note)}`];
+  const out = [], used = new Set(), add = (t, m) => { if (m && !used.has(m.id)) { used.add(m.id); out.push(line(t, m)); } };
+  const isCode = m => /coder|devstral/i.test(m.label);
+  add('En güçlü genel model', [...ok].filter(m => !isCode(m)).sort((a, b) => size(b) - size(a))[0]);
+  add('Kodlama', [...ok].filter(isCode).sort((a, b) => size(b) - size(a))[0]);
+  add('Akıl yürütme', [...ok].filter(m => /R1-Distill|gpt-oss/i.test(m.label)).sort((a, b) => size(b) - size(a))[0]);
+  add('Hızlı ve yeterli (12B+)', [...ok].filter(m => size(m) >= 12).sort((a, b) => sp[b.id].tps - sp[a.id].tps)[0]);
+  // the next step up: a bigger model that currently runs slowly or does not fit
+  const next = all.filter(m => !used.has(m.id) && sp[m.id].status !== 'ok' && size(m) > Math.max(0, ...ok.map(size))).sort((a, b) => size(a) - size(b))[0];
+  if (next) out.push([`Bir adım ötesi: ${esc(next.label)}`, `${sp[next.id].tps ? tps(sp[next.id].tps) + ' · ' : ''}${esc(sp[next.id].note)}. ${c.ramType === 'unified' ? 'Mac’te bellek sonradan artırılamaz.' : 'Daha çok VRAM veya RAM gerekir.'}`]);
+  return out.length ? out : [['Küçük modeller (4–9B)', 'Bu donanımda 12B üstü modeller rahat çalışmıyor; bulut seçeneklerine de bak.']];
 }
 function engineTips(c) {
   const t = [];
@@ -356,7 +357,7 @@ function resultsElimde() {
   const hs = $('#hwsum'); if (hs) hs.innerHTML = `<div class="chips">${uni ? `<span>${icon('chip', 'bi')}<b>Apple Silicon</b> birleşik bellek</span>` : `<span>${icon('chip', 'bi')}<b>${c.vram || 0} GB</b> ekran kartı belleği</span><span><b>${c.bw ? nf(c.bw) + ' GB/sn' : '—'}</b> bellek bant genişliği</span>`}<span><b>${c.ram} GB</b> ${uni ? 'bellek' : c.ramType + ' RAM'}</span><span><b>${gb(c.ssd)}</b> boş disk</span></div>`;
   // per family: the largest model that runs comfortably, otherwise the fastest one that runs at all
   const rank = { ok: 0, slow: 1, no: 2 };
-  const best = FAMILIES.map(f => all.filter(m => m.family === f).sort((a, b) => rank[est[a.id].status] - rank[est[b.id].status] || (est[a.id].status === 'ok' ? (b.total || 0) - (a.total || 0) : est[b.id].tps - est[a.id].tps))[0]).filter(Boolean);
+  const best = FAMILIES.map(f => all.filter(m => m.family === f).sort((a, b) => rank[est[a.id].status] - rank[est[b.id].status] || (est[a.id].status === 'ok' ? effSize(b) - effSize(a) : est[b.id].tps - est[a.id].tps))[0]).filter(Boolean);
   const cards = best.map(m => m.id).map(id => { const e = est[id]; return `<article class="mcard ${e.status}"><div class="mc-top">${badge(e.status)}<span class="fam">${Calc.MODELS[id].family}</span></div><h3>${Calc.MODELS[id].label}<small>${sizeLabel(Calc.MODELS[id])}</small></h3><b class="big">${tps(e.tps)}</b>${meter(e.tps, 100, e.status)}<span class="small">1.000 tokenlik cevap: <b>${ansTime(e.tps)}</b></span><p class="small muted">${esc(e.note)}</p></article>`; }).join('');
   const q = est.qwen, r64 = Calc.cheapestOffer('ram64'), r4 = Calc.cheapestOffer('ram64ddr4'), r128 = Calc.cheapestOffer('ram128'), g3 = Calc.cheapestOffer('gpu3060used');
   let tip;
@@ -367,7 +368,7 @@ function resultsElimde() {
   // task time for every model that runs: bars for the chosen task type, table for all task types
   const T = Calc.cat().taskTypes, tk = T[S.taskType] || T.short;
   const rows = ids.map(id => { const m = Calc.MODELS[id], w = est[id].tps, pp = w ? Calc.prefill(c, id) : NaN, t = x => w ? x.ctx / pp + x.out / w : NaN;
-    return { id, label: m.label, family: m.family, size: m.total || NaN, st: est[id].status, rk: rank[est[id].status], tps: w || NaN, pp, short: t(T.short), think: t(T.think), agent: t(T.agent), first: w ? 32000 / pp + 1000 / w : NaN }; });
+    return { id, label: m.label, family: m.family, size: m.total || NaN, st: est[id].status, rk: rank[est[id].status], tps: w || NaN, pp, short: t(T.short), think: t(T.think), agent: t(T.agent), first: w ? 32000 / pp + 1000 / w : NaN, sOn: w ? sessionSecs(pp, w, true) : NaN, sOff: w ? sessionSecs(pp, w, false) : NaN }; });
   const runs = rows.filter(r => r.tps > 0);
   let task = '<p class="muted">Bu donanımda çalışan bir model yok; önce yükseltme önerisine bak.</p>';
   if (runs.length) {
@@ -376,13 +377,13 @@ function resultsElimde() {
     <p class="small muted">${tk.label}: ${nf(tk.ctx / 1000)}K token okur, ${nf(tk.out / 1000)}K token yazar. Ekranda görünen hız yalnızca yazma hızıdır; uzun bağlamda asıl bekleme okumadadır.</p>
     ${absTaskBars(sortBy((shown.length ? shown : runs).map(r => ({ label: r.label, sub: `okuma ${nf(r.pp)} · yazma ${tps(r.tps)}`, read: tk.ctx / r.pp, write: tk.out / r.tps })), r => r.read + r.write, 1))}
     <div class="card-head" style="margin-top:22px"><h2>Tüm modeller <span class="muted">(${rows.length})</span></h2><span class="muted small">Başlıklara tıklayarak sırala</span></div>
-    <div class="tablewrap flat"><table class="systable compact"><thead><tr>${th('task', 'label', 'Model', st)}${th('task', 'family', 'Aile', st)}${th('task', 'size', 'Boyut', st, 'num')}${th('task', 'rk', 'Durum', st)}${th('task', 'tps', 'Yazma', st, 'num')}${th('task', 'pp', 'Okuma', st, 'num')}${Object.entries(T).map(([k, t]) => th('task', k, t.label, st, 'num')).join('')}${th('task', 'first', 'Ajanın ilk cevabı', st, 'num')}</tr></thead>
-    <tbody>${sortBy(rows, r => r[st.k], st.d).map(r => `<tr class="${r.st === 'no' ? 'dimrow' : ''}"><td><b>${r.label}</b></td><td>${r.family}</td><td class="num">${sizeLabel(Calc.MODELS[r.id]) || '—'}</td><td>${badge(r.st)}</td><td class="num">${tps(r.tps)}</td><td class="num">${r.pp ? nf(r.pp) + ' tok/sn' : '—'}</td><td class="num">${dur(r.short)}</td><td class="num">${dur(r.think)}</td><td class="num">${dur(r.agent)}</td><td class="num">${dur(r.first)}</td></tr>`).join('')}</tbody></table></div>
-    <p class="small muted">Ajanın ilk cevabı: 32K bağlam okur, 1K yazar. Qwen 125B, DeepSeek, Qwen 35B ve Coder Strata ölçümlerinden; diğerleri llama.cpp ve Q4 dosya boyutuyla, bant genişliğinden tahmin (sığmayan kısım sistem RAM’inden okunur).</p>
+    <div class="tablewrap flat"><table class="systable compact"><thead><tr>${th('task', 'label', 'Model', st)}${th('task', 'family', 'Aile', st)}${th('task', 'size', 'Boyut', st, 'num')}${th('task', 'rk', 'Durum', st)}${th('task', 'tps', 'Yazma', st, 'num')}${th('task', 'pp', 'Okuma', st, 'num')}${Object.entries(T).map(([k, t]) => th('task', k, t.label, st, 'num')).join('')}${th('task', 'first', 'Ajanın ilk cevabı', st, 'num')}${th('task', 'sOn', '40 tur · önbellekli', st, 'num')}${th('task', 'sOff', '40 tur · önbelleksiz', st, 'num')}</tr></thead>
+    <tbody>${sortBy(rows, r => r[st.k], st.d).map(r => `<tr class="${r.st === 'no' ? 'dimrow' : ''}"><td><b>${r.label}</b></td><td>${r.family}</td><td class="num">${sizeLabel(Calc.MODELS[r.id]) || '—'}</td><td>${badge(r.st)}</td><td class="num">${tps(r.tps)}</td><td class="num">${r.pp ? nf(r.pp) + ' tok/sn' : '—'}</td><td class="num">${dur(r.short)}</td><td class="num">${dur(r.think)}</td><td class="num">${dur(r.agent)}</td><td class="num">${dur(r.first)}</td><td class="num">${dur(r.sOn)}</td><td class="num">${dur(r.sOff)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="small muted">Ajanın ilk cevabı: 32K bağlam okur, 1K yazar. 40 tur: 33K bağlamla başlayan, her turda 1.200 token girdi ve 800 token cevap eklenen ajan oturumu (Metrikler → Önbellek). Qwen 125B, DeepSeek, Qwen 35B ve Coder Strata ölçümlerinden; diğerleri llama.cpp ve Q4 dosya boyutuyla, bant genişliğinden tahmin (sığmayan kısım sistem RAM’inden okunur).</p>
     <ul class="checks">${engineTips(c).map(t => `<li>${t}</li>`).join('')}</ul>`;
   }
   const el = Calc.electricity(c, S.model, S).tl;
-  return `${step(2, 'Hangi model ne hızda?', `Her model ailesinden bu bilgisayarda rahat çalışan en büyük model. Yazma hızı; çubuk 100 tok/sn’ye göre. Tüm ${ids.length} model 4. adımdaki tabloda.`)}
+  return `${step(2, 'Hangi model ne hızda?', `Her model ailesinden bu bilgisayarda rahat çalışan en güçlü model (MoE için √(toplam × etkin) parametre). Yazma hızı; çubuk 100 tok/sn’ye göre. Tüm ${ids.length} model 4. adımdaki tabloda.`)}
   <div class="mgrid">${cards}</div>
   ${step(3, 'Ne çalıştırmalı, ne yükseltmeli?')}
   <div class="tip">${tip}</div>
@@ -429,15 +430,24 @@ function ctxRoom(c, M) {
   else if (m.strata) free = Math.max(0, v - 8);           // Strata keeps attention + hot experts on the card, experts in RAM
   else free = v - 1.5 - (file || v);
   const gbFree = Math.max(0, free);
-  return { gb: gbFree, tokens: Math.min(262144, gbFree * 40000), q };
+  return { gb: gbFree, tokens: Math.min(262144, gbFree * 40000), q, file };
+}
+function fitWhere(c, M, file) {
+  const m = Calc.MODELS[M] || {};
+  if (c.ramType === 'unified') return 'birleşik bellekte';
+  if (m.strata) return 'uzmanlar RAM’de (Strata)';
+  const f = Math.min(1, Math.max(0, (c.vram || 0) - 1.5) / (file || 1));
+  return f >= 1 ? 'tamamı kartta' : `%${Math.round(f * 100)}’i kartta, kalanı RAM’de`;
+}
+// every metric used by the decision, for one computer
+function metricRow(c, M, all, eq) {
+  const sp = Calc.speed(c, M), pp = Calc.prefill(c, M), room = ctxRoom(c, M);
+  return { c, sp, pp, room, tps: sp.tps, task: sp.tps ? Calc.taskTime(c, M, S).total : Infinity, first: sp.tps ? 32000 / pp + 1000 / sp.tps : Infinity, sOn: sessionSecs(pp, sp.tps, true), sOff: sessionSecs(pp, sp.tps, false),
+    okModels: all.filter(m => Calc.speed(c, m.id).status === 'ok').length, el: sp.tps ? Calc.electricity(c, M, S).tl : NaN, be: eq && sp.tps ? Calc.breakEven(c, M, eq, S, false) : NaN, tot: Calc.localCum(c, M, S, S.horizon, false), where: fitWhere(c, M, room.file) };
 }
 function decide(cands, M) {
   const T = Calc.cat().taskTypes, all = Calc.localModels(), eq = Calc.cloudOptions(S).filter(o => o.fits && ((Calc.MODELS[M] || {}).api || []).includes(o.id)).sort((a, b) => a.monthly - b.monthly)[0];
-  const rows = cands.map(c => {
-    const sp = Calc.speed(c, M), pp = Calc.prefill(c, M), room = ctxRoom(c, M);
-    return { c, sp, pp, room, tps: sp.tps, task: Calc.taskTime(c, M, S).total, first: 32000 / pp + 1000 / sp.tps, sOn: sessionSecs(pp, sp.tps, true), sOff: sessionSecs(pp, sp.tps, false),
-      okModels: all.filter(m => Calc.speed(c, m.id).status === 'ok').length, el: Calc.electricity(c, M, S).tl, be: eq ? Calc.breakEven(c, M, eq, S, false) : NaN, tot: Calc.localCum(c, M, S, S.horizon, false) };
-  });
+  const rows = cands.map(c => metricRow(c, M, all, eq));
   // each criterion scaled 0..1 among the candidates (log scale for price, speed and time)
   const norm = (get, higher, log) => { const v = rows.map(r => { const x = get(r); return log ? Math.log(Math.max(x, 1e-6)) : x; }), lo = Math.min(...v), hi = Math.max(...v);
     rows.forEach((r, i) => { const z = hi > lo ? (v[i] - lo) / (hi - lo) : 1; (r.n = r.n || {})[get.k] = higher ? z : 1 - z; }); };
@@ -465,13 +475,22 @@ function resultsAl() {
   } else {
     top = D.rows.slice(0, 3);
     const cheapest = [...D.rows].sort((a, b) => a.c.price - b.c.price)[0];
-    const cols = top.some(r => r === cheapest) ? top : [...top, cheapest];
+    const own = metricRow(customComputer(), M, Calc.localModels(), D.eq);
+    const cols = [...(top.some(r => r === cheapest) ? top : [...top, cheapest]), own];
+    const colName = (r, i) => r === own ? 'Kendi topladığın' : i < top.length ? ['1. öneri', '2. öneri', '3. öneri'][i] : 'En ucuz aday';
+    // why the first pick over the cheapest candidate
+    const A = top[0], Z = cheapest, ctxK = r => r.room.tokens >= 1000 ? '≈' + nf(r.room.tokens / 1000) + 'K' : 'yok';
+    const summary = A === Z ? `<b>${esc(A.c.name)}</b> hem en yüksek puanı alıyor hem de en ucuz aday.`
+      : `<b>${esc(A.c.name)}</b>, en ucuz adaydan (${esc(Z.c.name)}) <b>${tl(A.c.price - Z.c.price)}</b> pahalı. Karşılığında: yazma ${nf(A.tps / Z.tps, 1)} kat hızlı (${tps(A.tps)} / ${tps(Z.tps)}), 40 turluk ajan oturumu ${dur(Z.sOn - A.sOn)} ${Z.sOn > A.sOn ? 'kısa' : 'uzun'}, bağlam payı ${ctxK(A)} / ${ctxK(Z)} token, ${A.okModels} / ${Z.okModels} model rahat çalışır.`;
     const names = ['1. öneri', '2. öneri', '3. öneri'];
     rec = `<div class="pcgrid three">${top.map((r, i) => computerCard(r.c, { tag: names[i], highlight: true, extra: scoreBreak(r) })).join('')}</div>`;
     // comparison table: the metrics from the Metrikler page, side by side for the candidates
     const best = (get, higher) => { const v = cols.map(get).filter(Number.isFinite); return v.length ? (higher ? Math.max(...v) : Math.min(...v)) : NaN; };
     const R = [
       ['Fiyat', r => r.c.price, false, v => tl(v)],
+      ['Ekran kartı · RAM', r => NaN, true, (v, r) => r.c.ramType === 'unified' ? `${r.c.ram} GB birleşik` : `${r.c.vram} GB · ${r.c.ram} GB ${r.c.ramType}`],
+      ['Bellek bant genişliği', r => r.c.bw || NaN, true, v => Number.isFinite(v) ? nf(v) + ' GB/sn' : '—'],
+      [`${esc(Calc.MODELS[M].short)} nerede?`, r => NaN, true, (v, r) => r.where],
       [`Yazma hızı (${esc(Calc.MODELS[M].short)})`, r => r.tps, true, v => tps(v)],
       ['Okuma hızı (prefill)', r => r.pp, true, v => nf(v) + ' tok/sn'],
       [`Görev süresi (${esc((Calc.cat().taskTypes[S.taskType] || {}).label || '')})`, r => r.task, false, dur],
@@ -481,12 +500,13 @@ function resultsAl() {
       ['Önbellek için bağlam payı (tahmini)', r => r.room.tokens, true, v => v >= 1000 ? '≈' + nf(v / 1000) + 'K token' : 'yok'],
       [`Rahat çalışan model (/${D.total})`, r => r.okModels, true, v => nf(v)],
       ['Ek elektrik', r => r.el, false, v => tl(v) + '/ay'],
-      [D.eq ? `${esc(D.eq.name)} karşısında amorti` : 'Amorti', r => r.be, false, v => Number.isFinite(v) ? (v === 0 ? 'hemen' : nf(v, 1) + ' ay') : '10 yıl+'],
+      [D.eq ? `${esc(D.eq.name)} karşısında amorti` : 'Amorti', r => r.be, false, (v, r) => !r.tps ? '—' : Number.isFinite(v) ? (v === 0 ? 'hemen' : nf(v, 1) + ' ay') : '10 yıl+'],
       [`${S.horizon} ayda toplam`, r => r.tot, false, v => tl(v)]];
     cmpTable = `<section class="card"><div class="card-head"><div><h2>Önerileri karşılaştır</h2><span class="muted small">Metrikler sayfasındaki ölçütler, adaylar için yan yana; her satırda en iyi değer vurgulu.</span></div><a class="small" href="#metrikler">Metrikler ${icon('arrow', 'bi')}</a></div>
-     <div class="tablewrap flat"><table class="systable cmpt"><thead><tr><th></th>${cols.map((r, i) => `<th class="num">${i < top.length ? names[i] : 'En ucuz aday'}<small>${esc(r.c.name)}</small></th>`).join('')}</tr></thead>
-     <tbody>${R.map(([l, get, hi, f]) => { const b = best(get, hi); return `<tr><td>${l}</td>${cols.map(r => { const v = get(r); return `<td class="num${Number.isFinite(v) && v === b && cols.length > 1 ? ' best' : ''}">${f(v)}</td>`; }).join('')}</tr>`; }).join('')}</tbody></table></div>
-     <p class="small muted">Oturum: 33K bağlamla başlar, her turda 1.200 token yeni girdi ve 800 token cevap (Metrikler → Önbellek). Bağlam payı: model yüklendikten sonra hızlı bellekte kalan yer, 8 bit önbellekle token başına ≈25 KB varsayımıyla.</p></section>`;
+     <p class="dsum">${summary}</p>
+     <div class="tablewrap flat"><table class="systable cmpt"><thead><tr><th></th>${cols.map((r, i) => `<th class="num${r === own ? ' own' : ''}">${colName(r, i)}<small>${esc(r.c.name === 'Kendi topladığın sistem' ? specLine(r.c) : r.c.name)}</small>${r === own && r.sp.status !== 'ok' ? `<small class="bad">${STATUS[r.sp.status][1]}</small>` : ''}</th>`).join('')}</tr></thead>
+     <tbody>${R.map(([l, get, hi, f]) => { const b = best(get, hi); return `<tr><td>${l}</td>${cols.map(r => { const v = get(r); return `<td class="num${r === own ? ' own' : ''}${Number.isFinite(v) && v === b && cols.length > 1 ? ' best' : ''}">${f(v, r)}</td>`; }).join('')}</tr>`; }).join('')}</tbody></table></div>
+     <p class="small muted">Son sütun aşağıdaki “Kendin topla” bölümünde seçtiğin parçalar; parça değiştirince güncellenir. Oturum: 33K bağlamla başlar, her turda 1.200 token yeni girdi ve 800 token cevap (Metrikler → Önbellek). Bağlam payı: model yüklendikten sonra hızlı bellekte kalan yer, 8 bit önbellekle token başına ≈25 KB varsayımıyla.</p></section>`;
   }
   const pickTag = id => { const i = top.findIndex(r => r.c.id === id); return i >= 0 ? `${i + 1}. öneri` : ''; };
   BUY_CHART = { pts: all.map(c => { const sp = Calc.speed(c, M); return { x: c.price, y: sp.tps || 0, st: sp.status, name: c.name, tag: pickTag(c.id), sub: `${specLine(c)} · görev ${dur(Calc.taskTime(c, M, S).total)}` }; }) };
@@ -703,12 +723,16 @@ VIEWS.fiyatlar = () => {
 
 /* --- method --- */
 const FORMULAS = [
-  ['Yazma hızı', 'bant genişliği ÷ token başına okunan GB × verim', 'Ölçümü olan sistemlerde ölçüm kullanılır (“ölçüm” etiketi). Verim: yoğun modelde ≈%70–80, MoE’de daha düşük.'],
+  ['Yazma hızı', 'bant genişliği ÷ token başına okunan GB × verim', 'Ölçümü olan sistemlerde ölçüm kullanılır (“ölçüm” etiketi). Token başına okunan GB: Q4 dosya boyutu (MoE’de etkin parametre payı). Verim: yoğun modelde ≈%75, belleğe tamamen sığan MoE’de ≈%35. 15 tok/sn üstü “rahat”, 5–15 “yavaş”, 5 altı “çalışmaz”.'],
+  ['Karta sığmayan model', '1 ÷ (GB_kart ÷ BW_kart + GB_RAM ÷ BW_RAM) × verim', 'Modelin karta sığmayan kısmı her tokende sistem RAM’inden okunur (DDR5 ≈70, DDR4 ≈34 GB/sn); en yavaş katman hızı belirler.'],
   ['Görev süresi', 'bağlam ÷ okuma hızı + çıktı ÷ yazma hızı', 'Kısa cevap 2K okur / 1K yazar; düşünerek cevap 5K / 15K; kodlama ajanı görevi 32K / 50K.'],
   ['Aylık kapasite', 'yazma hızı × günlük saat × 30 × 3.600', 'Bilgisayarın ayda üretebileceği çıktı tokeni; kullanımın bunu aşarsa “yetmez” uyarısı çıkar.'],
   ['Ek elektrik', 'tarife(ev + ek kWh) − tarife(ev)', 'Ek kWh = token ÷ (hız × 3.600) × watt ÷ 1.000. Kademeli tarife: ayda 240 kWh’ye kadar alt kademe, üstü üst kademe; vergi ve KDV dahil.'],
   ['API maliyeti', 'çıktı × çıktı fiyatı + girdi × [(1 − ö) × girdi fiyatı + ö × önbellek fiyatı]', 'Girdi = çıktı × (100 − çıktı payı) ÷ çıktı payı; ö = önbellekten okunan pay. USD fiyatlar güncel kurla TL’ye çevrilir.'],
-  ['Amorti', 'fiyat − ikinci el değeri + elektrik × ay = bulut × ay', 'Eşitliği sağlayan ay; kur ve TL fiyat artışı varsayımları dahil. Abonelik kotası kullanımına yetmiyorsa o seçenek elenir.']];
+  ['Amorti', 'fiyat − ikinci el değeri + elektrik × ay = bulut × ay', 'Eşitliği sağlayan ay; kur ve TL fiyat artışı varsayımları dahil. Abonelik kotası kullanımına yetmiyorsa o seçenek elenir.'],
+  ['Ajan oturumu', 'Σ (yeni girdi ÷ okuma hızı + cevap ÷ yazma hızı)', '40 tur, 33K bağlamla başlar, her turda 1.200 token girdi + 800 token cevap. Önbellekli: yalnızca yeni girdi okunur; önbelleksiz: her turda bütün bağlam.'],
+  ['Bağlam payı', '(hızlı bellek − model) ÷ ≈25 KB', 'Model yüklendikten sonra ekran kartında (Mac’te birleşik bellekte) önbellek için kalan yer, 8 bit önbellekle token başına ≈25 KB varsayımıyla; kabaca.'],
+  ['Karar puanı', 'Σ ağırlık × (0–1 ölçekli ölçüt)', 'Adaylar kendi aralarında fiyat, yazma hızı, ajan oturumu, bağlam payı, quant kalitesi, rahat çalışan model sayısı ve elektrikte 0–1 arasına ölçeklenir; ağırlıkları seçilen öncelik belirler.']];
 VIEWS.nasil = () => {
   const T = { ...Calc.cat().tariff, ...(S.tariff || {}) };
   return `${pageHead('sliders', 'Yöntem', 'Nasıl hesaplıyoruz?', 'Sitedeki her sayının nereden geldiği: formüller, varsayımlar ve veri kaynakları. Varsayımları buradan değiştirebilirsin; tüm sayfalar buna göre hesaplanır.')}
@@ -917,8 +941,8 @@ document.addEventListener('change', e => {
   const t = e.target, d = t.dataset;
   if (d.k && t.type === 'checkbox') { set(d.k, t.checked); updateResults(); }
   else if (d.mine) { const m = { ...S.mine }; if (d.mine === 'gpu') { const g = MINE_GPUS.find(x => x[0] === t.value); m.gpu = t.value; m.vram = g[2]; m.watts = g[3]; } else m[d.mine] = d.mine === 'ramType' ? t.value : Number(t.value); set('mine', m); rerenderControls(); }
-  else if (d.slot) { S.build[d.slot] = t.value; save(); $('#builderBox').innerHTML = builderHtml(); }
-  else if ('gpucount' in d) { S.build.gpuCount = Number(t.value); save(); $('#builderBox').innerHTML = builderHtml(); }
+  else if (d.slot) { S.build[d.slot] = t.value; save(); fixBuild(); const y = scrollY; updateResults(); scrollTo(0, y); }
+  else if ('gpucount' in d) { S.build.gpuCount = Number(t.value); save(); const y = scrollY; updateResults(); scrollTo(0, y); }
   else if (d.offer) { S.offerSel[d.offer] = t.value; save(); updateResults(); }
   else if (d.pickoffer) { S.offerSel[d.pickoffer] = t.value; save(); const det = t.closest('details'); det.outerHTML = opartHtml(d.pickoffer, true); }
   else if ('modelsel' in d) { set('model', t.value); set('cmpCloud', ''); rerenderControls(); }

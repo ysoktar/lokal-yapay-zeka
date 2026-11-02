@@ -7,7 +7,7 @@ Site dört tip kullanıcı için tasarlandı:
 | Sayfa | Kimin için | Ne yapar |
 |---|---|---|
 | **Bilgisayarım var** (`#elimde`) | Elinde bilgisayarı olan | Ekran kartı, RAM ve SSD’ye göre Strata modellerinin (Qwen3.8-Flash-Next 125B, DeepSeek V4.1 Flash 763B…) ve klasik modellerin çalışıp çalışmadığını, hızını ve en ucuz yükseltmeyi gösterir |
-| **Bilgisayar alacağım** (`#al`) | Yeni bilgisayar düşünen | Kullanım + model + bütçeye göre üç öneri, bütçedeki tüm hazır sistemler ve parça parça “kendin topla” (her parçada mağaza seçimi) |
+| **Bilgisayar alacağım** (`#al`) | Yeni bilgisayar düşünen | Önceliğe göre (dengeli, en ucuz, en hızlı, çok model, uzun bağlam) çok ölçütlü puanla üç öneri ve puan dökümü; öneriler + en ucuz aday + kendi topladığın sistem için karşılaştırma tablosu (okuma/yazma, ajan oturumu önbellekli/önbelleksiz, bağlam payı, model sayısı, amorti); fiyat–hız ve toplam maliyet grafikleri; tüm sistemler × 22 model matrisi; parça parça “kendin topla” |
 | **Bulut** (`#bulut`) | Bilgisayar almak istemeyen | Her sınıfın (açık, kapalı, üst düzey model, abonelik) en ucuzunu ve tüm abonelik/API seçeneklerini aylık maliyete göre gruplu gösterir |
 | **Al mı, kirala mı?** (`#karsilastir`) | Kararsız olan | Bir bilgisayarı varsayılan olarak aynı sınıftaki bir bulut modeliyle karşılaştırır: zamanla toplam maliyet ve amorti ayı, aylık kullanıma göre maliyet grafiği (logaritmik/doğrusal) ve yerelin hangi kullanımda ucuzladığı |
 

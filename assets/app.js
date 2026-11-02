@@ -8,6 +8,23 @@ const tps = v => v >= 1 ? nf(v, v < 10 ? 1 : 0) + ' tok/sn' : '—';
 const dur = s => !Number.isFinite(s) ? '—' : s < 60 ? nf(s) + ' sn' : s < 3600 ? nf(s / 60, s < 600 ? 1 : 0) + ' dk' : nf(s / 3600, 1) + ' sa';
 const ansTime = t => { if (!t) return '—'; const s = 1000 / t; return s < 60 ? nf(s) + ' sn' : nf(s / 60, 1) + ' dk'; };
 
+
+/* ---------- icons: simple line icons drawn for this site (24×24, stroke = currentColor) ---------- */
+const ICONS = {
+  monitor: '<rect x="2.5" y="3.5" width="19" height="13" rx="2"/><path d="M8 20.5h8M12 16.5v4"/>',
+  bag: '<path d="M5.5 8h13l-1.1 12.5H6.6z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>',
+  cloud: '<path d="M7.5 18.5h9.5a4 4 0 0 0 .4-7.98 5.5 5.5 0 0 0-10.6 1.06A3.5 3.5 0 0 0 7.5 18.5z"/>',
+  scale: '<path d="M12 4v16M8 20h8M5 7.5h14M12 4l-7 3.5M12 4l7 3.5"/><path d="M5 7.5l-2.5 6a2.5 2.5 0 0 0 5 0zM19 7.5l-2.5 6a2.5 2.5 0 0 0 5 0z"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  alert: '<path d="M12 3.5L2.5 20h19z"/><path d="M12 10v4.5M12 17.2v.3"/>',
+  x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  contrast: '<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" stroke="none"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/>',
+  chip: '<rect x="6.5" y="6.5" width="11" height="11" rx="2"/><path d="M9.5 3v3.5M14.5 3v3.5M9.5 17.5V21M14.5 17.5V21M3 9.5h3.5M3 14.5h3.5M17.5 9.5H21M17.5 14.5H21"/>'
+};
+const icon = (n, cls = 'ic') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+
 /* ---------- state ---------- */
 const DEFAULT_STATE = () => {
   const d = Calc.cat().defaults;
@@ -38,8 +55,8 @@ const MINE_GPUS = [ // id, label, VRAM GB, watts, prefill tok/s (Qwen 125B, esti
   ['rtx5060ti', 'RTX 5060 Ti 16 GB', 16, 180, 600, 'NVIDIA', 448], ['rtx5070', 'RTX 5070 12 GB', 12, 250, 2090, 'NVIDIA', 672], ['rtx5070ti', 'RTX 5070 Ti 16 GB', 16, 300, 2400, 'NVIDIA', 896], ['rtx5080', 'RTX 5080 16 GB', 16, 360, 2700, 'NVIDIA', 960], ['rtx5090', 'RTX 5090 32 GB', 32, 575, 5000, 'NVIDIA', 1792],
   ['rx6800', 'RX 6800 16 GB', 16, 250, 600, 'AMD-RDNA2', 512], ['rx7800xt', 'RX 7800 XT 16 GB', 16, 263, 800, 'AMD-RDNA3', 624], ['rx7900xt', 'RX 7900 XT 20 GB', 20, 315, 1100, 'AMD-RDNA3', 800], ['rx7900xtx', 'RX 7900 XTX 24 GB', 24, 355, 1300, 'AMD-RDNA3', 960], ['rx9060xt', 'RX 9060 XT 16 GB', 16, 160, 700, 'AMD', 320], ['rx9070xt', 'RX 9070 XT 16 GB', 16, 304, 1110, 'AMD', 640], ['r9700', 'Radeon AI PRO R9700 32 GB', 32, 300, 1200, 'AMD', 640],
   ['mac', 'Mac (Apple Silicon)', 0, 0, 0, 'Apple', 0]];
-const STATUS = { ok: ['ok', '✓ Rahat çalışır'], slow: ['slow', '⚠ Yavaş'], no: ['no', '✗ Çalışmaz'] };
-const badge = st => `<span class="badge ${STATUS[st][0]}">${STATUS[st][1]}</span>`;
+const STATUS = { ok: ['ok', 'Rahat çalışır', 'check'], slow: ['slow', 'Yavaş', 'alert'], no: ['no', 'Çalışmaz', 'x'] };
+const badge = st => `<span class="badge ${STATUS[st][0]}">${icon(STATUS[st][2], 'bi')}${STATUS[st][1]}</span>`;
 function presetButtons() {
   return `<div class="presets">${Calc.cat().usagePresets.map(p => `<button type="button" class="preset${S.preset === p.id ? ' on' : ''}" data-preset="${p.id}"><b>${esc(p.label)}</b><small>${nf(p.calls)} çağrı × ${nf(p.tokens)} token · ${p.days} gün → ${nf(p.calls * p.tokens * p.days / 1e6, 1)} M/ay</small></button>`).join('')}</div>`;
 }
@@ -134,19 +151,25 @@ function findLocal(id) { return id === 'mine' ? mineComputer() : allLocal().find
 /* ---------- views ---------- */
 const VIEWS = {};
 VIEWS[''] = () => {
-  const L = Calc.live(), r64 = Calc.cheapestOffer('ram64');
-  return `<section class="hero">
-   <p class="eyebrow">Türkiye fiyatlarıyla · her gün güncel</p>
+  const L = Calc.live();
+  const g = k => Calc.cheapestOffer(k);
+  const rows = [['64 GB DDR5 RAM', g('ram64')], ['RTX 5060 Ti 16 GB', g('gpu5060ti')], ['RTX 5070 12 GB', g('gpu5070')], ['RTX 3090 24 GB (2. el)', g('gpu3090used')], ['Radeon AI PRO R9700 32 GB', g('gpuR9700')]];
+  return `<section class="hero"><div class="hero-text">
+   <p class="eyebrow">Türkiye fiyatlarıyla</p>
    <h1>Yapay zekâyı kendi bilgisayarında çalıştırmak ne kadar tutar?</h1>
    <p class="lead">Elindeki bilgisayarın hangi modeli ne hızda çalıştırdığını, yeni bir bilgisayar için ne alman gerektiğini ve bunun abonelik ya da API ile karşılaştırmasını gösterir.</p>
-   <div class="facts"><div><b>16 GB</b><span>ekran kartında Qwen 27B ≈30–45 tok/sn (3,5 bit)</span></div><div><b>12 GB + 64 GB</b><span>kart + RAM ile 125B MoE ≈80 tok/sn</span></div><div><b>≈30 bin token</b><span>kodlama ajanının her göreve başladığı bağlam</span></div><div><b>${tl(r64.price)}</b><span>64 GB DDR5 · ${esc(r64.store)}</span></div></div>
+   <div class="hero-cta"><a class="btn" href="#elimde">Bilgisayarımı kontrol et</a><a class="btn ghost" href="#al">Bilgisayar önerisi al</a></div>
+   <ul class="hero-points"><li>${icon('check', 'bi')}Mağaza fiyatları her hafta, API fiyatları ve kur her ziyarette güncel</li><li>${icon('check', 'bi')}Okuma ve yazma hızı ayrı, görev süresi gerçekçi</li><li>${icon('check', 'bi')}Hesap yöntemi ve tüm varsayımlar açık</li></ul></div>
+   <aside class="price-panel"><div class="pp-head"><b>Güncel parça fiyatları</b><a href="#fiyatlar">Tümü</a></div>
+   <table><tbody>${rows.map(([l, o]) => `<tr><td>${l}<small>${esc(o.store)}</small></td><td class="num">${tl(o.price)}</td></tr>`).join('')}</tbody></table>
+   <p class="pp-foot" id="liveStatus">${liveStatusText()}</p></aside>
   </section>
   <h2 class="q">Ne yapmak istiyorsun?</h2>
   <div class="personas">
-   <a class="persona" href="#elimde"><span class="pi">💻</span><b>Bilgisayarım var</b><span>Elimdeki bilgisayar hangi modeli, ne hızda çalıştırır? Ne eklersem yeter?</span><em>Kontrol et →</em></a>
-   <a class="persona" href="#al"><span class="pi">🛒</span><b>Yapay zekâ için bilgisayar alacağım</b><span>Kullanımıma ve bütçeme göre hangi bilgisayar? Hazır sistemler ve kendin topla.</span><em>Öneri al →</em></a>
-   <a class="persona" href="#bulut"><span class="pi">☁️</span><b>Bilgisayar almadan kullanacağım</b><span>Abonelik mi, API mi? Kullanımıma en ucuz hangisi?</span><em>Karşılaştır →</em></a>
-   <a class="persona" href="#karsilastir"><span class="pi">⚖️</span><b>Almak mı, kiralamak mı?</b><span>Bir bilgisayar kaç ayda kendini öder? Gizlilik şartsa ne olur?</span><em>Hesapla →</em></a>
+   <a class="persona" href="#elimde"><span class="pi">${icon('monitor')}</span><b>Bilgisayarım var</b><span>Elimdeki bilgisayar hangi modeli, ne hızda çalıştırır? Ne eklersem yeter?</span><em>Kontrol et ${icon('arrow', 'bi')}</em></a>
+   <a class="persona" href="#al"><span class="pi">${icon('bag')}</span><b>Yapay zekâ için bilgisayar alacağım</b><span>Kullanımıma ve bütçeme göre hangi bilgisayar? Hazır sistemler ve kendin topla.</span><em>Öneri al ${icon('arrow', 'bi')}</em></a>
+   <a class="persona" href="#bulut"><span class="pi">${icon('cloud')}</span><b>Bilgisayar almadan kullanacağım</b><span>Abonelik mi, API mi? Kullanımıma en ucuz hangisi?</span><em>Karşılaştır ${icon('arrow', 'bi')}</em></a>
+   <a class="persona" href="#karsilastir"><span class="pi">${icon('scale')}</span><b>Almak mı, kiralamak mı?</b><span>Bir bilgisayar kaç ayda kendini öder? Gizlilik şartsa ne olur?</span><em>Hesapla ${icon('arrow', 'bi')}</em></a>
   </div>
   <section class="card lessons"><h2>Almadan önce bilmen gereken altı şey</h2><ol>
    <li><b>Okuma ≠ yazma.</b> “12 GB kartta 100+ tok/sn” paylaşımları çoğu zaman okuma hızı. DeepSeek 763B aynı kartta 4–6 tok/sn yazıyor; Qwen 125B ≈94.</li>
@@ -156,7 +179,6 @@ VIEWS[''] = () => {
    <li><b>RAM pahalandı, token ucuzladı.</b> 64 GB DDR5 bir yılda ≈6 kat; aynı dönemde API fiyatları düştü. Gizlilik şart değilse kiralamak çoğu kişiye ucuz.</li>
    <li><b>Yerel her zaman gizli değil.</b> Sunucuyu dışarı açma, modeli güvendiğin yerden indir.</li></ol>
    <p class="small muted"><a href="#nasil">Yöntem ve ayrıntılar</a></p></section>
-  <p class="small muted center" id="liveStatus">${liveStatusText()}</p>
   <p class="small muted center">${L.meta ? `Mağaza fiyatları (haftalık): ${new Date(L.meta.updated).toLocaleString('tr-TR')}` : 'Fiyatlar: gömülü veri (otomatik güncelleme okunamadı)'} · <a href="#fiyatlar">Tüm mağaza fiyatları</a></p>`;
 };
 
@@ -256,7 +278,7 @@ function builderHtml() {
   return `<div class="builder"><div class="brows">${rows}</div>
    <aside class="bsum"><span class="muted small">Toplam</span><b class="big">${tl(c.price)}</b>
     <ul class="small">${sp.map(([m, s]) => `<li>${Calc.MODELS[m].short}: <b>${tps(s.tps)}</b> ${badge(s.status)}<br><span class="muted">görev: ${dur(Calc.taskTime(c, m, S).total)}</span></li>`).join('')}</ul>
-    <p class="small ${warn ? 'bad' : 'muted'}">${warn ? `⚠ Güç kaynağı yetersiz olabilir: tahmini çekiş ${nf(draw)} W, %30 pay ile ${nf(draw * 1.3)} W gerekir.` : `Güç: tahmini ${nf(draw)} W / ${psu} W PSU`}</p>
+    <p class="small ${warn ? 'bad' : 'muted'}">${warn ? `${icon('alert', 'bi')} Güç kaynağı yetersiz olabilir: tahmini çekiş ${nf(draw)} W, %30 pay ile ${nf(draw * 1.3)} W gerekir.` : `Güç: tahmini ${nf(draw)} W / ${psu} W PSU`}</p>
     <p class="small muted">${c.ram} GB ${c.ramType} · ${c.vram} GB VRAM${c.gpus > 1 ? ' (iki kart, tek havuz değil)' : ''}</p>
     <button type="button" class="btn" data-compare="custom">Bulutla karşılaştır →</button>
     <button type="button" class="btn ghost" data-copybuild>Parça listesini kopyala</button></aside></div>`;

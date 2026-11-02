@@ -68,13 +68,6 @@ const MINE_GPUS = [ // id, label, VRAM GB, watts, prefill tok/s (Qwen 125B, esti
   ['mac', 'Mac (Apple Silicon)', 0, 0, 0, 'Apple', 0]];
 const STATUS = { ok: ['ok', 'Rahat çalışır', 'check'], slow: ['slow', 'Yavaş', 'alert'], no: ['no', 'Çalışmaz', 'x'] };
 const badge = st => `<span class="badge ${STATUS[st][0]}">${icon(STATUS[st][2], 'bi')}${STATUS[st][1]}</span>`;
-// Cloud models of roughly the same class as each local model (for a fair buy-vs-rent comparison)
-const EQUIV = {
-  q27: ['api-open-qwen3-32b', 'api-open-gemma-3-27b-it', 'api-open-mistral-small-3.2-24b-instruct', 'api-open-qwen3-30b-a3b-instruct-2507'],
-  qwen: ['api-open-qwen3-235b-a22b-2507', 'api-open-gpt-oss-120b', 'api-open-glm-4.5-air', 'api-groq-120'],
-  deepseek: ['api-deepseek-flash-off', 'api-deepseek-flash-peak', 'api-open-deepseek-v3.2']
-};
-
 function pageHead(ic, eyebrow, title, lead) {
   return `<header class="page-head"><span class="ph-ic">${icon(ic)}</span><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1>${lead ? `<p class="lead">${lead}</p>` : ''}</div></header>`;
 }
@@ -84,9 +77,15 @@ const segButtons = (attr, items, cur) => `<div class="seg small" role="group">${
 function presetButtons() {
   return `<div class="presets">${Calc.cat().usagePresets.map(p => `<button type="button" class="preset${S.preset === p.id ? ' on' : ''}" data-preset="${p.id}"><b>${esc(p.label)}</b><small>${nf(p.calls)} çağrı × ${nf(p.tokens)} token · ${p.days} gün</small><em>${nf(p.calls * p.tokens * p.days / 1e6, 1)} M/ay</em></button>`).join('')}</div>`;
 }
-function modelToggle() {
-  const M = [['q27', 'Qwen3.8 27B', 'yoğun model · 16–24 GB kartta tamamı kartta'], ['qwen', 'Qwen3.8-Flash-Next 125B', 'MoE · 12 GB kart + 64 GB RAM (Strata)'], ['deepseek', 'DeepSeek V4.1 Flash 763B', 'çok büyük MoE · 64–128 GB RAM, yavaş']];
-  return `<div class="seg" role="group" aria-label="Bilgisayarda çalışacak model">${M.map(([k, l, s]) => `<button type="button" data-model="${k}" aria-pressed="${S.model === k}"><b>${l}</b><small>${s}</small></button>`).join('')}</div>`;
+const FAMILIES = ['Qwen', 'Gemma', 'Llama', 'gpt-oss', 'Mistral', 'DeepSeek', 'Phi', 'GLM'];
+const QUICK = ['q27', 'g:gemma3-27b', 'g:gptoss-20b', 'g:gptoss-120b', 'g:llama33-70b', 'g:mistralsmall32-24b', 'qwen', 'deepseek'];
+const sizeLabel = m => m.total ? (m.moe && m.active ? `${nf(m.total)}B / ${nf(m.active, m.active % 1 ? 1 : 0)}B etkin` : `${nf(m.total)}B`) : '';
+// a few models from different families, the selected one first (computer cards, builder)
+const mixModels = () => [...new Set([S.model, 'q27', 'g:gemma3-27b', 'g:gptoss-120b', 'g:llama33-70b', 'qwen'])].filter(id => Calc.MODELS[id]).slice(0, 5);
+function modelPicker() {
+  const fam = {}; for (const m of Calc.localModels()) (fam[m.family] = fam[m.family] || []).push(m);
+  return `<div class="model-pick">${segButtons('model', QUICK.filter(id => Calc.MODELS[id]).map(id => [id, esc(Calc.MODELS[id].short)]), S.model)}
+   <label class="f"><span>Tüm modeller (${Calc.localModels().length}) · aileye göre</span><select data-modelsel>${FAMILIES.filter(f => fam[f]).map(f => `<optgroup label="${f}">${fam[f].map(m => `<option value="${m.id}"${m.id === S.model ? ' selected' : ''}>${esc(m.label)}${sizeLabel(m) ? ' · ' + sizeLabel(m) : ''}</option>`).join('')}</optgroup>`).join('')}</select></label></div>`;
 }
 function taskToggle() { const T = Calc.cat().taskTypes; return `<div class="seg" role="group" aria-label="Görev tipi">${Object.entries(T).map(([k, t]) => `<button type="button" data-task="${k}" aria-pressed="${S.taskType === k}"><b>${t.label}</b><small>${nf(t.out / 1000)}K yazar · ${nf(t.ctx / 1000)}K okur · ${t.desc}</small></button>`).join('')}</div>`; }
 function usagePanel(opts = {}) {
@@ -99,7 +98,7 @@ function usagePanel(opts = {}) {
    ${opts.horizon !== false ? `<label class="f"><span>Karşılaştırma süresi (ay)</span><input type="number" min="1" max="120" data-k="horizon" value="${S.horizon}"></label>` : ''}
   </div>
   <div class="row-label">Tipik bir görev <i class="hint" title="Düşünen modeller ve kodlama ajanları bir görevde 15–50 bin token harcayabilir; ajanlar işe ~30 bin tokenlik bağlamla başlar. Görev süresi = bağlamı okuma + cevabı yazma.">?</i></div>${taskToggle()}
-  ${opts.model !== false ? `<div class="row-label">Bilgisayarda çalışacak model</div>${modelToggle()}` : ''}
+  ${opts.model !== false ? `<div class="row-label">Bilgisayarda çalışacak model</div>${modelPicker()}` : ''}
   ${opts.privacy !== false ? `<label class="check"><input type="checkbox" data-k="privacy" ${S.privacy ? 'checked' : ''}> <span><b>Gizlilik şart</b> · kodum/verim bilgisayardan çıkamaz (bulut seçenekleri elenir)</span></label>` : ''}
   <details class="more"><summary>Önbellek ve günlük çalışma saati</summary><div class="fields">
    <label class="f"><span>API önbellekten okunan girdi (%)</span><input type="number" min="0" max="100" step="5" data-k="cachedInputSharePercent" value="${S.cachedInputSharePercent}"></label>
@@ -126,7 +125,7 @@ function computerCard(c, opts = {}) {
    <p class="muted small">${specLine(c)}</p>
    <div class="pc-stats"><div><span>${Calc.MODELS[S.model].short}</span><b>${tps(sp.tps)}</b><small>${speedSub(sp)}</small></div><div><span>Görev süresi</span><b>${dur(tt.total)}</b><small>okuma ${dur(tt.read)} + yazma ${dur(tt.write)}</small></div><div><span>Ek elektrik</span><b>${tl(el)}/ay</b><small>${nf(S.monthlyTokens, 1)} M çıktı</small></div></div>
    <div class="badges">${badge(sp.status)}${short ? ` <span class="badge no">Yetmez: en fazla ${nf(cap, 1)} M/ay</span>` : ''}</div>
-   <ul class="mrow" aria-label="Modellere göre yazma hızı ve görev süresi">${['q27', 'qwen', 'deepseek'].map(m => { const s2 = Calc.speed(c, m); return `<li class="${m === S.model ? 'on' : ''}"><span class="dot ${s2.status}"></span><span>${Calc.MODELS[m].short}</span><b>${tps(s2.tps)}</b><small>${s2.tps ? dur(Calc.taskTime(c, m, S).total) : '—'}</small></li>`; }).join('')}</ul>
+   <ul class="mrow" aria-label="Modellere göre yazma hızı ve görev süresi">${mixModels().map(m => { const s2 = Calc.speed(c, m); return `<li class="${m === S.model ? 'on' : ''}"><span class="dot ${s2.status}"></span><span>${Calc.MODELS[m].short}</span><b>${tps(s2.tps)}</b><small>${s2.tps ? dur(Calc.taskTime(c, m, S).total) : '—'}</small></li>`; }).join('')}</ul>
    <p class="small muted">${esc(sp.note)}</p>
    ${opts.reason ? `<p class="small reason">${opts.reason}</p>` : ''}
    <details class="more"><summary>Parçalar ve mağazalar</summary>${partsList(c)}</details>
@@ -294,9 +293,12 @@ VIEWS.elimde = () => `${pageHead('monitor', 'Bilgisayarım var', 'Elindeki bilgi
   <div id="results"></div>`;
 function resultsElimde() {
   const c = mineComputer(), hw = { vram: c.vram, ram: c.ram, ramType: c.ramType, ssd: c.ssd }, uni = c.ramType === 'unified';
-  const ids = ['q27', 'q36', 'qwen', 'coder', 'deepseek'], est = Object.fromEntries(ids.map(id => [id, Calc.estimate(id, { ...hw, bw: c.bw })]));
+  const all = Calc.localModels(), ids = all.map(m => m.id), est = Object.fromEntries(ids.map(id => [id, Calc.speed(c, id)]));
   const hs = $('#hwsum'); if (hs) hs.innerHTML = `<div class="chips">${uni ? `<span>${icon('chip', 'bi')}<b>Apple Silicon</b> birleşik bellek</span>` : `<span>${icon('chip', 'bi')}<b>${c.vram || 0} GB</b> ekran kartı belleği</span><span><b>${c.bw ? nf(c.bw) + ' GB/sn' : '—'}</b> bellek bant genişliği</span>`}<span><b>${c.ram} GB</b> ${uni ? 'bellek' : c.ramType + ' RAM'}</span><span><b>${gb(c.ssd)}</b> boş disk</span></div>`;
-  const cards = ids.map(id => { const e = est[id]; return `<article class="mcard ${e.status}">${badge(e.status)}<h3>${Calc.MODELS[id].label}</h3><b class="big">${tps(e.tps)}</b>${meter(e.tps, 100, e.status)}<span class="small">1.000 tokenlik cevap: <b>${ansTime(e.tps)}</b></span><p class="small muted">${esc(e.note)}</p></article>`; }).join('');
+  // per family: the largest model that runs comfortably, otherwise the fastest one that runs at all
+  const rank = { ok: 0, slow: 1, no: 2 };
+  const best = FAMILIES.map(f => all.filter(m => m.family === f).sort((a, b) => rank[est[a.id].status] - rank[est[b.id].status] || (est[a.id].status === 'ok' ? (b.total || 0) - (a.total || 0) : est[b.id].tps - est[a.id].tps))[0]).filter(Boolean);
+  const cards = best.map(m => m.id).map(id => { const e = est[id]; return `<article class="mcard ${e.status}"><div class="mc-top">${badge(e.status)}<span class="fam">${Calc.MODELS[id].family}</span></div><h3>${Calc.MODELS[id].label}<small>${sizeLabel(Calc.MODELS[id])}</small></h3><b class="big">${tps(e.tps)}</b>${meter(e.tps, 100, e.status)}<span class="small">1.000 tokenlik cevap: <b>${ansTime(e.tps)}</b></span><p class="small muted">${esc(e.note)}</p></article>`; }).join('');
   const q = est.qwen, r64 = Calc.cheapestOffer('ram64'), r4 = Calc.cheapestOffer('ram64ddr4'), r128 = Calc.cheapestOffer('ram128'), g3 = Calc.cheapestOffer('gpu3060used');
   let tip;
   if (uni) tip = q.status === 'ok' ? 'Mac’in Qwen 125B’yi bellekte tutabiliyor. Strata’nın Mac uygulamasıyla hemen deneyebilirsin.' : '<b>Mac’lerde bellek sonradan artırılamıyor.</b> 64 GB altı Mac’te büyük modeller SSD’den okunur ve yavaşlar; 27B gibi orta boy modeller ve bulut seçenekleri daha uygun.';
@@ -305,33 +307,30 @@ function resultsElimde() {
   else tip = `<b>En etkili yükseltme RAM.</b> ${c.ramType === 'DDR4' ? `64 GB DDR4 ≈ ${tl(r4.price)} (${esc(r4.store)})` : `64 GB DDR5 ≈ ${tl(r64.price)} (${esc(r64.store)})`} ile Qwen 125B rahat çalışır. Ekran kartını değiştirmek bu modelde pek hızlandırmaz.`;
   // task time for every model that runs: bars for the chosen task type, table for all task types
   const T = Calc.cat().taskTypes, tk = T[S.taskType] || T.short;
-  const runs = ids.filter(id => est[id].tps > 0).map(id => { const pp = Calc.prefill(c, id), w = est[id].tps, t = x => x.ctx / pp + x.out / w;
-    return { id, label: Calc.MODELS[id].label, st: est[id].status, tps: w, pp, short: t(T.short), think: t(T.think), agent: t(T.agent), first: 32000 / pp + 1000 / w }; });
+  const rows = ids.map(id => { const m = Calc.MODELS[id], w = est[id].tps, pp = w ? Calc.prefill(c, id) : NaN, t = x => w ? x.ctx / pp + x.out / w : NaN;
+    return { id, label: m.label, family: m.family, size: m.total || NaN, st: est[id].status, rk: rank[est[id].status], tps: w || NaN, pp, short: t(T.short), think: t(T.think), agent: t(T.agent), first: w ? 32000 / pp + 1000 / w : NaN }; });
+  const runs = rows.filter(r => r.tps > 0);
   let task = '<p class="muted">Bu donanımda çalışan bir model yok; önce yükseltme önerisine bak.</p>';
   if (runs.length) {
-    const st = sortState('task', 'short'), shown = runs.filter(r => r.st !== 'no');
+    const st = sortState('task', 'rk'), shown = runs.filter(r => r.st !== 'no');
     task = `<div class="row-label first">Görev tipi</div>${segButtons('task', Object.entries(T).map(([k, t]) => [k, t.label]), S.taskType)}
     <p class="small muted">${tk.label}: ${nf(tk.ctx / 1000)}K token okur, ${nf(tk.out / 1000)}K token yazar. Ekranda görünen hız yalnızca yazma hızıdır; uzun bağlamda asıl bekleme okumadadır.</p>
     ${absTaskBars(sortBy((shown.length ? shown : runs).map(r => ({ label: r.label, sub: `okuma ${nf(r.pp)} · yazma ${tps(r.tps)}`, read: tk.ctx / r.pp, write: tk.out / r.tps })), r => r.read + r.write, 1))}
-    <div class="tablewrap flat"><table class="systable compact"><thead><tr>${th('task', 'label', 'Model', st)}${th('task', 'tps', 'Yazma', st, 'num')}${th('task', 'pp', 'Okuma', st, 'num')}${Object.entries(T).map(([k, t]) => th('task', k, t.label, st, 'num')).join('')}${th('task', 'first', 'Ajanın ilk cevabı', st, 'num')}</tr></thead>
-    <tbody>${sortBy(runs, r => r[st.k], st.d).map(r => `<tr><td><b>${r.label}</b>${badge(r.st)}</td><td class="num">${tps(r.tps)}</td><td class="num">${nf(r.pp)} tok/sn</td><td class="num">${dur(r.short)}</td><td class="num">${dur(r.think)}</td><td class="num">${dur(r.agent)}</td><td class="num">${dur(r.first)}</td></tr>`).join('')}</tbody></table></div>
-    <p class="small muted">Ajanın ilk cevabı: 32K bağlam okur, 1K yazar. Başlıklara tıklayarak sırala.</p>
+    <div class="card-head" style="margin-top:22px"><h2>Tüm modeller <span class="muted">(${rows.length})</span></h2><span class="muted small">Başlıklara tıklayarak sırala</span></div>
+    <div class="tablewrap flat"><table class="systable compact"><thead><tr>${th('task', 'label', 'Model', st)}${th('task', 'family', 'Aile', st)}${th('task', 'size', 'Boyut', st, 'num')}${th('task', 'rk', 'Durum', st)}${th('task', 'tps', 'Yazma', st, 'num')}${th('task', 'pp', 'Okuma', st, 'num')}${Object.entries(T).map(([k, t]) => th('task', k, t.label, st, 'num')).join('')}${th('task', 'first', 'Ajanın ilk cevabı', st, 'num')}</tr></thead>
+    <tbody>${sortBy(rows, r => r[st.k], st.d).map(r => `<tr class="${r.st === 'no' ? 'dimrow' : ''}"><td><b>${r.label}</b></td><td>${r.family}</td><td class="num">${sizeLabel(Calc.MODELS[r.id]) || '—'}</td><td>${badge(r.st)}</td><td class="num">${tps(r.tps)}</td><td class="num">${r.pp ? nf(r.pp) + ' tok/sn' : '—'}</td><td class="num">${dur(r.short)}</td><td class="num">${dur(r.think)}</td><td class="num">${dur(r.agent)}</td><td class="num">${dur(r.first)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="small muted">Ajanın ilk cevabı: 32K bağlam okur, 1K yazar. Qwen 125B, DeepSeek, Qwen 35B ve Coder Strata ölçümlerinden; diğerleri llama.cpp ve Q4 dosya boyutuyla, bant genişliğinden tahmin (sığmayan kısım sistem RAM’inden okunur).</p>
     <ul class="checks">${engineTips(c).map(t => `<li>${t}</li>`).join('')}</ul>`;
   }
-  const fits = Calc.cat().ggufModels.map(m => [m, Calc.ggufFit(m, 'Q4_K_M', hw)]).filter(([, f]) => f);
-  const gpuFit = fits.filter(([, f]) => f === 'gpu').map(([m]) => m.name), off = fits.filter(([, f]) => f === 'offload').map(([m]) => m.name);
   const el = Calc.electricity(c, S.model, S).tl;
-  return `${step(2, 'Hangi model ne hızda?', 'Yazma hızı; çubuk 100 tok/sn’ye göre. Ölçümü olanlar notta belirtilir.')}
+  return `${step(2, 'Hangi model ne hızda?', `Her model ailesinden bu bilgisayarda rahat çalışan en büyük model. Yazma hızı; çubuk 100 tok/sn’ye göre. Tüm ${ids.length} model 4. adımdaki tabloda.`)}
   <div class="mgrid">${cards}</div>
   ${step(3, 'Ne çalıştırmalı, ne yükseltmeli?')}
   <div class="tip">${tip}</div>
   <section class="card"><h2>Bu bilgisayar için önerilen modeller</h2><ul class="recs">${recModels(c).map(r => `<li><b>${r[0]}</b><span>${r[1]}</span></li>`).join('')}</ul>
    <p class="small muted">Aynı bit sayısında bile quant’ı kimin hazırladığı kaliteyi değiştirir; tanınmış yapımcıların dosyalarını seç. Düşünme ayarını “orta” tutmak çoğu işte kaliteyi az, süreyi çok etkiler.</p></section>
-  ${step(4, 'Bir görev ne kadar sürer?', 'Görev süresi = bağlamı okuma + cevabı yazma. Bu bilgisayarda çalışan tüm modeller için.')}
+  ${step(4, 'Bir görev ne kadar sürer?', 'Görev süresi = bağlamı okuma + cevabı yazma. Bu bilgisayarda çalışan tüm modeller, tüm aileler.')}
   <section class="card">${task}</section>
-  ${step(5, 'Klasik modeller sığar mı?', 'llama.cpp, Q4, 8K bağlam; GGUF dosya boyutu + bağlam belleği tahmini.')}
-  <section class="card"><div class="fitgroup"><h3>${badge('ok')} Ekran kartına sığan <span class="muted">(${gpuFit.length})</span></h3><div class="pills">${gpuFit.map(n => `<span>${esc(n)}</span>`).join('') || '<span class="muted">—</span>'}</div></div>
-   <div class="fitgroup"><h3>${badge('slow')} RAM’e taşarak, yavaş <span class="muted">(${off.length})</span></h3><div class="pills">${off.map(n => `<span>${esc(n)}</span>`).join('') || '<span class="muted">—</span>'}</div></div></section>
   <div class="pcgrid two">
    <section class="card"><h2>${icon('shield', 'ic h-ic')}Yerel her zaman gizli demek değil</h2><ul class="checks">
     <li><b>Sunucuyu yalnızca kendi bilgisayarına aç.</b> Ollama / llama.cpp sunucusu 127.0.0.1’i dinlemeli. İnternette tüm ağa açık on binlerce yerel AI sunucusu bulundu; çoğunda araç çağırma açık.</li>
@@ -361,9 +360,10 @@ function resultsAl() {
     const fastest = [...ok].sort((a, b) => Calc.speed(b, M).tps - Calc.speed(a, M).tps)[0];
     // with the dense 27B model a 16 GB card runs a better quant (3.5 bit instead of 2–3 bit) and leaves more context
     const vpp = c => Calc.speed(c, M).tps / c.price;
-    const balanced = M === 'q27' ? [...ok].filter(c => c.kind === 'pc' && c.gpuVram >= 16).sort((a, b) => vpp(b) - vpp(a))[0] : null;
+    const MM = Calc.MODELS[M], needs16 = M === 'q27' || (MM.file > 10.5 && MM.file <= 14.5);
+    const balanced = needs16 ? [...ok].filter(c => c.kind === 'pc' && c.gpuVram >= 16).sort((a, b) => vpp(b) - vpp(a))[0] : null;
     const picks = [[cheapest, 'En ucuz çalışan', 'Kullanımını karşılayan en düşük fiyat.'], [value, 'Fiyat/performans', 'Lira başına en çok token/sn.'],
-      ...(balanced ? [[balanced, 'Dengeli: 16 GB kart', '16 GB kartlar arasında lira başına en hızlısı: Qwen 27B’yi 2–3 bit yerine 3,5 bit çalıştırır (daha az kalite kaybı) ve ≈110K bağlam bırakır.']] : []),
+      ...(balanced ? [[balanced, 'Dengeli: 16 GB kart', M === 'q27' ? '16 GB kartlar arasında lira başına en hızlısı: Qwen 27B’yi 2–3 bit yerine 3,5 bit çalıştırır (daha az kalite kaybı) ve ≈110K bağlam bırakır.' : `16 GB kartlar arasında lira başına en hızlısı: ${esc(MM.short)} (≈${nf(MM.file)} GB) 12 GB karta sığmaz, 16 GB kartta tamamı kartta çalışır.`]] : []),
       [fastest, 'En hızlı', 'Bütçende en yüksek yazma hızı.']];
     const merged = [];
     for (const [c, t, r] of picks) { const m = merged.find(x => x.c.id === c.id); if (m) { m.t += ' · ' + t; m.r += ' ' + r; } else merged.push({ c, t, r }); }
@@ -410,7 +410,7 @@ function builderHtml() {
      <a href="${esc(ch.url)}" target="_blank" rel="noopener" class="small ext" title="Ürün sayfası">${icon('ext', 'bi')}</a></div>`;
   }).join('');
   const psu = P[b.psu].watts, draw = c.watts + 40, warn = draw * 1.3 > psu;
-  const sp = ['q27', 'qwen', 'deepseek'].map(m => [m, Calc.speed(c, m)]);
+  const sp = mixModels().map(m => [m, Calc.speed(c, m)]);
   return `<div class="builder"><div class="brows">${rows}</div>
    <aside class="bsum"><span class="muted small">Toplam</span><b class="big">${tl(c.price)}</b>
     <p class="small muted">${c.ram} GB ${c.ramType} · ${c.vram} GB VRAM${c.gpus > 1 ? ' (iki kart, tek havuz değil)' : ''}</p>
@@ -468,7 +468,7 @@ VIEWS.karsilastir = () => `${pageHead('scale', 'Almak mı, kiralamak mı?', 'Bir
 function cmpContext() {
   const locals = allLocal(), local = S.cmpLocal === 'mine' ? mineComputer() : locals.find(c => c.id === S.cmpLocal) || locals[0], owned = local.id === 'mine';
   const fitsAll = Calc.cloudOptions(S).filter(o => o.fits).sort((a, b) => a.monthly - b.monthly);
-  const inCls = o => S.cmpClass === 'equiv' ? (EQUIV[S.model] || []).includes(o.id) : Calc.inClass(o, S.cmpClass);
+  const inCls = o => S.cmpClass === 'equiv' ? ((Calc.MODELS[S.model] || {}).api || []).includes(o.id) : Calc.inClass(o, S.cmpClass);
   let clouds = fitsAll.filter(o => inCls(o) || o.id === S.cmpCloud); if (!clouds.length) clouds = fitsAll;
   const cloud = clouds.find(o => o.id === S.cmpCloud) || clouds[0];
   const frontier = fitsAll.find(o => Calc.inClass(o, 'frontier') && o.id !== cloud.id);
@@ -600,9 +600,10 @@ const MET_DEVICES = [ // label, memory bandwidth GB/s, memory GB
   ['RTX 3090 24 GB', 936, 24], ['RTX 4090 24 GB', 1008, 24], ['RTX 5090 32 GB', 1792, 32], ['RX 9060 XT 16 GB', 320, 16], ['RX 9070 XT 16 GB', 640, 16], ['RX 7900 XT 20 GB', 800, 20], ['Radeon AI PRO R9700 32 GB', 640, 32],
   ['Mac mini M6', 170, 32], ['Mac M5 Pro', 307, 64], ['Mac M5 Max (40 çekirdek)', 614, 128], ['Mac M5 Ultra', 1200, 256], ['Ryzen AI Max mini PC (128 GB)', 256, 128], ['DGX Spark (128 GB)', 273, 128], ['PlayStation 5 (16 GB)', 448, 16],
   ['Sistem RAM · DDR5 çift kanal (gerçek)', 70, 64], ['Sistem RAM · DDR4 çift kanal (gerçek)', 34, 64]];
-const MET_MODELS = [ // label, GB read per generated token, total file GB
+const MET_BASE = [ // label, GB read per generated token, total file GB
   ['Qwen3.8 27B · 4 bit (yoğun)', 16.5, 16.5], ['Qwen3.8 27B · 3,5 bit (yoğun)', 11.8, 11.8], ['Qwen3.8 27B · 2 bit (yoğun)', 6.8, 6.8], ['Qwen3.6-35B-A3B · 4 bit (MoE, ~3B etkin)', 2, 22],
   ['Qwen3.8-Flash-Next 125B · IQ2_XS (MoE, ~6B etkin)', 1.8, 39], ['gpt-oss 120B (MoE, ~5B etkin)', 3, 63], ['Llama 3.3 70B · 4 bit (yoğun)', 42.5, 42.5]];
+const MET_MODELS_LIST = () => [...MET_BASE, ...Calc.localModels().filter(m => m.id.startsWith('g:') && !['g:gptoss-120b', 'g:llama33-70b'].includes(m.id)).map(m => [`${m.label} · ${m.mx ? 'MXFP4' : 'Q4'}${m.moe ? ` (MoE, ~${nf(m.active, 1)}B etkin)` : ' (yoğun)'}`, Math.round(m.file * m.active / m.total * 100) / 100, m.file])];
 // Decode ceiling: every token reads the active weights once. The part that does not fit in fast memory comes from
 // system RAM (PC, ≈70 GB/s) or the SSD (unified memory, ≈5 GB/s). For MoE, frequently used experts stay in fast memory.
 function metCalc(d, m) {
@@ -637,7 +638,7 @@ VIEWS.metrikler = () => `${pageHead('gauge', 'Metrikler', 'Hızı ve maliyeti be
   <div class="doc"><nav class="toc" aria-label="Bölümler">${MET_SECTIONS.map(([id, t], i) => `<button type="button" data-jump="m-${id}"><span>${i}</span>${t}</button>`).join('')}</nav><div class="doc-main">
   <section class="card" id="m-hesap"><h2><span class="secn">0</span>Yazma hızı hesaplayıcı</h2><p class="muted">Model her yeni token için “etkin” ağırlıklarının tamamını bellekten okur. Bu yüzden yazma hızının üst sınırı ≈ <b>bellek bant genişliği ÷ token başına okunan GB</b>. Modelin sığmayan kısmı sistem RAM’inden (≈70 GB/sn) veya SSD’den okunur ve hızı o belirler.</p>
    <div class="fields two"><label class="f"><span>Donanım</span><select data-met="dev">${MET_DEVICES.map((d, i) => `<option value="${i}"${i === S.metDev ? ' selected' : ''}>${d[0]} · ${d[1]} GB/sn</option>`).join('')}</select></label>
-   <label class="f"><span>Model</span><select data-met="model">${MET_MODELS.map((m, i) => `<option value="${i}"${i === S.metModel ? ' selected' : ''}>${m[0]}</option>`).join('')}</select></label></div>
+   <label class="f"><span>Model</span><select data-met="model">${MET_MODELS_LIST().map((m, i) => `<option value="${i}"${i === S.metModel ? ' selected' : ''}>${m[0]}</option>`).join('')}</select></label></div>
    <div id="results"></div></section>
   <section class="card prose" id="m-token"><h2><span class="secn">1</span>Girdi ve çıktı tokenleri</h2>
    <p><b>Girdi (input)</b> modelin okuduğu her şey: sistem talimatı, sohbet geçmişi, dosyalar, araç tanımları. <b>Çıktı (output)</b> modelin yazdığı her şey, düşünme tokenleri dahil.</p>
@@ -685,7 +686,7 @@ VIEWS.metrikler = () => `${pageHead('gauge', 'Metrikler', 'Hızı ve maliyeti be
    <li>Üstüne önbellek: bir sağlayıcıda girdi tokenlerinin ≈%96’sı diskteki önbellekten geliyor. Aynı yılda donanım pahalanırken token fiyatları düştü.</li></ul></section>
   </div></div>`;
 function resultsMetrikler() {
-  const d = MET_DEVICES[S.metDev] || MET_DEVICES[6], m = MET_MODELS[S.metModel] || MET_MODELS[0], r = metCalc(d, m);
+  const d = MET_DEVICES[S.metDev] || MET_DEVICES[6], ML = MET_MODELS_LIST(), m = ML[S.metModel] || ML[0], r = metCalc(d, m);
   const rows = MET_DEVICES.map((dv, i) => [i, dv, metCalc(dv, m)]).sort((a, b) => b[2].real - a[2].real), max = rows[0][2].real;
   const where = r.fits ? `${d[1]} GB/sn ÷ ${nf(m[1], 1)} GB/token` : `%${nf(r.hit * 100)} hızlı bellekten, %${nf((1 - r.hit) * 100)} ${r.slow === 5 ? 'SSD’den' : 'sistem RAM’inden'}`;
   return `<div class="vstats m-stats"><div><span>Teorik tavan</span><b>${nf(r.ceil)} tok/sn</b><small>${where}</small></div><div><span>Gerçekçi (≈%${Math.round(r.k * 100)})</span><b>${nf(r.real)} tok/sn</b><small>1.000 token ≈ ${dur(1000 / r.real)}${r.moe && r.fits ? ' · MoE’de yönlendirme ek yük getirir (M5 Max 128 GB’ta Qwen 125B ölçümü 87)' : ''}</small></div><div class="${r.fits ? 'okc' : 'warnc'}"><span>Model belleğe sığıyor mu?</span><b>${r.fits ? 'Evet' : 'Hayır'}</b><small>dosya ≈${nf(m[2], 1)} GB · kullanılabilir ≈${nf(r.usable)} GB${r.fits ? '' : r.moe ? ' · sık kullanılan uzmanlar hızlı bellekte tutulur' : ' · her token yavaş katmanı bekler'}</small></div></div>
@@ -725,6 +726,7 @@ document.addEventListener('change', e => {
   else if ('gpucount' in d) { S.build.gpuCount = Number(t.value); save(); $('#builderBox').innerHTML = builderHtml(); }
   else if (d.offer) { S.offerSel[d.offer] = t.value; save(); updateResults(); }
   else if (d.pickoffer) { S.offerSel[d.pickoffer] = t.value; save(); const det = t.closest('details'); det.outerHTML = opartHtml(d.pickoffer, true); }
+  else if ('modelsel' in d) { set('model', t.value); set('cmpCloud', ''); rerenderControls(); }
   else if (d.met) { set(d.met === 'dev' ? 'metDev' : 'metModel', Number(t.value)); updateResults(); }
   else if ('cmplocal' in d) { set('cmpLocal', t.value); updateResults(); }
   else if ('cmpcloudsel' in d) { set('cmpCloud', t.value); updateResults(); }

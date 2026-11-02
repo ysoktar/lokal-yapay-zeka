@@ -354,6 +354,9 @@ tr.dimrow td{color:var(--muted)}tr.dimrow td b{color:var(--text-2);font-weight:5
 .tbars.money .tb-row{grid-template-columns:minmax(0,230px) minmax(0,1fr) 112px}
 .tbars.money .tb-row b{white-space:nowrap}
 @media(max-width:720px){.tbars.money .tb-row{grid-template-columns:minmax(0,1fr) 100px}}
+.cache-f{grid-template-columns:minmax(0,2.2fr) repeat(4,minmax(0,1fr));margin-bottom:4px}
+.prose h3{font-size:15px;margin:22px 0 6px;color:var(--text)}
+@media(max-width:1060px){.cache-f{grid-template-columns:repeat(2,minmax(0,1fr))}.cache-f .f:first-child{grid-column:1/-1}}
 /* ---------- responsive ---------- */
 @media(max-width:1060px){.lgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.pcgrid.four{grid-template-columns:repeat(2,minmax(0,1fr))}.doc{grid-template-columns:1fr}.toc{position:static;display:flex;flex-wrap:wrap}.toc button{padding:5px 10px;border:1px solid var(--line);border-radius:20px}.toc button span{display:none}.hero{grid-template-columns:1fr;gap:28px}.personas{grid-template-columns:repeat(2,minmax(0,1fr))}.mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.pcgrid.three,.pcgrid.two{grid-template-columns:minmax(0,1fr)}.builder{grid-template-columns:1fr}.bsum{position:static}.fields.four{grid-template-columns:repeat(2,minmax(0,1fr))}.foot-grid{grid-template-columns:1fr 1fr}.brand-sub{display:none}}
 @media(max-width:720px){.wrap{padding:0 16px}.topbar-in{flex-wrap:wrap;gap:8px;padding:10px 0;min-height:0}.nav{order:3;flex-basis:100%}

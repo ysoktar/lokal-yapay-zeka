@@ -57,7 +57,7 @@
   }
  },
  "meta": {
-  "updated": "2026-11-01T21:51Z"
+  "updated": "2026-11-02T05:45Z"
  },
  "openrouter": {
   "deepseek/deepseek-r1-0528": {
@@ -118,9 +118,9 @@
    "outputUsd": 2.5
   },
   "openai/gpt-oss-120b": {
-   "cachedUsd": 0.013,
-   "inputUsd": 0.015,
-   "outputUsd": 0.054
+   "cachedUsd": 0.02,
+   "inputUsd": 0.022,
+   "outputUsd": 0.082
   },
   "openai/gpt-oss-20b": {
    "cachedUsd": 0.03,
@@ -146,8 +146,8 @@
    "outputUsd": 1.0
   },
   "qwen/qwen3-coder-30b-a3b-instruct": {
-   "inputUsd": 0.07,
-   "outputUsd": 0.28
+   "inputUsd": 0.15,
+   "outputUsd": 0.6
   },
   "z-ai/glm-4.5-air": {
    "cachedUsd": 0.025,

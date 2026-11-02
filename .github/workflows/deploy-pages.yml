@@ -1,0 +1,44 @@
+name: Siteyi yayınla
+
+# Publishes the site to GitHub Pages on every push to main and after each price update.
+# Settings → Pages → Source must be "GitHub Actions".
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: ["Fiyatları güncelle"]
+    types: [completed]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # after a price update, publish only if it succeeded
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main   # includes the commit the price update just pushed
+      - uses: actions/configure-pages@v5
+      - name: Yayınlanacak dosyaları hazırla
+        run: |
+          mkdir _site
+          cp -r index.html .nojekyll assets data _site/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

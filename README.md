@@ -25,10 +25,11 @@ data/catalog.json          elle düzenlenen katalog: parça özellikleri, hazır
 data/prices.json           otomatik fiyatlar (GitHub Actions yazar)
 data/manual-offers.json    otomatik okunamayan mağazaların teklifleri (elle)
 scripts/update_prices.py   fiyat toplayıcı (yalnız Python standart kütüphanesi)
-.github/workflows/update-prices.yml   haftalık çalışan iş akışı
+.github/workflows/update-prices.yml   haftalık fiyat güncelleme
+.github/workflows/deploy-pages.yml    siteyi GitHub Pages’e yayınlar (main’e her push’ta ve fiyat güncellemesinden sonra)
 ```
 
-Site statik dosyalardan oluşur ve GitHub Pages’te çalışır; veriler tarayıcıda JSON dosyalarından okunur. Yerelde denemek için:
+Site statik dosyalardan oluşur ve GitHub Pages’te çalışır (Settings → Pages → Source: **GitHub Actions**; yayını `deploy-pages.yml` yapar); veriler tarayıcıda JSON dosyalarından okunur. Yerelde denemek için:
 
 ```bash
 python3 -m http.server 8000

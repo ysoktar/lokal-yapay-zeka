@@ -4,7 +4,7 @@ const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [..
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nf = (v, d = 0) => Number(v).toLocaleString('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d });
 const tl = (v, d = 0) => nf(v, d) + ' TL';
-const tps = v => v >= 1 ? nf(v, v < 10 ? 1 : 0) + ' tok/sn' : '—';
+const tps = v => v > 0 ? nf(v, v < 10 ? 1 : 0) + ' tok/sn' : '—';
 const dur = s => !Number.isFinite(s) ? '—' : s < 60 ? nf(s) + ' sn' : s < 3600 ? nf(s / 60, s < 600 ? 1 : 0) + ' dk' : nf(s / 3600, 1) + ' sa';
 const ansTime = t => { if (!t) return '—'; const s = 1000 / t; return s < 60 ? nf(s) + ' sn' : nf(s / 60, 1) + ' dk'; };
 const mTok = v => (v < 1 ? nf(v, 2) : v < 10 ? nf(v, 1) : nf(v)) + ' M';
@@ -42,7 +42,7 @@ const DEFAULT_STATE = () => {
   return { monthlyTokens: d.monthlyTokens, outputSharePercent: d.outputSharePercent, cachedInputSharePercent: d.cachedInputSharePercent,
     preset: null, taskType: 'short', model: 'q27', privacy: false, budget: d.budget, horizon: d.horizon, hoursPerDay: d.hoursPerDay,
     usdTry: (Calc.live().usdTry && Calc.live().usdTry.value) || d.usdTry, usdYearly: 0, tlYearly: 0, foreignTax: 0, resale: false, depreciation: 25,
-    offerSel: {}, caps: {}, cloudClass: 'all', cmpClass: 'equiv', cmpLocal: 'custom', cmpCloud: '', buyFilter: 'all', tariff: {}, tokScale: 'log', metDev: 6, metModel: 0, sorts: {}, cloudSort: 'monthly',
+    offerSel: {}, caps: {}, cloudClass: 'all', cmpClass: 'equiv', cmpLocal: 'custom', cmpCloud: '', buyFilter: 'all', sysView: 'table', tariff: {}, tokScale: 'log', metDev: 6, metModel: 0, sorts: {}, cloudSort: 'monthly',
     build: { gpu: 'gpu5070', gpuCount: 1, cpu: 'cpu7500f', mobo: 'moboB650', ram: 'ram64', ssd: 'ssd2', psu: 'psu850', case: 'caseMid', cooler: 'cooler' },
     mine: { gpu: 'rtx3060', vram: 12, watts: 170, ram: 32, ramType: 'DDR5', ssd: 500 } };
 };
@@ -81,7 +81,14 @@ const FAMILIES = ['Qwen', 'Gemma', 'Llama', 'gpt-oss', 'Mistral', 'DeepSeek', 'P
 const QUICK = ['q27', 'g:gemma3-27b', 'g:gptoss-20b', 'g:gptoss-120b', 'g:llama33-70b', 'g:mistralsmall32-24b', 'qwen', 'deepseek'];
 const sizeLabel = m => m.total ? (m.moe && m.active ? `${nf(m.total)}B / ${nf(m.active, m.active % 1 ? 1 : 0)}B etkin` : `${nf(m.total)}B`) : '';
 // a few models from different families, the selected one first (computer cards, builder)
-const mixModels = () => [...new Set([S.model, 'q27', 'g:gemma3-27b', 'g:gptoss-120b', 'g:llama33-70b', 'qwen'])].filter(id => Calc.MODELS[id]).slice(0, 5);
+const mixModels = () => [...new Set([S.model, 'q27', 'g:gemma3-27b', 'g:gptoss-20b', 'g:gptoss-120b', 'g:llama33-70b', 'g:mistralsmall32-24b', 'qwen', 'deepseek'])].filter(id => Calc.MODELS[id]).slice(0, 8);
+// every model on one computer: speed, status and task time (current task type), grouped by family order
+function allModelsTable(c) {
+  const T = Calc.cat().taskTypes, tk = T[S.taskType] || T.short, rank = { ok: 0, slow: 1, no: 2 };
+  const rows = Calc.localModels().map(m => { const sp = Calc.speed(c, m.id); return { m, sp, tt: sp.tps ? Calc.taskTime(c, m.id, S).total : Infinity }; })
+    .sort((a, b) => rank[a.sp.status] - rank[b.sp.status] || b.sp.tps - a.sp.tps);
+  return `<table class="mini-t"><thead><tr><th>Model</th><th class="num">Yazma</th><th class="num">${esc(tk.label)}</th></tr></thead><tbody>${rows.map(({ m, sp, tt }) => `<tr class="${sp.status === 'no' ? 'dimrow' : ''}${m.id === S.model ? ' on' : ''}"><td><span class="dot ${sp.status}"></span>${esc(m.short)} <small>${m.family}</small></td><td class="num">${tps(sp.tps)}</td><td class="num">${dur(tt)}</td></tr>`).join('')}</tbody></table>`;
+}
 function modelPicker() {
   const fam = {}; for (const m of Calc.localModels()) (fam[m.family] = fam[m.family] || []).push(m);
   return `<div class="model-pick">${segButtons('model', QUICK.filter(id => Calc.MODELS[id]).map(id => [id, esc(Calc.MODELS[id].short)]), S.model)}
@@ -128,6 +135,7 @@ function computerCard(c, opts = {}) {
    <ul class="mrow" aria-label="Modellere göre yazma hızı ve görev süresi">${mixModels().map(m => { const s2 = Calc.speed(c, m); return `<li class="${m === S.model ? 'on' : ''}"><span class="dot ${s2.status}"></span><span>${Calc.MODELS[m].short}</span><b>${tps(s2.tps)}</b><small>${s2.tps ? dur(Calc.taskTime(c, m, S).total) : '—'}</small></li>`; }).join('')}</ul>
    <p class="small muted">${esc(sp.note)}</p>
    ${opts.reason ? `<p class="small reason">${opts.reason}</p>` : ''}
+   <details class="more"><summary>Tüm modeller (${Calc.localModels().length})</summary>${allModelsTable(c)}</details>
    <details class="more"><summary>Parçalar ve mağazalar</summary>${partsList(c)}</details>
    <div class="actions"><button type="button" class="btn ghost small" data-compare="${c.id}">Bulutla karşılaştır ${icon('arrow', 'bi')}</button></div>
   </article>`;
@@ -246,6 +254,48 @@ function xyChart(box, o) {
   };
   svg.onpointerleave = () => { tip.hidden = true; xh.setAttribute('visibility', 'hidden'); };
 }
+
+/* ---------- scatter chart: price vs speed of every system ---------- */
+function scatterChart(box, pts, o) {
+  if (!box || !pts.length) return;
+  const W = Math.round(Math.min(900, Math.max(320, box.clientWidth || 900))), narrow = W < 600;
+  const H = narrow ? 300 : 380, L = narrow ? 46 : 58, R = narrow ? 14 : 24, T = 26, B = 40, iw = W - L - R, ih = H - T - B;
+  const xs0 = pts.map(p => p.x), lo = Math.min(...xs0, o.budget) * 0.85, hi = Math.max(...xs0, o.budget) * 1.1, l0 = Math.log10(lo), l1 = Math.log10(hi);
+  const x = v => L + (Math.log10(v) - l0) / (l1 - l0) * iw;
+  const ymax0 = Math.max(10, ...pts.map(p => p.y)) * 1.08, st = niceStep(ymax0 / 4), ymax = Math.ceil(ymax0 / st) * st, y = v => T + ih - v / ymax * ih;
+  let g = `<text x="${L - 8}" y="${T - 12}" class="ax unit" text-anchor="end">tok/sn</text><text x="${W - R}" y="${H - 4}" class="ax" text-anchor="end">fiyat, TL (logaritmik)</text>`;
+  for (let v = 0; v <= ymax + 1e-9; v += st) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${L - 8}" y="${y(v) + 4}" class="ax" text-anchor="end">${nf(v)}</text>`;
+  for (const v of [50000, 75000, 100000, 150000, 200000, 300000, 500000, 750000, 1000000]) if (v >= lo && v <= hi && (!narrow || [50000, 100000, 200000, 500000, 1000000].includes(v)))
+    g += `<line x1="${x(v)}" x2="${x(v)}" y1="${T}" y2="${T + ih}" class="grid"/><text x="${x(v)}" y="${H - 20}" class="ax" text-anchor="middle">${nf(v / 1000)} bin</text>`;
+  const bx = x(o.budget);
+  g += `<rect x="${bx}" y="${T}" width="${W - R - bx}" height="${ih}" class="over-budget"/><line x1="${bx}" x2="${bx}" y1="${T - 6}" y2="${T + ih}" class="mk"/><text x="${bx + (bx > W - 150 ? -6 : 6)}" y="${T - 10}" class="mkt" text-anchor="${bx > W - 150 ? 'end' : 'start'}">Bütçe ${tl(o.budget)}</text>`;
+  const order = [...pts].sort((a, b) => !!a.tag - !!b.tag);
+  const dots = order.map(p => `<circle cx="${x(p.x)}" cy="${y(p.y)}" r="${p.tag ? 8 : 5.5}" class="pt ${p.st}${p.x > o.budget ? ' out' : ''}${p.tag ? ' pick' : ''}"/>`).join('');
+  // labels for the recommended systems: try right, left, above, below; skip spots that hit another label or a pick
+  const placed = [], picks = order.filter(p => p.tag), hit = (a, b) => a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
+  const labels = picks.map(p => {
+    const px = x(p.x), py = y(p.y), w = p.tag.length * 6.6 + 4, cand = [[px + 12, py + 4, 'start'], [px - 12, py + 4, 'end'], [px - w / 2, py - 14, 'start'], [px - w / 2, py + 22, 'start'], [px + 12, py - 12, 'start'], [px + 12, py + 20, 'start']];
+    let pick = cand[0];
+    for (const c of cand) { const x1 = c[2] === 'end' ? c[0] - w : c[0], box = { x1, x2: x1 + w, y1: c[1] - 12, y2: c[1] + 3 };
+      if (box.x1 < L || box.x2 > W - 2 || box.y1 < T - 4) continue;
+      if (placed.some(b => hit(box, b)) || picks.some(q => q !== p && hit(box, { x1: x(q.x) - 9, x2: x(q.x) + 9, y1: y(q.y) - 9, y2: y(q.y) + 9 }))) continue;
+      pick = c; placed.push(box); break; }
+    return `<text x="${pick[0]}" y="${pick[1]}" class="ptl" text-anchor="${pick[2]}">${esc(p.tag)}</text>`;
+  }).join('');
+  box.innerHTML = `<div class="chartbox"><svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Fiyat ve hız">${g}${dots}${labels}</svg><div class="ctip" hidden></div></div>
+   <div class="legend"><span><i class="k-ok"></i>Rahat çalışır</span><span><i class="k-over"></i>Yavaş</span><span><i class="k-bad"></i>Çalışmaz</span><span><i class="k-ring"></i>Önerilen</span><span class="muted">gölgeli alan: bütçe üstü</span></div>`;
+  const svg = $('svg', box), tip = $('.ctip', box);
+  svg.onpointermove = e => {
+    const r = svg.getBoundingClientRect(), sx = (e.clientX - r.left) / r.width * W, sy = (e.clientY - r.top) / r.height * H;
+    let best = null, bd = 28; for (const p of pts) { const d = Math.hypot(x(p.x) - sx, y(p.y) - sy); if (d < bd) { bd = d; best = p; } }
+    if (!best) { tip.hidden = true; return; }
+    tip.hidden = false; tip.innerHTML = `<b>${esc(best.name)}</b><div>${tl(best.x)} · <b>${tps(best.y)}</b></div><div class="muted">${best.sub}</div>${best.tag ? `<div class="ok-t">${esc(best.tag)}</div>` : ''}`;
+    const b = box.getBoundingClientRect(); tip.style.left = Math.max(0, Math.min(b.width - tip.offsetWidth - 4, e.clientX - b.left + 14)) + 'px'; tip.style.top = (e.clientY - b.top + 14) + 'px';
+  };
+  svg.onpointerleave = () => { tip.hidden = true; };
+}
+let BUY_CHART = null;
+function drawBuyCharts() { if (BUY_CHART) scatterChart($('#buychart'), BUY_CHART.pts, { budget: S.budget }); }
 
 /* ---------- views ---------- */
 const VIEWS = {};
@@ -368,15 +418,28 @@ function resultsAl() {
     const merged = [];
     for (const [c, t, r] of picks) { const m = merged.find(x => x.c.id === c.id); if (m) { m.t += ' · ' + t; m.r += ' ' + r; } else merged.push({ c, t, r }); }
     rec = `<div class="pcgrid ${merged.length === 4 ? 'two' : 'three'}">${merged.map(({ c, t, r }) => computerCard(c, { tag: t, reason: r, highlight: true })).join('')}</div>`;
+    var mergedPicks = merged;
   }
+  const pickTag = id => { const m = (mergedPicks || []).find(x => x.c.id === id); return m ? m.t : ''; };
+  BUY_CHART = { pts: all.map(c => { const sp = Calc.speed(c, M); return { x: c.price, y: sp.tps || 0, st: sp.status, name: c.name, tag: pickTag(c.id), sub: `${specLine(c)} · görev ${dur(Calc.taskTime(c, M, S).total)}` }; }) };
+  // total cost over the comparison period: purchase + electricity, against the matching cloud model
+  const H = S.horizon, eqApi = Calc.cloudOptions(S).filter(o => o.fits && ((Calc.MODELS[M] || {}).api || []).includes(o.id)).sort((a, b) => a.monthly - b.monthly)[0];
+  const tco = (mergedPicks || []).map(({ c, t }) => { const tot = Calc.localCum(c, M, S, H, false); return { label: c.name, sub: t, a: Math.min(tot, c.price), b: Math.max(0, tot - c.price), tot }; });
+  if (eqApi) tco.push({ label: eqApi.name, sub: `bulutta dengi model · ${tl(eqApi.monthly)}/ay`, c: Calc.cloudCum(eqApi, S, H), tot: Calc.cloudCum(eqApi, S, H) });
+  const tmax = Math.max(1, ...tco.map(r => r.tot));
+  const tcoHtml = tco.length ? `<div class="tbars money">${tco.map(r => `<div class="tb-row"><span class="tb-l">${esc(r.label)}<small>${esc(r.sub)}</small></span><span class="tb-bar abs">${r.c != null ? `<i class="cl" style="width:${r.c / tmax * 100}%"></i>` : `<i class="pu" style="width:${r.a / tmax * 100}%">${r.a / tmax > 0.18 ? tl(r.a) : ''}</i><i class="el" style="width:${r.b / tmax * 100}%"></i>`}</span><b>${tl(r.tot)}</b></div>`).join('')}</div>
+   <div class="legend"><span><i class="k-pu"></i>Satın alma</span><span><i class="k-el"></i>Elektrik (${H} ay)</span><span><i class="k-cl"></i>Bulut (${H} ay)</span></div>` : '';
   const F = S.buyFilter, list = within.filter(c => F === 'all' || (F === 'pc' ? c.kind === 'pc' : F === 'mac' ? c.kind === 'mac' : c.ram >= 64));
   const ss = sortState('sys', 'price'), rows = list.map(c => { const sp = Calc.speed(c, M), short = Calc.capacity(c, M, S) < S.monthlyTokens;
     return { c, sp, short, name: c.name, price: c.price, tps: sp.tps || NaN, tt: Calc.taskTime(c, M, S).total, el: sp.tps ? Calc.electricity(c, M, S).tl : NaN, st: { ok: 0, slow: 1, no: 2 }[sp.status] + (short ? 0.5 : 0) }; });
   return `${step(2, 'Sana önerilerimiz', `Bütçe ${tl(S.budget)} · ${Calc.MODELS[M].label} · ayda ${nf(S.monthlyTokens, 1)} M çıktı`)}
   ${rec}
-  ${step(3, 'Bütçendeki tüm hazır sistemler', `${list.length} sistem. Sıralamak için başlıklara tıkla. Qwen 27B hızı karta göre farklı bit sayısıyla hesaplanır (sütunda belirtilir).`, segButtons('buyfilter', [['all', 'Tümü'], ['pc', 'PC'], ['mac', 'Mac'], ['ram64', '64 GB+ RAM']], F))}
-  <div class="tablewrap"><table class="systable"><thead><tr>${th('sys', 'name', 'Sistem', ss)}${th('sys', 'price', 'Fiyat', ss, 'num')}${th('sys', 'tps', Calc.MODELS[M].short, ss, 'num')}${th('sys', 'tt', 'Görev süresi', ss, 'num')}${th('sys', 'el', 'Elektrik/ay', ss, 'num')}${th('sys', 'st', 'Durum', ss)}<th></th></tr></thead><tbody>${sortBy(rows, r => r[ss.k], ss.d).map(({ c, sp, tt, el, short }) => `<tr><td><b>${esc(c.name)}</b><small>${specLine(c)}</small><details class="more"><summary>Parçalar</summary>${partsList(c)}</details></td><td class="num"><b>${tl(c.price)}</b></td><td class="num">${tps(sp.tps)}<small>${sp.tps ? speedSub(sp) : ''}</small></td><td class="num">${dur(tt)}</td><td class="num">${sp.tps ? tl(el) : '—'}</td><td>${badge(sp.status)}${short && sp.tps ? '<small class="bad">kullanımına yetmez</small>' : ''}</td><td><button type="button" class="btn ghost small" data-compare="${c.id}">Karşılaştır</button></td></tr>`).join('') || '<tr><td colspan="7" class="muted">Bu filtreyle sistem yok.</td></tr>'}</tbody></table></div>
-  ${step(4, 'Kendin topla', 'Parçaları ve mağazaları sen seç. Uyumsuz parçalar elenir; fiyat, hız ve güç kaynağı yeterliliği anında hesaplanır.')}
+  ${step(3, 'Fiyat ve hız', `Her nokta bir hazır sistem: sağa gittikçe pahalı, yukarı çıktıkça hızlı (${Calc.MODELS[M].label}). Üzerine gelince ayrıntı görünür.`)}
+  <section class="card"><div id="buychart" class="chart-wrap"></div></section>
+  ${tcoHtml ? `<section class="card"><div class="card-head"><div><h2>${H} ayda toplam maliyet</h2><span class="muted small">Önerilen sistemler: satın alma + ayda ${nf(S.monthlyTokens, 1)} M çıktının elektriği${eqApi ? ', bulutta aynı modelin API maliyetiyle' : ''}.</span></div><a class="small" href="#karsilastir">Ayrıntılı karşılaştırma ${icon('arrow', 'bi')}</a></div>${tcoHtml}</section>` : ''}
+  ${step(4, 'Bütçendeki tüm hazır sistemler', `${list.length} sistem. Sıralamak için başlıklara tıkla. “Tüm modeller” görünümü her sistemi ${Calc.localModels().length} modelle karşılaştırır.`, `<div class="step-tools">${segButtons('sysview', [['table', 'Seçili model'], ['matrix', `Tüm modeller (${Calc.localModels().length})`]], S.sysView)}${segButtons('buyfilter', [['all', 'Tümü'], ['pc', 'PC'], ['mac', 'Mac'], ['ram64', '64 GB+ RAM']], F)}</div>`)}
+  ${S.sysView === 'matrix' ? matrixTable(list) : `<div class="tablewrap"><table class="systable"><thead><tr>${th('sys', 'name', 'Sistem', ss)}${th('sys', 'price', 'Fiyat', ss, 'num')}${th('sys', 'tps', Calc.MODELS[M].short, ss, 'num')}${th('sys', 'tt', 'Görev süresi', ss, 'num')}${th('sys', 'el', 'Elektrik/ay', ss, 'num')}${th('sys', 'st', 'Durum', ss)}<th></th></tr></thead><tbody>${sortBy(rows, r => r[ss.k], ss.d).map(({ c, sp, tt, el, short }) => `<tr><td><b>${esc(c.name)}</b><small>${specLine(c)}</small><details class="more"><summary>Parçalar</summary>${partsList(c)}</details></td><td class="num"><b>${tl(c.price)}</b></td><td class="num">${tps(sp.tps)}<small>${sp.tps ? speedSub(sp) : ''}</small></td><td class="num">${dur(tt)}</td><td class="num">${sp.tps ? tl(el) : '—'}</td><td>${badge(sp.status)}${short && sp.tps ? '<small class="bad">kullanımına yetmez</small>' : ''}</td><td><button type="button" class="btn ghost small" data-compare="${c.id}">Karşılaştır</button></td></tr>`).join('') || '<tr><td colspan="7" class="muted">Bu filtreyle sistem yok.</td></tr>'}</tbody></table></div>`}
+  ${step(5, 'Kendin topla', 'Parçaları ve mağazaları sen seç. Uyumsuz parçalar elenir; fiyat, hız ve güç kaynağı yeterliliği anında hesaplanır.')}
   <div id="builderBox">${builderHtml()}</div>
   <details class="card more alt"><summary>Başka yollar: mini PC, ikinci el veri merkezi kartları, Mac</summary><ul class="checks">
    <li><b>128 GB birleşik bellekli mini PC’ler (Ryzen AI Max):</b> Qwen 125B’nin 4 bit sürümünü tek kutuda tutar. Windows ekran kartına en fazla ≈96 GB verir; Linux ve doğru motorla okuma hızı 10 kata kadar artabiliyor.</li>
@@ -384,6 +447,14 @@ function resultsAl() {
    <li><b>Donanım pahalanırken token ucuzladı:</b> Bir masaüstü AI kutusu bir yılda %74 pahalandı, aynı dönemde popüler bir açık modelin API fiyatı ≈%57 düştü. Amorti hesabını mutlaka yap.</li>
    <li><b>Mac:</b> Bellek bant genişliği çipe göre çok değişir (M6 ≈150, M5 Pro ≈300, M5 Max 614 GB/sn). “M5” adı tek başına hız söylemez.</li>
    <li><b>RAM’de DDR4 seçeneği:</b> GB başına yaklaşık yarı fiyat, yarı hız. Bu işte kapasite genelde hızdan önemli; aynı paraya 32 GB DDR5 yerine 64 GB DDR4 çoğu zaman daha iyi.</li></ul></details>`;
+}
+// systems × models: writing speed, coloured by status; sortable by price, name or any model
+function matrixTable(list) {
+  const ms = Calc.localModels(), st = sortState('mx', 'price');
+  const rows = list.map(c => { const r = { c, name: c.name, price: c.price }; for (const m of ms) { const sp = Calc.speed(c, m.id); r[m.id] = sp.tps || NaN; r['_' + m.id] = sp.status; } return r; });
+  return `<div class="tablewrap matrix"><table class="systable mx"><thead><tr>${th('mx', 'name', 'Sistem', st, 'stick')}${th('mx', 'price', 'Fiyat', st, 'num')}${ms.map(m => th('mx', m.id, `<span class="mxh">${esc(m.short)}<small>${m.family}</small></span>`, st, 'num' + (m.id === S.model ? ' sel' : ''))).join('')}</tr></thead>
+   <tbody>${sortBy(rows, r => r[st.k], st.d).map(r => `<tr><td class="stick"><b>${esc(r.name)}</b></td><td class="num">${tl(r.price)}</td>${ms.map(m => `<td class="num cell ${r['_' + m.id]}${m.id === S.model ? ' sel' : ''}">${r[m.id] ? nf(r[m.id], r[m.id] < 10 ? 1 : 0) : '—'}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${ms.length + 2}" class="muted">Bu filtreyle sistem yok.</td></tr>`}</tbody></table></div>
+   <p class="small muted">Hücreler yazma hızı (tok/sn): yeşil rahat, turuncu yavaş, kırmızı çalışmaz. Sütun başlığına tıklayınca o modelde en hızlı sistemler üste gelir.</p>`;
 }
 const SLOTS = [['gpu', 'Ekran kartı'], ['cpu', 'İşlemci'], ['mobo', 'Anakart'], ['ram', 'RAM'], ['ssd', 'SSD'], ['psu', 'Güç kaynağı'], ['case', 'Kasa'], ['cooler', 'CPU soğutucu']];
 function partsOf(cat) { return Object.entries(Calc.cat().parts).filter(([, p]) => p.cat === cat); }
@@ -414,6 +485,7 @@ function builderHtml() {
   return `<div class="builder"><div class="brows">${rows}</div>
    <aside class="bsum"><span class="muted small">Toplam</span><b class="big">${tl(c.price)}</b>
     <p class="small muted">${c.ram} GB ${c.ramType} · ${c.vram} GB VRAM${c.gpus > 1 ? ' (iki kart, tek havuz değil)' : ''}</p>
+    <details class="more"><summary>Tüm modeller (${Calc.localModels().length})</summary>${allModelsTable(c)}</details>
     <ul class="bspeeds">${sp.map(([m, s]) => `<li><span>${Calc.MODELS[m].short}</span><b>${tps(s.tps)}</b>${badge(s.status)}<small>görev: ${dur(Calc.taskTime(c, m, S).total)}</small></li>`).join('')}</ul>
     <p class="small ${warn ? 'bad' : 'muted'}">${warn ? `${icon('alert', 'bi')} Güç kaynağı yetersiz olabilir: tahmini çekiş ${nf(draw)} W, %30 pay ile ${nf(draw * 1.3)} W gerekir.` : `Güç: tahmini ${nf(draw)} W / ${psu} W güç kaynağı`}</p>
     <button type="button" class="btn" data-compare="custom">Bulutla karşılaştır ${icon('arrow', 'bi')}</button>
@@ -509,6 +581,7 @@ function resultsKarsilastir() {
   ${step(3, 'Sonuç')}
   <section class="verdict"><p>${verdict}</p><div class="vstats"><div><span>${esc(local.name)} · ${H} ay</span><b>${tl(lc(H))}</b><small>${owned ? 'sadece elektrik' : tl(local.price) + ' + elektrik'} · ${tps(sp.tps)} · görev ${dur(Calc.taskTime(local, M, S).total)}</small></div><div><span>${esc(cloud.name)} · ${H} ay</span><b>${tl(cc(H))}</b><small>${tl(cloud.monthly)}/ay</small></div><div><span>Amorti</span><b>${be === 0 ? 'Hemen' : Number.isFinite(be) ? nf(be, 1) + ' ay' : '10 yıl+'}</b><small>${H}. ayda fark: ${tl(Math.abs(diff))}</small></div></div>${usageLine ? `<p class="vline">${usageLine}</p>` : ''}</section>
   ${rent}
+  <details class="card more alt"><summary>${esc(local.name)}: tüm modellerde hız ve görev süresi (${Calc.localModels().length})</summary>${allModelsTable(local)}</details>
   ${step(4, 'Grafikler')}
   <section class="card"><div class="card-head"><h2>Zamanla toplam maliyet</h2><span class="muted small">${H} ay · satın alma + elektrik, bulutta aylık ücret</span></div><div id="chart" class="chart-wrap"></div></section>
   <section class="card"><div class="card-head"><div><h2>Aylık kullanıma göre bir ayın maliyeti</h2><span class="muted small">Kullanım arttıkça API maliyeti doğrusal artar; bilgisayarda yalnızca elektrik artar (donanım bedeli ${owned ? 'yok' : H + ' aya bölünmüş'}). Kapasite veya kota aşılınca ek bilgisayar ya da abonelik eklenir.</span></div>${segButtons('tokscale', [['log', 'Logaritmik'], ['lin', 'Doğrusal']], S.tokScale)}</div><div id="tchart" class="chart-wrap"></div>
@@ -709,6 +782,7 @@ function updateResults() {
   const v = route(), box = $('#results');
   if (box && RESULTS[v]) box.innerHTML = RESULTS[v]();
   if (v === 'karsilastir') drawCompareCharts();
+  if (v === 'al') drawBuyCharts();
 }
 function rerenderControls() { const y = scrollY; render(); scrollTo(0, y); }
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
@@ -737,11 +811,12 @@ document.addEventListener('click', e => {
   else if (d.model) { set('model', d.model); set('cmpCloud', ''); rerenderControls(); }
   else if (d.task) { set('taskType', d.task); rerenderControls(); }
   else if (d.buyfilter) { set('buyFilter', d.buyfilter); updateResults(); }
+  else if (d.sysview) { set('sysView', d.sysview); updateResults(); }
   else if (d.cloudclass) { set('cloudClass', d.cloudclass); updateResults(); }
   else if (d.cmpclass) { set('cmpClass', d.cmpclass); set('cmpCloud', ''); updateResults(); }
   else if (d.tokscale) { set('tokScale', d.tokscale); updateResults(); }
   else if (d.cloudsort) { set('cloudSort', d.cloudsort); updateResults(); }
-  else if (d.sort) { const [t, k] = d.sort.split(':'), cur = (S.sorts || {})[t]; set('sorts', { ...S.sorts, [t]: { k, d: cur && cur.k === k ? -cur.d : SORT_DEF[k] || 1 } }); updateResults(); }
+  else if (d.sort) { const i = d.sort.indexOf(':'), t = d.sort.slice(0, i), k = d.sort.slice(i + 1), cur = (S.sorts || {})[t]; set('sorts', { ...S.sorts, [t]: { k, d: cur && cur.k === k ? -cur.d : SORT_DEF[k] || (Calc.MODELS[k] ? -1 : 1) } }); updateResults(); }
   else if (d.jump) { const el = document.getElementById(d.jump); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   else if (d.compare) { set('cmpLocal', d.compare); location.hash = '#karsilastir'; }
   else if (d.cmpLocal) { set('cmpLocal', d.cmpLocal); }
@@ -753,7 +828,7 @@ document.addEventListener('click', e => {
   else if (b.id === 'theme') { const dark = document.documentElement.dataset.theme !== 'dark' && !(document.documentElement.dataset.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches); document.documentElement.dataset.theme = dark ? 'dark' : 'light'; try { localStorage.setItem('yerel-ai-theme', dark ? 'dark' : 'light'); } catch (e) {} }
 });
 window.addEventListener('hashchange', () => { render(); scrollTo(0, 0); });
-let resizeT; window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (route() === 'karsilastir') drawCompareCharts(); }, 200); });
+let resizeT; window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (route() === 'karsilastir') drawCompareCharts(); if (route() === 'al') drawBuyCharts(); }, 200); });
 
 /* ---------- boot ---------- */
 (async function boot() {

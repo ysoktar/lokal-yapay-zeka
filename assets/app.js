@@ -40,7 +40,7 @@ const icon = (n, cls = 'ic') => `<svg class="${cls}" viewBox="0 0 24 24" fill="n
 const DEFAULT_STATE = () => {
   const d = Calc.cat().defaults;
   return { monthlyTokens: d.monthlyTokens, outputSharePercent: d.outputSharePercent, cachedInputSharePercent: d.cachedInputSharePercent,
-    preset: null, taskType: 'short', model: 'q27', privacy: false, budget: d.budget, horizon: d.horizon, hoursPerDay: d.hoursPerDay,
+    preset: null, taskType: 'short', model: 'q27', privacy: false, budget: d.budget, priority: 'balanced', horizon: d.horizon, hoursPerDay: d.hoursPerDay,
     usdTry: (Calc.live().usdTry && Calc.live().usdTry.value) || d.usdTry, usdYearly: 0, tlYearly: 0, foreignTax: 0, resale: false, depreciation: 25,
     offerSel: {}, caps: {}, cloudClass: 'all', cmpClass: 'equiv', cmpLocal: 'custom', cmpCloud: '', buyFilter: 'all', sysView: 'table', tariff: {}, tokScale: 'log', metDev: 6, metModel: 0, cache: { dev: 2, turns: 40, start: 33000, add: 1200, out: 800 }, sorts: {}, cloudSort: 'monthly',
     build: { gpu: 'gpu5070', gpuCount: 1, cpu: 'cpu7500f', mobo: 'moboB650', ram: 'ram64', ssd: 'ssd2', psu: 'psu850', case: 'caseMid', cooler: 'cooler' },
@@ -134,7 +134,7 @@ function computerCard(c, opts = {}) {
    <div class="badges">${badge(sp.status)}${short ? ` <span class="badge no">Yetmez: en fazla ${nf(cap, 1)} M/ay</span>` : ''}</div>
    <ul class="mrow" aria-label="Modellere göre yazma hızı ve görev süresi">${mixModels().map(m => { const s2 = Calc.speed(c, m); return `<li class="${m === S.model ? 'on' : ''}"><span class="dot ${s2.status}"></span><span>${Calc.MODELS[m].short}</span><b>${tps(s2.tps)}</b><small>${s2.tps ? dur(Calc.taskTime(c, m, S).total) : '—'}</small></li>`; }).join('')}</ul>
    <p class="small muted">${esc(sp.note)}</p>
-   ${opts.reason ? `<p class="small reason">${opts.reason}</p>` : ''}
+   ${opts.reason ? `<p class="small reason">${opts.reason}</p>` : ''}${opts.extra || ''}
    <details class="more"><summary>Tüm modeller (${Calc.localModels().length})</summary>${allModelsTable(c)}</details>
    <details class="more"><summary>Parçalar ve mağazalar</summary>${partsList(c)}</details>
    <div class="actions"><button type="button" class="btn ghost small" data-compare="${c.id}">Bulutla karşılaştır ${icon('arrow', 'bi')}</button></div>
@@ -397,45 +397,107 @@ function resultsElimde() {
 VIEWS.al = () => `${pageHead('bag', 'Bilgisayar alacağım', 'Kullanımına göre hangi bilgisayar?', 'Kullanımını ve bütçeni gir; hazır sistemler arasından üç öneri çıkaralım. İstersen parça parça kendin topla, her parçada mağazayı sen seç.')}
   ${step(1, 'Ne için kullanacaksın?', 'Sana en yakın profili seç; sonuçlar anında değişir.')}
   ${usagePanel({ budget: true })}<div id="results"></div>`;
+// ---- buying decision: several criteria, weighted by what the user cares about ----
+const PRIORITIES = {
+  balanced: { label: 'Dengeli', desc: 'Fiyat, hız, bağlam payı ve esneklik birlikte.', w: { price: .25, speed: .18, session: .15, ctx: .12, quality: .1, models: .12, power: .08 } },
+  cheap: { label: 'En ucuz', desc: 'Kullanımını karşılayan en düşük fiyat öne çıkar.', w: { price: .6, speed: .12, session: .08, ctx: .05, quality: .05, models: .05, power: .05 } },
+  fast: { label: 'En hızlı', desc: 'Yazma hızı ve oturum süresi öne çıkar.', w: { price: .05, speed: .45, session: .3, ctx: .08, quality: .07, models: .03, power: .02 } },
+  models: { label: 'Çok model / gelecek', desc: 'Daha çok modeli rahat çalıştıran, büyük modellere hazır sistemler öne çıkar.', w: { price: .15, speed: .1, session: .08, ctx: .12, quality: .1, models: .45, power: 0 } },
+  agent: { label: 'Uzun bağlam / ajan', desc: 'Okuma hızı, oturum süresi ve önbellek için kalan bellek öne çıkar.', w: { price: .12, speed: .12, session: .35, ctx: .3, quality: .06, models: .03, power: .02 } }
+};
+const CRIT = { price: 'Fiyat', speed: 'Yazma hızı', session: '40 turluk ajan oturumu', ctx: 'Bağlam payı', quality: 'Quant kalitesi', models: 'Rahat çalışan model', power: 'Elektrik' };
+// a multi-turn agent session with and without the prompt cache (same model as the Metrikler cache calculator)
+function sessionSecs(pp, dec, cached, turns = 40, start = 33000, add = 1200, out = 800) {
+  if (!pp || !dec) return Infinity; let ctx = start, t = 0;
+  for (let i = 1; i <= turns; i++) { if (i > 1) ctx += add + out; t += (cached ? (i === 1 ? start : add) : ctx) / pp + out / dec; }
+  return t;
+}
+// fast memory left for the KV cache once the weights are loaded, as tokens (≈25 KB per token at 8 bit; rough)
+function ctxRoom(c, M) {
+  const m = Calc.MODELS[M] || {}, uni = c.ramType === 'unified', v = c.vram || 0;
+  let file = m.file, q = 1;
+  if (M === 'q27') { if (uni) file = 17; else if (v >= 20) file = 16.5; else if (v >= 16) { file = 11.8; q = .8; } else if (v >= 12) { file = 8.4; q = .55; } }
+  let free;
+  if (uni) free = c.ram * 0.75 - (file || c.ram * 0.6);
+  else if (m.strata) free = Math.max(0, v - 8);           // Strata keeps attention + hot experts on the card, experts in RAM
+  else free = v - 1.5 - (file || v);
+  const gbFree = Math.max(0, free);
+  return { gb: gbFree, tokens: Math.min(262144, gbFree * 40000), q };
+}
+function decide(cands, M) {
+  const T = Calc.cat().taskTypes, all = Calc.localModels(), eq = Calc.cloudOptions(S).filter(o => o.fits && ((Calc.MODELS[M] || {}).api || []).includes(o.id)).sort((a, b) => a.monthly - b.monthly)[0];
+  const rows = cands.map(c => {
+    const sp = Calc.speed(c, M), pp = Calc.prefill(c, M), room = ctxRoom(c, M);
+    return { c, sp, pp, room, tps: sp.tps, task: Calc.taskTime(c, M, S).total, first: 32000 / pp + 1000 / sp.tps, sOn: sessionSecs(pp, sp.tps, true), sOff: sessionSecs(pp, sp.tps, false),
+      okModels: all.filter(m => Calc.speed(c, m.id).status === 'ok').length, el: Calc.electricity(c, M, S).tl, be: eq ? Calc.breakEven(c, M, eq, S, false) : NaN, tot: Calc.localCum(c, M, S, S.horizon, false) };
+  });
+  // each criterion scaled 0..1 among the candidates (log scale for price, speed and time)
+  const norm = (get, higher, log) => { const v = rows.map(r => { const x = get(r); return log ? Math.log(Math.max(x, 1e-6)) : x; }), lo = Math.min(...v), hi = Math.max(...v);
+    rows.forEach((r, i) => { const z = hi > lo ? (v[i] - lo) / (hi - lo) : 1; (r.n = r.n || {})[get.k] = higher ? z : 1 - z; }); };
+  const crit = { price: [r => r.c.price, false, true], speed: [r => r.tps, true, true], session: [r => r.sOn, false, true], ctx: [r => Math.min(r.room.tokens, 131072), true, false], quality: [r => r.room.q, true, false], models: [r => r.okModels, true, false], power: [r => r.el, false, false] };
+  for (const [k, [g, h, l]] of Object.entries(crit)) { g.k = k; norm(g, h, l); }
+  const w = (PRIORITIES[S.priority] || PRIORITIES.balanced).w;
+  rows.forEach(r => { r.parts = Object.fromEntries(Object.keys(w).map(k => [k, w[k] * r.n[k]])); r.score = Math.round(Object.values(r.parts).reduce((a, b) => a + b, 0) * 100); });
+  return { rows: rows.sort((a, b) => b.score - a.score || a.c.price - b.c.price), eq, total: all.length };
+}
+function scoreBreak(r) {
+  const w = (PRIORITIES[S.priority] || PRIORITIES.balanced).w;
+  const val = { price: tl(r.c.price), speed: tps(r.tps), session: dur(r.sOn), ctx: r.room.tokens >= 1000 ? '≈' + nf(r.room.tokens / 1000) + 'K token' : 'yok', quality: r.room.q >= 1 ? 'tam (Q4+)' : r.room.q >= .8 ? '3,5 bit' : '2–3 bit', models: `${r.okModels} model`, power: tl(r.el) + '/ay' };
+  return `<div class="sbreak"><div class="sb-h"><b>Puan ${r.score}/100</b><span class="muted small">${(PRIORITIES[S.priority] || PRIORITIES.balanced).label}</span></div>${Object.keys(w).filter(k => w[k] > 0).sort((a, b) => w[b] - w[a]).map(k => `<div class="sb-r"><span>${CRIT[k]}</span><span class="sb-bar"><i style="width:${r.n[k] * 100}%"></i></span><b>${val[k]}</b></div>`).join('')}</div>`;
+}
 function resultsAl() {
   const all = Calc.computers(S.offerSel), M = S.model;
   const within = all.filter(c => c.price <= S.budget);
   const good = c => Calc.speed(c, M).status === 'ok' && Calc.capacity(c, M, S) >= S.monthlyTokens;
   const ok = within.filter(good);
-  let rec = '';
+  let rec = '', cmpTable = '', top = [];
+  const D = ok.length ? decide(ok, M) : null;
   if (!ok.length) {
     const above = all.filter(good).sort((a, b) => a.price - b.price)[0];
     rec = `<div class="tip">Bütçendeki (${tl(S.budget)}) hiçbir bilgisayar bu kullanımı ${Calc.MODELS[M].short} ile rahat karşılamıyor.${above ? ` En ucuz uygun seçenek: <b>${esc(above.name)}</b> — ${tl(above.price)}.` : ''} Günlük çalışma saatini artırabilir, başka bir model seçebilir veya <a href="#bulut">bulut seçeneklerine</a> bakabilirsin.</div>`;
   } else {
-    const cheapest = [...ok].sort((a, b) => a.price - b.price)[0];
-    const value = [...ok].sort((a, b) => Calc.speed(b, M).tps / b.price - Calc.speed(a, M).tps / a.price)[0];
-    const fastest = [...ok].sort((a, b) => Calc.speed(b, M).tps - Calc.speed(a, M).tps)[0];
-    // with the dense 27B model a 16 GB card runs a better quant (3.5 bit instead of 2–3 bit) and leaves more context
-    const vpp = c => Calc.speed(c, M).tps / c.price;
-    const MM = Calc.MODELS[M], needs16 = M === 'q27' || (MM.file > 10.5 && MM.file <= 14.5);
-    const balanced = needs16 ? [...ok].filter(c => c.kind === 'pc' && c.gpuVram >= 16).sort((a, b) => vpp(b) - vpp(a))[0] : null;
-    const picks = [[cheapest, 'En ucuz çalışan', 'Kullanımını karşılayan en düşük fiyat.'], [value, 'Fiyat/performans', 'Lira başına en çok token/sn.'],
-      ...(balanced ? [[balanced, 'Dengeli: 16 GB kart', M === 'q27' ? '16 GB kartlar arasında lira başına en hızlısı: Qwen 27B’yi 2–3 bit yerine 3,5 bit çalıştırır (daha az kalite kaybı) ve ≈110K bağlam bırakır.' : `16 GB kartlar arasında lira başına en hızlısı: ${esc(MM.short)} (≈${nf(MM.file)} GB) 12 GB karta sığmaz, 16 GB kartta tamamı kartta çalışır.`]] : []),
-      [fastest, 'En hızlı', 'Bütçende en yüksek yazma hızı.']];
-    const merged = [];
-    for (const [c, t, r] of picks) { const m = merged.find(x => x.c.id === c.id); if (m) { m.t += ' · ' + t; m.r += ' ' + r; } else merged.push({ c, t, r }); }
-    rec = `<div class="pcgrid ${merged.length === 4 ? 'two' : 'three'}">${merged.map(({ c, t, r }) => computerCard(c, { tag: t, reason: r, highlight: true })).join('')}</div>`;
-    var mergedPicks = merged;
+    top = D.rows.slice(0, 3);
+    const cheapest = [...D.rows].sort((a, b) => a.c.price - b.c.price)[0];
+    const cols = top.some(r => r === cheapest) ? top : [...top, cheapest];
+    const names = ['1. öneri', '2. öneri', '3. öneri'];
+    rec = `<div class="pcgrid three">${top.map((r, i) => computerCard(r.c, { tag: names[i], highlight: true, extra: scoreBreak(r) })).join('')}</div>`;
+    // comparison table: the metrics from the Metrikler page, side by side for the candidates
+    const best = (get, higher) => { const v = cols.map(get).filter(Number.isFinite); return v.length ? (higher ? Math.max(...v) : Math.min(...v)) : NaN; };
+    const R = [
+      ['Fiyat', r => r.c.price, false, v => tl(v)],
+      [`Yazma hızı (${esc(Calc.MODELS[M].short)})`, r => r.tps, true, v => tps(v)],
+      ['Okuma hızı (prefill)', r => r.pp, true, v => nf(v) + ' tok/sn'],
+      [`Görev süresi (${esc((Calc.cat().taskTypes[S.taskType] || {}).label || '')})`, r => r.task, false, dur],
+      ['Ajanın ilk cevabı (32K, önbellek boş)', r => r.first, false, dur],
+      ['40 turluk ajan oturumu · önbellekli', r => r.sOn, false, dur],
+      ['40 turluk ajan oturumu · önbelleksiz', r => r.sOff, false, dur],
+      ['Önbellek için bağlam payı (tahmini)', r => r.room.tokens, true, v => v >= 1000 ? '≈' + nf(v / 1000) + 'K token' : 'yok'],
+      [`Rahat çalışan model (/${D.total})`, r => r.okModels, true, v => nf(v)],
+      ['Ek elektrik', r => r.el, false, v => tl(v) + '/ay'],
+      [D.eq ? `${esc(D.eq.name)} karşısında amorti` : 'Amorti', r => r.be, false, v => Number.isFinite(v) ? (v === 0 ? 'hemen' : nf(v, 1) + ' ay') : '10 yıl+'],
+      [`${S.horizon} ayda toplam`, r => r.tot, false, v => tl(v)]];
+    cmpTable = `<section class="card"><div class="card-head"><div><h2>Önerileri karşılaştır</h2><span class="muted small">Metrikler sayfasındaki ölçütler, adaylar için yan yana; her satırda en iyi değer vurgulu.</span></div><a class="small" href="#metrikler">Metrikler ${icon('arrow', 'bi')}</a></div>
+     <div class="tablewrap flat"><table class="systable cmpt"><thead><tr><th></th>${cols.map((r, i) => `<th class="num">${i < top.length ? names[i] : 'En ucuz aday'}<small>${esc(r.c.name)}</small></th>`).join('')}</tr></thead>
+     <tbody>${R.map(([l, get, hi, f]) => { const b = best(get, hi); return `<tr><td>${l}</td>${cols.map(r => { const v = get(r); return `<td class="num${Number.isFinite(v) && v === b && cols.length > 1 ? ' best' : ''}">${f(v)}</td>`; }).join('')}</tr>`; }).join('')}</tbody></table></div>
+     <p class="small muted">Oturum: 33K bağlamla başlar, her turda 1.200 token yeni girdi ve 800 token cevap (Metrikler → Önbellek). Bağlam payı: model yüklendikten sonra hızlı bellekte kalan yer, 8 bit önbellekle token başına ≈25 KB varsayımıyla.</p></section>`;
   }
-  const pickTag = id => { const m = (mergedPicks || []).find(x => x.c.id === id); return m ? m.t : ''; };
+  const pickTag = id => { const i = top.findIndex(r => r.c.id === id); return i >= 0 ? `${i + 1}. öneri` : ''; };
   BUY_CHART = { pts: all.map(c => { const sp = Calc.speed(c, M); return { x: c.price, y: sp.tps || 0, st: sp.status, name: c.name, tag: pickTag(c.id), sub: `${specLine(c)} · görev ${dur(Calc.taskTime(c, M, S).total)}` }; }) };
   // total cost over the comparison period: purchase + electricity, against the matching cloud model
-  const H = S.horizon, eqApi = Calc.cloudOptions(S).filter(o => o.fits && ((Calc.MODELS[M] || {}).api || []).includes(o.id)).sort((a, b) => a.monthly - b.monthly)[0];
-  const tco = (mergedPicks || []).map(({ c, t }) => { const tot = Calc.localCum(c, M, S, H, false); return { label: c.name, sub: t, a: Math.min(tot, c.price), b: Math.max(0, tot - c.price), tot }; });
+  const H = S.horizon, eqApi = D ? D.eq : null;
+  const tco = top.map((r, i) => ({ label: r.c.name, sub: `${i + 1}. öneri`, a: Math.min(r.tot, r.c.price), b: Math.max(0, r.tot - r.c.price), tot: r.tot }));
   if (eqApi) tco.push({ label: eqApi.name, sub: `bulutta dengi model · ${tl(eqApi.monthly)}/ay`, c: Calc.cloudCum(eqApi, S, H), tot: Calc.cloudCum(eqApi, S, H) });
   const tmax = Math.max(1, ...tco.map(r => r.tot));
-  const tcoHtml = tco.length ? `<div class="tbars money">${tco.map(r => `<div class="tb-row"><span class="tb-l">${esc(r.label)}<small>${esc(r.sub)}</small></span><span class="tb-bar abs">${r.c != null ? `<i class="cl" style="width:${r.c / tmax * 100}%"></i>` : `<i class="pu" style="width:${r.a / tmax * 100}%">${r.a / tmax > 0.18 ? tl(r.a) : ''}</i><i class="el" style="width:${r.b / tmax * 100}%"></i>`}</span><b>${tl(r.tot)}</b></div>`).join('')}</div>
+  const tcoHtml = top.length ? `<div class="tbars money">${tco.map(r => `<div class="tb-row"><span class="tb-l">${esc(r.label)}<small>${esc(r.sub)}</small></span><span class="tb-bar abs">${r.c != null ? `<i class="cl" style="width:${r.c / tmax * 100}%"></i>` : `<i class="pu" style="width:${r.a / tmax * 100}%">${r.a / tmax > 0.18 ? tl(r.a) : ''}</i><i class="el" style="width:${r.b / tmax * 100}%"></i>`}</span><b>${tl(r.tot)}</b></div>`).join('')}</div>
    <div class="legend"><span><i class="k-pu"></i>Satın alma</span><span><i class="k-el"></i>Elektrik (${H} ay)</span><span><i class="k-cl"></i>Bulut (${H} ay)</span></div>` : '';
   const F = S.buyFilter, list = within.filter(c => F === 'all' || (F === 'pc' ? c.kind === 'pc' : F === 'mac' ? c.kind === 'mac' : c.ram >= 64));
   const ss = sortState('sys', 'price'), rows = list.map(c => { const sp = Calc.speed(c, M), short = Calc.capacity(c, M, S) < S.monthlyTokens;
     return { c, sp, short, name: c.name, price: c.price, tps: sp.tps || NaN, tt: Calc.taskTime(c, M, S).total, el: sp.tps ? Calc.electricity(c, M, S).tl : NaN, st: { ok: 0, slow: 1, no: 2 }[sp.status] + (short ? 0.5 : 0) }; });
-  return `${step(2, 'Sana önerilerimiz', `Bütçe ${tl(S.budget)} · ${Calc.MODELS[M].label} · ayda ${nf(S.monthlyTokens, 1)} M çıktı`)}
+  return `${step(2, 'Karar', `Bütçe ${tl(S.budget)} · ${Calc.MODELS[M].label} · ayda ${nf(S.monthlyTokens, 1)} M çıktı · ${(Calc.cat().taskTypes[S.taskType] || {}).label || ''}`)}
+  <section class="card"><div class="row-label first">Neye önem veriyorsun?</div>${segButtons('priority', Object.entries(PRIORITIES).map(([k, p]) => [k, p.label]), S.priority)}
+   <p class="small muted">${(PRIORITIES[S.priority] || PRIORITIES.balanced).desc} Puan; fiyat, yazma hızı, 40 turluk ajan oturumunun süresi (önbellekli), önbellek için kalan bellek, quant kalitesi, rahat çalışan model sayısı ve elektrikten hesaplanır. Yalnızca bu modeli rahat çalıştıran ve aylık kullanımına yeten sistemler aday olur.</p></section>
   ${rec}
+  ${cmpTable}
   ${step(3, 'Fiyat ve hız', `Her nokta bir hazır sistem: sağa gittikçe pahalı, yukarı çıktıkça hızlı (${Calc.MODELS[M].label}). Üzerine gelince ayrıntı görünür.`)}
   <section class="card"><div id="buychart" class="chart-wrap"></div></section>
   ${tcoHtml ? `<section class="card"><div class="card-head"><div><h2>${H} ayda toplam maliyet</h2><span class="muted small">Önerilen sistemler: satın alma + ayda ${nf(S.monthlyTokens, 1)} M çıktının elektriği${eqApi ? ', bulutta aynı modelin API maliyetiyle' : ''}.</span></div><a class="small" href="#karsilastir">Ayrıntılı karşılaştırma ${icon('arrow', 'bi')}</a></div>${tcoHtml}</section>` : ''}
@@ -862,6 +924,7 @@ document.addEventListener('click', e => {
   if (d.preset) { const p = Calc.cat().usagePresets.find(x => x.id === d.preset); Object.assign(S, { preset: p.id, taskType: p.task || S.taskType, monthlyTokens: Math.round(p.calls * p.tokens * p.days / 1e4) / 100, outputSharePercent: p.outputPct, cachedInputSharePercent: p.cachePct ?? S.cachedInputSharePercent }); save(); rerenderControls(); }
   else if (d.model) { set('model', d.model); set('cmpCloud', ''); rerenderControls(); }
   else if (d.task) { set('taskType', d.task); rerenderControls(); }
+  else if (d.priority) { set('priority', d.priority); updateResults(); }
   else if (d.buyfilter) { set('buyFilter', d.buyfilter); updateResults(); }
   else if (d.sysview) { set('sysView', d.sysview); updateResults(); }
   else if (d.cloudclass) { set('cloudClass', d.cloudclass); updateResults(); }

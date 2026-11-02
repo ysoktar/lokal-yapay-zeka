@@ -367,6 +367,8 @@ tr.dimrow td{color:var(--muted)}tr.dimrow td b{color:var(--text-2);font-weight:5
 .systable.cmpt{min-width:720px}.systable.cmpt th small{display:block;text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-2);font-size:12px;white-space:normal;max-width:200px;margin-left:auto}
 .systable.cmpt td:first-child{color:var(--text-2);font-size:13px}.systable.cmpt td.best{color:var(--ok);font-weight:700;background:var(--ok-bg)}
 
+.tbars.logt .tb-row.axis,.hb-row.axis{margin-top:-4px}.tbars.logt .tb-row.axis .rb-ax,.hb-row.axis .rb-ax{position:relative;height:16px}
+.hb-row.axis{background:none!important;outline:0!important}
 /* ---------- responsive ---------- */
 @media(max-width:1060px){.lgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.pcgrid.four{grid-template-columns:repeat(2,minmax(0,1fr))}.doc{grid-template-columns:1fr}.toc{position:static;display:flex;flex-wrap:wrap}.toc button{padding:5px 10px;border:1px solid var(--line);border-radius:20px}.toc button span{display:none}.hero{grid-template-columns:1fr;gap:28px}.personas{grid-template-columns:repeat(2,minmax(0,1fr))}.mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.pcgrid.three,.pcgrid.two{grid-template-columns:minmax(0,1fr)}.builder{grid-template-columns:1fr}.bsum{position:static}.fields.four{grid-template-columns:repeat(2,minmax(0,1fr))}.foot-grid{grid-template-columns:1fr 1fr}.brand-sub{display:none}}
 @media(max-width:720px){.wrap{padding:0 16px}.topbar-in{flex-wrap:wrap;gap:8px;padding:10px 0;min-height:0}.nav{order:3;flex-basis:100%}

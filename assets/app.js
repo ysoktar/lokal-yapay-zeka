@@ -31,7 +31,8 @@ const ICONS = {
   globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.7 2.6 14.3 0 17M12 3.5c-2.6 2.7-2.6 14.3 0 17"/>',
   refresh: '<path d="M19.5 11A7.5 7.5 0 0 0 5.6 7.5M4.5 13a7.5 7.5 0 0 0 13.9 3.5"/><path d="M5 3.5v4.2h4.2M19 20.5v-4.2h-4.2"/>',
   edit: '<path d="M4 20h4.2L19.5 8.7a2.1 2.1 0 0 0-3-3L5.2 17z"/>',
-  lock: '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>'
+  lock: '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>',
+  sort: '<path d="M8 9.5l4-4 4 4M8 14.5l4 4 4-4"/>', up: '<path d="M7 14.5l5-5 5 5"/>', down: '<path d="M7 9.5l5 5 5-5"/>'
 };
 const icon = (n, cls = 'ic') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
 
@@ -41,7 +42,7 @@ const DEFAULT_STATE = () => {
   return { monthlyTokens: d.monthlyTokens, outputSharePercent: d.outputSharePercent, cachedInputSharePercent: d.cachedInputSharePercent,
     preset: null, taskType: 'short', model: 'q27', privacy: false, budget: d.budget, horizon: d.horizon, hoursPerDay: d.hoursPerDay,
     usdTry: (Calc.live().usdTry && Calc.live().usdTry.value) || d.usdTry, usdYearly: 0, tlYearly: 0, foreignTax: 0, resale: false, depreciation: 25,
-    offerSel: {}, caps: {}, cloudClass: 'all', cmpClass: 'equiv', cmpLocal: 'custom', cmpCloud: '', buyFilter: 'all', tariff: {}, tokScale: 'log', metDev: 6, metModel: 0,
+    offerSel: {}, caps: {}, cloudClass: 'all', cmpClass: 'equiv', cmpLocal: 'custom', cmpCloud: '', buyFilter: 'all', tariff: {}, tokScale: 'log', metDev: 6, metModel: 0, sorts: {}, cloudSort: 'monthly',
     build: { gpu: 'gpu5070', gpuCount: 1, cpu: 'cpu7500f', mobo: 'moboB650', ram: 'ram64', ssd: 'ssd2', psu: 'psu850', case: 'caseMid', cooler: 'cooler' },
     mine: { gpu: 'rtx3060', vram: 12, watts: 170, ram: 32, ramType: 'DDR5', ssd: 500 } };
 };
@@ -125,6 +126,7 @@ function computerCard(c, opts = {}) {
    <p class="muted small">${specLine(c)}</p>
    <div class="pc-stats"><div><span>${Calc.MODELS[S.model].short}</span><b>${tps(sp.tps)}</b><small>${speedSub(sp)}</small></div><div><span>Görev süresi</span><b>${dur(tt.total)}</b><small>okuma ${dur(tt.read)} + yazma ${dur(tt.write)}</small></div><div><span>Ek elektrik</span><b>${tl(el)}/ay</b><small>${nf(S.monthlyTokens, 1)} M çıktı</small></div></div>
    <div class="badges">${badge(sp.status)}${short ? ` <span class="badge no">Yetmez: en fazla ${nf(cap, 1)} M/ay</span>` : ''}</div>
+   <ul class="mrow" aria-label="Modellere göre yazma hızı ve görev süresi">${['q27', 'qwen', 'deepseek'].map(m => { const s2 = Calc.speed(c, m); return `<li class="${m === S.model ? 'on' : ''}"><span class="dot ${s2.status}"></span><span>${Calc.MODELS[m].short}</span><b>${tps(s2.tps)}</b><small>${s2.tps ? dur(Calc.taskTime(c, m, S).total) : '—'}</small></li>`; }).join('')}</ul>
    <p class="small muted">${esc(sp.note)}</p>
    ${opts.reason ? `<p class="small reason">${opts.reason}</p>` : ''}
    <details class="more"><summary>Parçalar ve mağazalar</summary>${partsList(c)}</details>
@@ -176,6 +178,20 @@ function taskBars(rows) {
   return `<div class="tbars">${rows.map(r => { const tot = r.read + r.write, rp = Number.isFinite(tot) && tot > 0 ? r.read / tot * 100 : 0; return `<div class="tb-row"><span class="tb-l">${r.label}<small>${r.sub || ''}</small></span><span class="tb-bar"><i class="rd" style="width:${rp}%">${rp > 18 ? dur(r.read) : ''}</i><i class="wr" style="width:${100 - rp}%">${100 - rp > 18 ? dur(r.write) : ''}</i></span><b>${dur(tot)}</b></div>`; }).join('')}</div>
   <div class="legend"><span><i class="k-rd"></i>Okuma (bağlam, prefill)</span><span><i class="k-wr"></i>Yazma (cevap, decode)</span></div>`;
 }
+// sortable tables: header buttons carry data-sort="table:key"; non-finite values always go last
+const SORT_DEF = { tps: -1, pp: -1 };
+const sortState = (t, k) => (S.sorts && S.sorts[t]) || { k, d: SORT_DEF[k] || 1 };
+function sortBy(rows, get, d) {
+  return [...rows].sort((a, b) => { const x = get(a), y = get(b), fx = typeof x === 'string' || Number.isFinite(x), fy = typeof y === 'string' || Number.isFinite(y);
+    if (!fx || !fy) return fx === fy ? 0 : fx ? -1 : 1; return (typeof x === 'string' ? x.localeCompare(y, 'tr') : x - y) * d; });
+}
+const th = (t, k, label, st, cls = '') => `<th class="${cls}" aria-sort="${st.k === k ? (st.d > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" class="th-sort${st.k === k ? ' on' : ''}" data-sort="${t}:${k}">${label}${icon(st.k === k ? (st.d > 0 ? 'up' : 'down') : 'sort', 'bi')}</button></th>`;
+// bars on a common scale (to compare models), split into reading and writing time
+function absTaskBars(rows) {
+  const max = Math.max(...rows.map(r => r.read + r.write).filter(Number.isFinite), 1e-9);
+  return `<div class="tbars">${rows.map(r => { const a = r.read / max * 100, b = r.write / max * 100; return `<div class="tb-row"><span class="tb-l">${r.label}<small>${r.sub || ''}</small></span><span class="tb-bar abs"><i class="rd" style="width:${a}%">${a > 14 ? dur(r.read) : ''}</i><i class="wr" style="width:${b}%">${b > 14 ? dur(r.write) : ''}</i></span><b>${dur(r.read + r.write)}</b></div>`; }).join('')}</div>
+  <div class="legend"><span><i class="k-rd"></i>Okuma (bağlam, prefill)</span><span><i class="k-wr"></i>Yazma (cevap, decode)</span></div>`;
+}
 const meter = (v, max, cls) => `<span class="meter ${cls || ''}"><i style="width:${Math.max(2, Math.min(100, v / max * 100))}%"></i></span>`;
 
 /* ---------- line chart (SVG): linear or logarithmic axes, limits drawn dashed, vertical markers ---------- */
@@ -218,14 +234,14 @@ function xyChart(box, o) {
   let mk = '';
   for (const m of o.markers || []) if (m.x > X.lo && m.x < X.hi) { const px = xs(m.x), right = px > W - (narrow ? 150 : 200); mk += `<line x1="${px}" x2="${px}" y1="${T - 4}" y2="${T + ih}" class="mk"/><text x="${right ? px - 6 : px + 6}" y="${T - 10}" class="mkt" text-anchor="${right ? 'end' : 'start'}">${esc(m.label)}</text>`; }
   box.innerHTML = `<div class="chartbox"><svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="${esc(o.label || 'Grafik')}">${g}${mk}${lines}<line class="xh" x1="0" x2="0" y1="${T}" y2="${T + ih}" visibility="hidden"/></svg><div class="ctip" hidden></div></div>
-   <div class="legend">${o.series.map(s => `<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}${o.series.some(s => Number.isFinite(s.limit)) ? '<span class="muted"><i class="k-dot"></i>noktalı: kapasite / kota aşıldı</span>' : ''}</div>`;
+   <div class="legend">${o.series.map(s => `<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}${o.series.some(s => Number.isFinite(s.limit)) ? '<span class="muted"><i class="k-dot"></i>noktalı: kapasite / kota aşıldı (ek bilgisayar / abonelik)</span>' : ''}</div>`;
   const svg = $('svg', box), tip = $('.ctip', box), xh = $('.xh', svg);
   svg.onpointermove = e => {
     const r = svg.getBoundingClientRect(), sx = (e.clientX - r.left) / r.width * W;
     if (sx < L || sx > W - R) { tip.hidden = true; xh.setAttribute('visibility', 'hidden'); return; }
     const t = xinv(sx); xh.setAttribute('x1', sx); xh.setAttribute('x2', sx); xh.setAttribute('visibility', 'visible');
     tip.hidden = false;
-    tip.innerHTML = `<b>${X.tip(t)}</b>` + o.series.map(s => `<div><i style="background:${s.color}"></i>${esc(s.name)}: <b>${tl(s.f(t))}</b>${Number.isFinite(s.limit) && t > s.limit ? ' <span class="bad">· sınır aşıldı</span>' : ''}</div>`).join('');
+    tip.innerHTML = `<b>${X.tip(t)}</b>` + o.series.map(s => `<div><i style="background:${s.color}"></i>${esc(s.name)}: <b>${tl(s.f(t))}</b>${(s.note ? s.note(t) : Number.isFinite(s.limit) && t > s.limit ? 'sınır aşıldı' : '') ? `<small class="bad">${esc(s.note ? s.note(t) : 'sınır aşıldı')}</small>` : ''}</div>`).join('');
     const bx = box.getBoundingClientRect();
     tip.style.left = Math.max(0, Math.min(bx.width - tip.offsetWidth - 4, e.clientX - bx.left + 14)) + 'px'; tip.style.top = (e.clientY - bx.top + 14) + 'px';
   };
@@ -287,14 +303,19 @@ function resultsElimde() {
   else if (c.vram < 8) tip = `<b>Önce ekran kartı.</b> Strata için en az 8 GB (tercihen 12 GB) ekran kartı gerekir. En ucuz yol: 2. el RTX 3060 12 GB (≈${tl(g3.price)}) + 64 GB RAM.`;
   else if (q.status === 'ok') tip = `<b>Hiçbir şey almana gerek yok.</b> Qwen3.8-Flash-Next 125B bu bilgisayarda ≈${tps(q.tps)} çalışır. ${c.ram < 128 ? `DeepSeek 763B’yi gerçekten kullanmak istersen 128 GB RAM gerekir (128 GB DDR5 ≈ ${tl(r128.price)}, ${esc(r128.store)}).` : ''}`;
   else tip = `<b>En etkili yükseltme RAM.</b> ${c.ramType === 'DDR4' ? `64 GB DDR4 ≈ ${tl(r4.price)} (${esc(r4.store)})` : `64 GB DDR5 ≈ ${tl(r64.price)} (${esc(r64.store)})`} ile Qwen 125B rahat çalışır. Ekran kartını değiştirmek bu modelde pek hızlandırmaz.`;
-  // the fastest model that runs comfortably decides the task-time example
-  const okIds = ids.filter(id => est[id].status === 'ok'), pool = okIds.length ? okIds : ids.filter(id => est[id].tps > 0);
-  const best = pool.sort((a, b) => est[b].tps - est[a].tps)[0];
-  let task = '<p class="muted">Bu donanımda rahat çalışan bir model yok; önce yükseltme önerisine bak.</p>';
-  if (best) {
-    const pp = Calc.prefill(c, best), sp = est[best].tps, T = Calc.cat().taskTypes;
-    task = `<p>Örnek model: <b>${Calc.MODELS[best].label}</b> · okuma ≈<b>${nf(pp)} tok/sn</b>, yazma ≈<b>${tps(sp)}</b>. Ekranda görünen hız yalnızca yazma hızıdır; uzun bağlamda asıl bekleme okumadadır.</p>
-    ${taskBars([...Object.values(T).map(t => ({ label: t.label, sub: `${nf(t.ctx / 1000)}K okur · ${nf(t.out / 1000)}K yazar`, read: t.ctx / pp, write: t.out / sp })), { label: 'Ajanın ilk cevabı', sub: '32K okur · 1K yazar', read: 32000 / pp, write: 1000 / sp }])}
+  // task time for every model that runs: bars for the chosen task type, table for all task types
+  const T = Calc.cat().taskTypes, tk = T[S.taskType] || T.short;
+  const runs = ids.filter(id => est[id].tps > 0).map(id => { const pp = Calc.prefill(c, id), w = est[id].tps, t = x => x.ctx / pp + x.out / w;
+    return { id, label: Calc.MODELS[id].label, st: est[id].status, tps: w, pp, short: t(T.short), think: t(T.think), agent: t(T.agent), first: 32000 / pp + 1000 / w }; });
+  let task = '<p class="muted">Bu donanımda çalışan bir model yok; önce yükseltme önerisine bak.</p>';
+  if (runs.length) {
+    const st = sortState('task', 'short'), shown = runs.filter(r => r.st !== 'no');
+    task = `<div class="row-label first">Görev tipi</div>${segButtons('task', Object.entries(T).map(([k, t]) => [k, t.label]), S.taskType)}
+    <p class="small muted">${tk.label}: ${nf(tk.ctx / 1000)}K token okur, ${nf(tk.out / 1000)}K token yazar. Ekranda görünen hız yalnızca yazma hızıdır; uzun bağlamda asıl bekleme okumadadır.</p>
+    ${absTaskBars(sortBy((shown.length ? shown : runs).map(r => ({ label: r.label, sub: `okuma ${nf(r.pp)} · yazma ${tps(r.tps)}`, read: tk.ctx / r.pp, write: tk.out / r.tps })), r => r.read + r.write, 1))}
+    <div class="tablewrap flat"><table class="systable compact"><thead><tr>${th('task', 'label', 'Model', st)}${th('task', 'tps', 'Yazma', st, 'num')}${th('task', 'pp', 'Okuma', st, 'num')}${Object.entries(T).map(([k, t]) => th('task', k, t.label, st, 'num')).join('')}${th('task', 'first', 'Ajanın ilk cevabı', st, 'num')}</tr></thead>
+    <tbody>${sortBy(runs, r => r[st.k], st.d).map(r => `<tr><td><b>${r.label}</b>${badge(r.st)}</td><td class="num">${tps(r.tps)}</td><td class="num">${nf(r.pp)} tok/sn</td><td class="num">${dur(r.short)}</td><td class="num">${dur(r.think)}</td><td class="num">${dur(r.agent)}</td><td class="num">${dur(r.first)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="small muted">Ajanın ilk cevabı: 32K bağlam okur, 1K yazar. Başlıklara tıklayarak sırala.</p>
     <ul class="checks">${engineTips(c).map(t => `<li>${t}</li>`).join('')}</ul>`;
   }
   const fits = Calc.cat().ggufModels.map(m => [m, Calc.ggufFit(m, 'Q4_K_M', hw)]).filter(([, f]) => f);
@@ -306,7 +327,7 @@ function resultsElimde() {
   <div class="tip">${tip}</div>
   <section class="card"><h2>Bu bilgisayar için önerilen modeller</h2><ul class="recs">${recModels(c).map(r => `<li><b>${r[0]}</b><span>${r[1]}</span></li>`).join('')}</ul>
    <p class="small muted">Aynı bit sayısında bile quant’ı kimin hazırladığı kaliteyi değiştirir; tanınmış yapımcıların dosyalarını seç. Düşünme ayarını “orta” tutmak çoğu işte kaliteyi az, süreyi çok etkiler.</p></section>
-  ${step(4, 'Bir görev ne kadar sürer?', 'Görev süresi = bağlamı okuma + cevabı yazma.')}
+  ${step(4, 'Bir görev ne kadar sürer?', 'Görev süresi = bağlamı okuma + cevabı yazma. Bu bilgisayarda çalışan tüm modeller için.')}
   <section class="card">${task}</section>
   ${step(5, 'Klasik modeller sığar mı?', 'llama.cpp, Q4, 8K bağlam; GGUF dosya boyutu + bağlam belleği tahmini.')}
   <section class="card"><div class="fitgroup"><h3>${badge('ok')} Ekran kartına sığan <span class="muted">(${gpuFit.length})</span></h3><div class="pills">${gpuFit.map(n => `<span>${esc(n)}</span>`).join('') || '<span class="muted">—</span>'}</div></div>
@@ -338,16 +359,23 @@ function resultsAl() {
     const cheapest = [...ok].sort((a, b) => a.price - b.price)[0];
     const value = [...ok].sort((a, b) => Calc.speed(b, M).tps / b.price - Calc.speed(a, M).tps / a.price)[0];
     const fastest = [...ok].sort((a, b) => Calc.speed(b, M).tps - Calc.speed(a, M).tps)[0];
-    const picks = [[cheapest, 'En ucuz çalışan', 'Kullanımını karşılayan en düşük fiyat.'], [value, 'Fiyat/performans', 'Lira başına en çok token/sn.'], [fastest, 'En hızlı', 'Bütçende en yüksek yazma hızı.']];
+    // with the dense 27B model a 16 GB card runs a better quant (3.5 bit instead of 2–3 bit) and leaves more context
+    const vpp = c => Calc.speed(c, M).tps / c.price;
+    const balanced = M === 'q27' ? [...ok].filter(c => c.kind === 'pc' && c.gpuVram >= 16).sort((a, b) => vpp(b) - vpp(a))[0] : null;
+    const picks = [[cheapest, 'En ucuz çalışan', 'Kullanımını karşılayan en düşük fiyat.'], [value, 'Fiyat/performans', 'Lira başına en çok token/sn.'],
+      ...(balanced ? [[balanced, 'Dengeli: 16 GB kart', '16 GB kartlar arasında lira başına en hızlısı: Qwen 27B’yi 2–3 bit yerine 3,5 bit çalıştırır (daha az kalite kaybı) ve ≈110K bağlam bırakır.']] : []),
+      [fastest, 'En hızlı', 'Bütçende en yüksek yazma hızı.']];
     const merged = [];
     for (const [c, t, r] of picks) { const m = merged.find(x => x.c.id === c.id); if (m) { m.t += ' · ' + t; m.r += ' ' + r; } else merged.push({ c, t, r }); }
-    rec = `<div class="pcgrid three">${merged.map(({ c, t, r }) => computerCard(c, { tag: t, reason: r, highlight: true })).join('')}</div>`;
+    rec = `<div class="pcgrid ${merged.length === 4 ? 'two' : 'three'}">${merged.map(({ c, t, r }) => computerCard(c, { tag: t, reason: r, highlight: true })).join('')}</div>`;
   }
-  const F = S.buyFilter, list = within.filter(c => F === 'all' || (F === 'pc' ? c.kind === 'pc' : F === 'mac' ? c.kind === 'mac' : c.ram >= 64)).sort((a, b) => a.price - b.price);
+  const F = S.buyFilter, list = within.filter(c => F === 'all' || (F === 'pc' ? c.kind === 'pc' : F === 'mac' ? c.kind === 'mac' : c.ram >= 64));
+  const ss = sortState('sys', 'price'), rows = list.map(c => { const sp = Calc.speed(c, M), short = Calc.capacity(c, M, S) < S.monthlyTokens;
+    return { c, sp, short, name: c.name, price: c.price, tps: sp.tps || NaN, tt: Calc.taskTime(c, M, S).total, el: sp.tps ? Calc.electricity(c, M, S).tl : NaN, st: { ok: 0, slow: 1, no: 2 }[sp.status] + (short ? 0.5 : 0) }; });
   return `${step(2, 'Sana önerilerimiz', `Bütçe ${tl(S.budget)} · ${Calc.MODELS[M].label} · ayda ${nf(S.monthlyTokens, 1)} M çıktı`)}
   ${rec}
-  ${step(3, 'Bütçendeki tüm hazır sistemler', `${list.length} sistem, fiyata göre sıralı. Qwen 27B hızı karta göre farklı bit sayısıyla hesaplanır (sütunda belirtilir).`, segButtons('buyfilter', [['all', 'Tümü'], ['pc', 'PC'], ['mac', 'Mac'], ['ram64', '64 GB+ RAM']], F))}
-  <div class="tablewrap"><table class="systable"><thead><tr><th>Sistem</th><th class="num">Fiyat</th><th class="num">${Calc.MODELS[M].short}</th><th class="num">Görev süresi</th><th class="num">Elektrik/ay</th><th>Durum</th><th></th></tr></thead><tbody>${list.map(c => { const sp = Calc.speed(c, M), short = Calc.capacity(c, M, S) < S.monthlyTokens; return `<tr><td><b>${esc(c.name)}</b><small>${specLine(c)}</small><details class="more"><summary>Parçalar</summary>${partsList(c)}</details></td><td class="num"><b>${tl(c.price)}</b></td><td class="num">${tps(sp.tps)}<small>${sp.tps ? speedSub(sp) : ''}</small></td><td class="num">${dur(Calc.taskTime(c, M, S).total)}</td><td class="num">${sp.tps ? tl(Calc.electricity(c, M, S).tl) : '—'}</td><td>${badge(sp.status)}${short && sp.tps ? '<small class="bad">kullanımına yetmez</small>' : ''}</td><td><button type="button" class="btn ghost small" data-compare="${c.id}">Karşılaştır</button></td></tr>`; }).join('') || '<tr><td colspan="7" class="muted">Bu filtreyle sistem yok.</td></tr>'}</tbody></table></div>
+  ${step(3, 'Bütçendeki tüm hazır sistemler', `${list.length} sistem. Sıralamak için başlıklara tıkla. Qwen 27B hızı karta göre farklı bit sayısıyla hesaplanır (sütunda belirtilir).`, segButtons('buyfilter', [['all', 'Tümü'], ['pc', 'PC'], ['mac', 'Mac'], ['ram64', '64 GB+ RAM']], F))}
+  <div class="tablewrap"><table class="systable"><thead><tr>${th('sys', 'name', 'Sistem', ss)}${th('sys', 'price', 'Fiyat', ss, 'num')}${th('sys', 'tps', Calc.MODELS[M].short, ss, 'num')}${th('sys', 'tt', 'Görev süresi', ss, 'num')}${th('sys', 'el', 'Elektrik/ay', ss, 'num')}${th('sys', 'st', 'Durum', ss)}<th></th></tr></thead><tbody>${sortBy(rows, r => r[ss.k], ss.d).map(({ c, sp, tt, el, short }) => `<tr><td><b>${esc(c.name)}</b><small>${specLine(c)}</small><details class="more"><summary>Parçalar</summary>${partsList(c)}</details></td><td class="num"><b>${tl(c.price)}</b></td><td class="num">${tps(sp.tps)}<small>${sp.tps ? speedSub(sp) : ''}</small></td><td class="num">${dur(tt)}</td><td class="num">${sp.tps ? tl(el) : '—'}</td><td>${badge(sp.status)}${short && sp.tps ? '<small class="bad">kullanımına yetmez</small>' : ''}</td><td><button type="button" class="btn ghost small" data-compare="${c.id}">Karşılaştır</button></td></tr>`).join('') || '<tr><td colspan="7" class="muted">Bu filtreyle sistem yok.</td></tr>'}</tbody></table></div>
   ${step(4, 'Kendin topla', 'Parçaları ve mağazaları sen seç. Uyumsuz parçalar elenir; fiyat, hız ve güç kaynağı yeterliliği anında hesaplanır.')}
   <div id="builderBox">${builderHtml()}</div>
   <details class="card more alt"><summary>Başka yollar: mini PC, ikinci el veri merkezi kartları, Mac</summary><ul class="checks">
@@ -406,6 +434,7 @@ function cloudSub(o, withType) {
   if (o.type === 'subscription') return `${withType ? 'Abonelik · ' : ''}${esc(o.limit)}`;
   return `${withType ? (o.open ? 'API · açık model · ' : 'API · ') : ''}1M token: girdi $${o.inputUsd} · çıktı $${o.outputUsd}${o.live ? ' · canlı fiyat' : ''}`;
 }
+const CSORT = { monthly: o => o.monthly, out: o => o.type === 'subscription' ? NaN : o.outputUsd, in: o => o.type === 'subscription' ? NaN : o.inputUsd, name: o => o.name.replace(/^Açık · /, '') };
 function resultsBulut() {
   const all = Calc.cloudOptions(S);
   const cards = CLOUD_GROUPS.map(([k, l, s, f]) => [l, s, all.filter(o => o.fits && f(o)).sort((a, b) => a.monthly - b.monthly)[0]]).filter(x => x[2]);
@@ -413,12 +442,12 @@ function resultsBulut() {
   const max = Math.max(...opts.filter(o => o.fits).map(o => o.monthly), 1);
   const bar = o => `<div class="bar-row${o.fits ? '' : ' dim'}"><span class="bn">${esc(o.name.replace(/^Açık · /, ''))}${Calc.inClass(o, 'frontier') && o.type !== 'subscription' ? ' <span class="mini">üst düzey</span>' : ''}<small>${o.split ? `bu ay: çıktı ${tl(o.split.out)} · girdi ${tl(o.split.inFresh)} · önbellek ${tl(o.split.inCached)}` : esc(o.limit)}</small></span><span class="bt"><i style="width:${Math.max(1, Math.log1p(o.monthly) / Math.log1p(max) * 100)}%"></i></span><b>${tl(o.monthly)}</b></div>`;
   const groups = [['API · açık modeller', o => o.type !== 'subscription' && o.open], ['API · kapalı modeller', o => o.type !== 'subscription' && !o.open], ['Abonelikler', o => o.type === 'subscription' && o.fits]]
-    .map(([t, f]) => [t, opts.filter(f).sort((a, b) => a.monthly - b.monthly)]).filter(([, l]) => l.length);
+    .map(([t, f]) => [t, sortBy(opts.filter(f), CSORT[S.cloudSort] || CSORT.monthly, 1)]).filter(([, l]) => l.length);
   const over = opts.filter(o => !o.fits).sort((a, b) => a.monthly - b.monthly);
   return `${step(2, 'Her sınıfın en ucuzu', `Ayda ${nf(S.monthlyTokens, 1)} M çıktı + ${nf(Calc.inputM(S), 1)} M girdi tokeni için.`)}
   <div class="pcgrid four">${cards.map(([l, s, o]) => `<article class="pc hl cloudcard"><span class="tag">${l}</span><h3>${esc(o.name.replace(/^Açık · /, ''))}</h3><p class="small muted">${s}</p><b class="big">${tl(o.monthly)}<small>/ay</small></b><p class="small muted">${cloudSub(o)}</p><div class="actions"><a class="btn ghost small" href="${esc(o.source)}" target="_blank" rel="noopener">Resmî fiyat ${icon('ext', 'bi')}</a><button type="button" class="btn ghost small" data-cmpcloud="${o.id}">Bilgisayarla karşılaştır</button></div></article>`).join('')}</div>
-  ${step(3, 'Tüm seçenekler', `${opts.length} seçenek, gruplar içinde ucuzdan pahalıya. Çubuk uzunluğu logaritmik.`, segButtons('cloudclass', [['all', 'Tümü'], ['open', 'Açık'], ['closed', 'Kapalı'], ['frontier', 'Üst düzey']], S.cloudClass))}
-  <section class="card">${groups.map(([t, l]) => `<div class="bar-group"><h3>${t} <span class="muted">(${l.length})</span></h3><div class="bars">${l.map(bar).join('')}</div></div>`).join('')}
+  ${step(3, 'Tüm seçenekler', `${opts.length} seçenek, gruplar halinde. Çubuk uzunluğu aylık maliyeti gösterir (logaritmik).`, segButtons('cloudclass', [['all', 'Tümü'], ['open', 'Açık'], ['closed', 'Kapalı'], ['frontier', 'Üst düzey']], S.cloudClass))}
+  <section class="card"><div class="card-head sortbar"><span class="muted small">Sırala</span>${segButtons('cloudsort', [['monthly', 'Aylık maliyet'], ['out', 'Çıktı fiyatı'], ['in', 'Girdi fiyatı'], ['name', 'Ad']], S.cloudSort)}</div>${groups.map(([t, l]) => `<div class="bar-group"><h3>${t} <span class="muted">(${l.length})</span></h3><div class="bars">${l.map(bar).join('')}</div></div>`).join('')}
    ${over.length ? `<details class="more"><summary>Kotası bu kullanıma yetmeyen abonelikler (${over.length})</summary><div class="bars">${over.map(bar).join('')}</div></details>` : ''}
    <p class="small muted note">API girdisi: çıktı payı %${S.outputSharePercent} → ayda ${nf(Calc.inputM(S), 1)} M girdi; önbellekten okunan %${S.cachedInputSharePercent}. Aboneliklerin aylık token kotası sağlayıcı garantisi değil, varsayımdır.</p></section>
   <div class="pcgrid two"><section class="card"><h2>${icon('alert', 'ic h-ic')}Abonelikte dikkat</h2><ul class="checks">
@@ -482,7 +511,7 @@ function resultsKarsilastir() {
   ${rent}
   ${step(4, 'Grafikler')}
   <section class="card"><div class="card-head"><h2>Zamanla toplam maliyet</h2><span class="muted small">${H} ay · satın alma + elektrik, bulutta aylık ücret</span></div><div id="chart" class="chart-wrap"></div></section>
-  <section class="card"><div class="card-head"><div><h2>Aylık kullanıma göre bir ayın maliyeti</h2><span class="muted small">Kullanım arttıkça API maliyeti doğrusal artar; bilgisayarda yalnızca elektrik artar (donanım bedeli ${owned ? 'yok' : H + ' aya bölünmüş'}).</span></div>${segButtons('tokscale', [['log', 'Logaritmik'], ['lin', 'Doğrusal']], S.tokScale)}</div><div id="tchart" class="chart-wrap"></div>
+  <section class="card"><div class="card-head"><div><h2>Aylık kullanıma göre bir ayın maliyeti</h2><span class="muted small">Kullanım arttıkça API maliyeti doğrusal artar; bilgisayarda yalnızca elektrik artar (donanım bedeli ${owned ? 'yok' : H + ' aya bölünmüş'}). Kapasite veya kota aşılınca ek bilgisayar ya da abonelik eklenir.</span></div>${segButtons('tokscale', [['log', 'Logaritmik'], ['lin', 'Doğrusal']], S.tokScale)}</div><div id="tchart" class="chart-wrap"></div>
    <p class="small muted">${S.tokScale === 'log' ? 'İki eksen de logaritmik: her ızgara çizgisi 10 kat. API’ler paralel çizgilerdir; aralarındaki boşluk fiyat oranıdır.' : 'Doğrusal ölçek; yatay eksen kullanımının 2,5 katına kadar.'}</p></section>`;
 }
 function drawCompareCharts() {
@@ -495,8 +524,13 @@ function drawCompareCharts() {
   const log = S.tokScale !== 'log' ? false : true, cap = X.sp.tps ? X.cap : 0;
   const lo = log ? 0.1 : 0, hi = log ? 1000 : niceStep(Math.max(10, S.monthlyTokens * 2.5) / 5) * 5;
   const tser = [];
-  if (X.sp.tps) tser.push({ name: local.name, color: 'var(--c1)', f: X.localM, limit: cap });
-  const cs = (o, color, dash) => ({ name: o.name, color, dash, f: X.cloudM(o), limit: o.type === 'subscription' ? (S.caps[o.id] || o.defaultCapM) : undefined });
+  // beyond a limit the cost is what it would really take: more computers (capacity) or more subscriptions (quota)
+  const units = (x, lim) => Math.max(1, Math.ceil(x / lim - 1e-9));
+  if (X.sp.tps) tser.push(owned
+    ? { name: local.name, color: 'var(--c1)', f: X.localM, limit: cap, note: x => x > cap ? 'kapasite aşıldı: bu bilgisayar yetmez' : '' }
+    : { name: local.name, color: 'var(--c1)', limit: cap, f: x => units(x, cap) * X.hwMonthly + Calc.electricity(local, M, { ...S, monthlyTokens: x }).tl, note: x => x > cap ? `${units(x, cap)} bilgisayar gerekir` : '' });
+  const cs = (o, color, dash) => { if (o.type !== 'subscription') return { name: o.name, color, dash, f: X.cloudM(o) };
+    const q = S.caps[o.id] || o.defaultCapM, m = X.cloudM(o)(1); return { name: o.name, color, dash, limit: q, f: x => units(x, q) * m, note: x => x > q ? `kota aşıldı: ${units(x, q)} abonelik gerekir` : '' }; };
   tser.push(cs(cloud, 'var(--c2)'));
   if (frontier) tser.push(cs(frontier, 'var(--c3)', true));
   const lt = [0.1, 1, 10, 100, 1000], ls = niceStep(hi / 5);
@@ -508,7 +542,7 @@ function drawCompareCharts() {
 const PCATS = [['gpu', 'Ekran kartları'], ['cpu', 'İşlemciler'], ['mobo', 'Anakartlar'], ['ram', 'RAM'], ['ssd', 'SSD'], ['psu', 'Güç kaynakları'], ['case', 'Kasalar'], ['cooler', 'Soğutucular']];
 function opartHtml(k, open) {
   const p = Calc.cat().parts[k], offs = Calc.offers(k), ch = Calc.chosenOffer(k, S.offerSel), mine = !!S.offerSel[k] && S.offerSel[k] === ch.store;
-  return `<details class="opart" data-part="${k}"${open ? ' open' : ''}><summary><span class="op-n">${esc(p.label)}</span><span class="op-s">${esc(ch.store)}${mine ? ' <span class="mini">seçimin</span>' : offs.length > 1 ? ' <span class="mini ok">en ucuz</span>' : ''}</span><b class="num">${tl(ch.price)}</b><span class="op-c">${offs.length} mağaza</span>${icon('chev', 'bi chev')}</summary>
+  return `<details class="opart" data-part="${k}"${open ? ' open' : ''}><summary><span class="op-n">${esc(p.label)}</span><span class="op-s">${esc(ch.store)}${ch.stock === 'tükendi' ? ' <span class="mini bad">tükendi</span>' : mine ? ' <span class="mini">seçimin</span>' : offs.length > 1 ? ' <span class="mini ok">en ucuz</span>' : ''}</span><b class="num">${tl(ch.price)}</b><span class="op-c">${offs.length} mağaza</span>${icon('chev', 'bi chev')}</summary>
    <div class="op-body"><table class="offers"><tbody>${offs.map((o, i) => `<tr class="${o.store === ch.store ? 'sel' : ''}"><td><label><input type="radio" name="o-${k}" data-pickoffer="${k}" value="${esc(o.store)}"${o.store === ch.store ? ' checked' : ''}> <b>${esc(o.store)}</b></label>${i === 0 ? ' <span class="badge ok">en ucuz</span>' : ''}</td><td class="num"><b>${tl(o.price)}</b></td><td><span class="badge ${o.stock === 'stokta' ? 'ok' : o.stock === 'tükendi' ? 'no' : 'slow'}">${esc(o.stock)}</span></td><td class="small muted">${esc(o.source)} · ${esc(o.date)}</td><td class="small"><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc((o.name || '').slice(0, 60))} ${icon('ext', 'bi')}</a></td></tr>`).join('')}</tbody></table></div></details>`;
 }
 VIEWS.fiyatlar = () => {
@@ -520,8 +554,7 @@ VIEWS.fiyatlar = () => {
    <div class="src">${icon('edit')}<div><b>Elle · tarihli</b><span>akakçe, Vatan, Hepsiburada, n11, Sinerji, İnceHesap…</span></div></div></div>
   <div class="jump"><span class="muted small">Kategoriler:</span>${PCATS.map(([c, l]) => `<button type="button" data-jump="cat-${c}">${l}</button>`).join('')}<button type="button" data-jump="cat-mac">Mac</button><button type="button" class="btn ghost small" data-resetoffers>Mağaza seçimlerini sıfırla</button></div>
   ${PCATS.map(([cat, label]) => `<section class="card" id="cat-${cat}"><div class="card-head"><h2>${label}</h2><span class="muted small">Seçili mağaza · fiyat</span></div><div class="oparts">${Object.keys(P).filter(k => P[k].cat === cat).map(k => opartHtml(k)).join('')}</div></section>`).join('')}
-  <section class="card" id="cat-mac"><h2>Mac fiyatları (Apple Türkiye)</h2><table class="offers"><tbody>${Calc.computers({}).filter(c => c.kind === 'mac').map(c => `<tr><td>${esc(c.appleName)}</td><td class="num"><b>${tl(c.price)}</b></td><td><a href="${esc(c.url)}" target="_blank" rel="noopener">Apple ${icon('ext', 'bi')}</a></td></tr>`).join('')}</tbody></table></section>
-  <section class="card"><h2>Fiyatları güncellemek</h2><p>API fiyatları ve dolar kuru her ziyarette senin tarayıcından canlı çekilir (dolar kuru: ${nf(S.usdTry, 4)} TL${L.usdTry ? `, yedek TCMB ${esc(L.usdTry.date)}` : ''}). Mağaza (Gamegaraj, Gaming.gen.tr) ve Apple fiyatları her hafta GitHub Actions ile toplanır; tarayıcılar bu sitelerden doğrudan okuyamaz. Otomatik erişimi engelleyen mağazalar için aşağıdaki promptu web araması açık bir yapay zekâya ver; çıkan JSON’u <code>data/manual-offers.json</code> dosyasına ekle.</p><button type="button" class="btn ghost" data-copyprompt>Promptu kopyala</button></section>`;
+  <section class="card" id="cat-mac"><h2>Mac fiyatları (Apple Türkiye)</h2><table class="offers"><tbody>${Calc.computers({}).filter(c => c.kind === 'mac').map(c => `<tr><td>${esc(c.appleName)}</td><td class="num"><b>${tl(c.price)}</b></td><td><a href="${esc(c.url)}" target="_blank" rel="noopener">Apple ${icon('ext', 'bi')}</a></td></tr>`).join('')}</tbody></table></section>`;
 };
 
 /* --- method --- */
@@ -553,7 +586,7 @@ VIEWS.nasil = () => {
   <section class="card"><h2>Veri nereden geliyor?</h2><div class="sources flow">
    <div class="src">${icon('globe')}<div><b>Tarayıcın, her ziyarette</b><span>OpenRouter API fiyatları ve dolar kuru doğrudan senin tarayıcından çekilir.</span></div></div>
    <div class="src">${icon('refresh')}<div><b>GitHub Actions, her hafta</b><span>Gamegaraj, Gaming.gen.tr, Apple Türkiye ve TCMB; değişiklik varsa <code>data/prices.json</code> güncellenir.</span></div></div>
-   <div class="src">${icon('edit')}<div><b>Elle, tarihli</b><span>Otomatik erişimi engelleyen mağazalar; <a href="#fiyatlar">Fiyatlar</a> sayfasındaki promptla toplanır.</span></div></div></div></section>
+   <div class="src">${icon('edit')}<div><b>Elle, tarihli</b><span>Otomatik erişimi engelleyen mağazaların teklifleri, tarihleriyle birlikte <code>data/manual-offers.json</code> dosyasında tutulur.</span></div></div></div></section>
   <section class="card"><h2>Kaynaklar</h2><ul class="links">
    <li><a href="https://github.com/Niko1221/Strata" target="_blank" rel="noopener">Strata (GitHub)</a> · <a href="https://github.com/Niko1221/Strata/blob/main/docs/MODELS.md" target="_blank" rel="noopener">Bellek ve hız tabloları</a> · <a href="https://github.com/Niko1221/Strata/blob/main/docs/DEEPSEEK41.md" target="_blank" rel="noopener">DeepSeek ölçümleri</a> · <a href="https://github.com/Niko1221/Strata/blob/main/docs/COMMUNITY_BENCHMARKS.md" target="_blank" rel="noopener">Topluluk ölçümleri</a></li>
    <li>Yerel AI topluluğu ölçümleri ve teknik incelemeler (Ekim–Kasım 2026)</li>
@@ -660,12 +693,6 @@ function resultsMetrikler() {
    <div class="legend"><span><i class="k-ok"></i>Model hızlı belleğe sığıyor</span><span><i class="k-over"></i>Sığmıyor: kalanı RAM’den / SSD’den</span></div></div>`;
 }
 
-const PROMPT = `Türkiye'de bugün satılan bilgisayar parçalarının güncel fiyatlarını web'de araştır. Her ürün için EN AZ 3 farklı mağazaya bak (akakçe, Vatan, İtopya, İnceHesap, Hepsiburada, Trendyol, Amazon TR, Sinerji, n11, Teknosa, MediaMarkt). Fiyatı sayfada gerçekten gördüysen yaz; tahmin etme.
-
-Parçalar (id: açıklama): gpu9060: RX 9060 XT 16 GB · gpu5060ti: RTX 5060 Ti 16 GB · gpu5070: RTX 5070 12 GB · gpu9070xt: RX 9070 XT 16 GB · gpu5070ti: RTX 5070 Ti 16 GB · gpu5080: RTX 5080 16 GB · gpu5090: RTX 5090 32 GB (hava soğutmalı) · gpuR9700: Radeon AI PRO R9700 32 GB · gpu3060used: RTX 3060 12 GB ikinci el (sahibinden/letgo ortanca) · gpu3090used: RTX 3090 24 GB ikinci el · cpu7500f: Ryzen 5 7500F · cpu9700x: Ryzen 7 9700X · cpu5500: Ryzen 5 5500 · moboB650: AM5 B650M anakart · moboA520: AM4 A520 anakart · moboX870E: x8/x8 destekli X870E · ram32: 32 GB (2x16) DDR5 · ram64: 64 GB (2x32) DDR5 · ram64ddr4: 64 GB (2x32) DDR4 · ram128: 128 GB DDR5 · ssd1: 1 TB NVMe · ssd2: 2 TB NVMe · psu750: 750 W Bronze · psu850: 850 W Gold · psu1200: 1200 W Gold · psu1300: 1300 W Platinum · caseMid: ATX mid tower kasa (PSU'suz) · cooler: AM5/AM4 kule tipi soğutucu
-
-Çıktıyı SADECE şu JSON formatında ver: {"updated":"GG.AA.YYYY","offers":{"gpu5080":[{"store":"Mağaza","name":"ürün adı","price":88803,"url":"ürün sayfası","stock":"stokta|tükendi|bilinmiyor","date":"GG.AA.YYYY","source":"elle"}]}}`;
-
 /* ---------- render & events ---------- */
 const RESULTS = { metrikler: resultsMetrikler, elimde: resultsElimde, al: resultsAl, bulut: resultsBulut, karsilastir: resultsKarsilastir };
 const TITLES = { elimde: 'Bilgisayarım var', al: 'Bilgisayar al', bulut: 'Bulut', karsilastir: 'Al mı, kirala mı?', fiyatlar: 'Fiyatlar', metrikler: 'Metrikler', nasil: 'Yöntem' };
@@ -711,13 +738,14 @@ document.addEventListener('click', e => {
   else if (d.cloudclass) { set('cloudClass', d.cloudclass); updateResults(); }
   else if (d.cmpclass) { set('cmpClass', d.cmpclass); set('cmpCloud', ''); updateResults(); }
   else if (d.tokscale) { set('tokScale', d.tokscale); updateResults(); }
+  else if (d.cloudsort) { set('cloudSort', d.cloudsort); updateResults(); }
+  else if (d.sort) { const [t, k] = d.sort.split(':'), cur = (S.sorts || {})[t]; set('sorts', { ...S.sorts, [t]: { k, d: cur && cur.k === k ? -cur.d : SORT_DEF[k] || 1 } }); updateResults(); }
   else if (d.jump) { const el = document.getElementById(d.jump); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   else if (d.compare) { set('cmpLocal', d.compare); location.hash = '#karsilastir'; }
   else if (d.cmpLocal) { set('cmpLocal', d.cmpLocal); }
   else if (d.cmpcloud) { set('cmpCloud', d.cmpcloud); set('cmpClass', 'all'); location.hash = '#karsilastir'; }
   else if ('resetoffers' in d) { set('offerSel', {}); rerenderControls(); toast('Mağaza seçimleri sıfırlandı'); }
   else if ('resetall' in d) { S = DEFAULT_STATE(); save(); rerenderControls(); toast('Ayarlar sıfırlandı'); }
-  else if ('copyprompt' in d) { navigator.clipboard?.writeText(PROMPT).then(() => toast('Prompt kopyalandı')); }
   else if ('copybuild' in d) { const c = customComputer(); const txt = c.items.map(i => `${i.part.label}: ${i.offer.name} — ${i.offer.price} TL (${i.offer.store}) ${i.offer.url}`).join('\n') + `\nToplam: ${c.price} TL`; navigator.clipboard?.writeText(txt).then(() => toast('Parça listesi kopyalandı')); }
   else if (b.id === 'share') { navigator.clipboard?.writeText(shareUrl()).then(() => toast('Bağlantı kopyalandı'), () => prompt('Bağlantı:', shareUrl())); }
   else if (b.id === 'theme') { const dark = document.documentElement.dataset.theme !== 'dark' && !(document.documentElement.dataset.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches); document.documentElement.dataset.theme = dark ? 'dark' : 'light'; try { localStorage.setItem('yerel-ai-theme', dark ? 'dark' : 'light'); } catch (e) {} }

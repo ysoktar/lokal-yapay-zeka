@@ -100,6 +100,8 @@ GM_PARTS = {
     "cpu9700x": ("ryzen 7 9700x", [r"9700X", r"İşlemci"], []),
     "ram32":    ("32gb ddr5 ram", [r"32 ?GB", r"DDR5", r"(Masaüstü|Desktop|RAM)"], [r"SO-?DIMM|Notebook|Dizüstü|Laptop|Intel Core|Ryzen"]),
     "ram64":    ("64gb ddr5 ram", [r"64 ?GB", r"DDR5", r"(Masaüstü|Desktop|RAM)"], [r"SO-?DIMM|Notebook|Dizüstü|Laptop|Intel Core|Ryzen"]),
+    "ram64ddr4":("64gb ddr4 ram", [r"64 ?GB", r"DDR4", r"(Masaüstü|Desktop|RAM)"], [r"SO-?DIMM|Notebook|Dizüstü|Laptop|Intel Core|Ryzen"]),
+    "ram128":   ("128gb ddr5 ram", [r"128 ?GB", r"DDR5", r"(Masaüstü|Desktop|RAM)"], [r"SO-?DIMM|Notebook|Dizüstü|Laptop|Intel Core|Ryzen"]),
     "ssd1":     ("1tb nvme ssd", [r"\b1 ?TB\b", r"(NVMe|M\.2)"], [r"Intel Core|Ryzen"]),
     "ssd2":     ("2tb nvme ssd", [r"\b2 ?TB\b", r"(NVMe|M\.2)"], [r"Intel Core|Ryzen"]),
     "psu850":   ("850w gold", [r"850 ?W", r"Gold"], []),

@@ -515,6 +515,17 @@
     "date": "01.11.2026",
     "source": "elle"
    }
+  ],
+  "ram64ddr4": [
+   {
+    "store": "Vatan",
+    "name": "Crucial 64GB (2x32GB) DDR4 3200MHz CL22 UDIMM",
+    "price": 30919,
+    "url": "https://www.vatanbilgisayar.com/crucial-64gb-2x32gb-ddr4-3200mhz-cl22-udimm-sogutuculu-pc-ram.html",
+    "stock": "bilinmiyor",
+    "date": "02.11.2026",
+    "source": "elle"
+   }
   ]
  }
 }
